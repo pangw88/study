@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/tx
+           http://www.springframework.org/schema/tx/spring-tx.xsd
+           http://www.springframework.org/schema/aop
+           http://www.springframework.org/schema/aop/spring-aop.xsd">
+	
+	<!-- 扫描指定包下添加@Component注解，以及其子注解@Controller、@Service、@Repository注解的类，
+	将这些类委托给spring的BeanFactory管理，context:component-scan标签内包含了context:annotation-config，
+	所以context:annotation-config在这里可以省略 -->
+	<context:component-scan base-package="com.wp.study.spring.transaction.byaspectxml.service" />
+	
+	<!-- 启动@Transactional注解，对使用@Transactional注解的类或方法添加事物管理 -->
+	<!-- <tx:annotation-driven transaction-manager="txManager"/> -->
+	
+	<!-- PlatformTransactionMnager -->
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+  		<property name="dataSource" ref="dataSource"/>
+	</bean>
+	
+	<!-- 定义事物通知 -->
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			<tx:method name="add*" propagation="REQUIRED" />
+		</tx:attributes>
+	</tx:advice>
+	
+	<aop:config>
+		<aop:pointcut id="aopSampleService"
+			expression="execution(public * com.wp.study.spring.transaction.byaspectxml.service.*.*(..))" />
+		<aop:advisor pointcut-ref="aopSampleService" advice-ref="txAdvice" />
+	</aop:config>
+
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+	 	<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+	  	<property name="url" value="jdbc:mysql://localhost:3306/test" />
+	  	<property name="username" value="root" />
+	 	<property name="password" value="" />
+	</bean>
+	
+	<!-- define the SqlSessionFactory，同时指定数据源 -->  
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">  
+        <property name="dataSource" ref="dataSource" />
+        <!-- 指定sqlMapConfig总配置文件，config.xml中订制的environment在spring容器中不在生效 -->
+        <property name="configLocation" value="classpath:com/wp/study/spring/transaction/byaspectxml/mybatis-config.xml" />
+        <!-- 实例对象所属包位置，已经配置在config.xml文件中，故省略之 -->
+        <!-- <property name="typeAliasesPackage" value="spring.transaction.byaspectxml.entity" /> -->  
+    </bean>
+	
+	<!-- define mapper bean，数据映射器必须为接口 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- 指定使用的sqlSessionFactory -->
+        <property name="sqlSessionFactory" ref="sqlSessionFactory"/>
+        <!-- 指定数据映射接口所属包位置 -->
+        <property name="basePackage" value="com.wp.study.jdbc.mysql.dao" />
+    </bean> 
+	
+</beans>

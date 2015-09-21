@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd">
+           
+	<!-- 向spring容器注册AutowiredAnnotationBeanPostProcessor、CommonAnnotationBeanPostProcessor
+	PersistenceAnnotationBeanPostProcessor、RequiredAnnotationBeanPostProcessor
+	四个BeanPostProcessor，用于识别@Autowired、@Resource、@PostConstruct、@PreDestroy、
+	@PersistenceContext、@Required等注解 -->
+	<!-- <context:annotation-config /> -->
+	
+	<!-- 扫描指定包下添加@Component注解，以及其子注解@Controller、@Service、@Repository注解的类，
+	将这些类委托给spring的BeanFactory管理，context:component-scan标签内包含了context:annotation-config，
+	所以context:annotation-config在这里可以省略 -->
+	<context:component-scan base-package="com.wp.study.spring.ioc.injectbyannotation.*" />
+</beans>

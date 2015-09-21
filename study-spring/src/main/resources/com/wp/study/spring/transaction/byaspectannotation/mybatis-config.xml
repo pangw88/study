@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>     
+<!DOCTYPE configuration     
+    PUBLIC "-//mybatis.org//DTD Config 3.0//EN"     
+    "http://mybatis.org/dtd/mybatis-3-config.dtd">  
+<configuration>
+	<!--数据源配置，因为已经配置在beans.xml文件，故省略之 -->  
+    <!-- <environments default="development">  
+        <environment id="development">  
+            <transactionManager type="jdbc" />  
+            <dataSource type="POOLED">  
+                <property name="driver" value="com.mysql.jdbc.Driver" />  
+                <property name="url" value="jdbc:mysql://127.0.0.1:3306/smc?useUnicode=true&characterEncoding=utf8&generateSimpleParameterMetadata=true" />  
+                <property name="username" value="root" />  
+                <property name="password" value="123456" />  
+            </dataSource>  
+        </environment>  
+    </environments>  -->
+
+	<!-- mapper中已经使用类的全限定名，故此处别名可省略 -->
+    <!-- <typeAliases>  
+        给实体类起一个别名Sample  
+        <typeAlias type="spring.transaction.byaspectannotation.entity.Sample" alias="Sample" />   
+    </typeAliases> -->  
+     
+    <mappers>  
+        <!-- sampleMapper.xml装载进来，同等于把"dao"的实现装载进来 -->  
+        <mapper resource="com/wp/study/jdbc/sqlMap/mysql/sampleMapper.xml" />  
+    </mappers> 
+</configuration>

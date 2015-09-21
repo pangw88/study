@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC   
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">  
+<!--这块为dao接口的实现，namespace必须和接口的类路径一样，返回值类型为config.xml中实例对象的别名Sample -->  
+<mapper namespace="com.wp.study.jdbc.mysql.dao.SampleDao">  
+    <resultMap id="SampleResultMap" type="com.wp.study.jdbc.mysql.pojo.Sample">
+		<result property="id" column="id" />
+		<result property="name" column="name" />
+	</resultMap>
+    
+    <insert id="addSample" parameterType="com.wp.study.jdbc.mysql.pojo.Sample">
+		INSERT INTO SAMPLE (	
+        	name)
+		VALUES ( 
+        	#{name})
+	</insert>
+	
+</mapper>

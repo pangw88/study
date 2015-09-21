@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC   
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">  
+<!--这块为dao接口的实现，namespace必须和接口的类路径一样，返回值类型也可以配置在configuration.xml的typeAliases标签中 -->
+<mapper namespace="com.wp.study.jdbc.derby.dao.ConfigMapper"> 
+    <resultMap id="ConfigResultMap" type="com.wp.study.jdbc.derby.pojo.Config">
+		<result property="confKey" column="conf_key" />
+		<result property="confValue" column="conf_value" />
+		<result property="description" column="description" />
+		<result property="createTime" column="create_time" />
+		<result property="updateTime" column="update_time" />
+	</resultMap> 
+	
+	<select id="queryAllConfig" resultMap="ConfigResultMap">  
+		SELECT	
+		    conf_key,
+        	conf_value,
+  			description,
+  			update_time
+  		FROM
+  			MST_CONFIG
+    </select> 
+</mapper>

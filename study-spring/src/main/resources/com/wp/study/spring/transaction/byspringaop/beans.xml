@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/tx
+           http://www.springframework.org/schema/tx/spring-tx.xsd
+           http://www.springframework.org/schema/aop
+           http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+	<!-- 扫描指定包下添加@Component注解，以及其子注解@Controller、@Service、@Repository注解的类， 将这些类委托给spring的BeanFactory管理，context:component-scan标签内包含了context:annotation-config， 
+		所以context:annotation-config在这里可以省略 -->
+	<context:component-scan base-package="com.wp.study.spring.transaction.byspringaop.service" />
+
+	<!-- PlatformTransactionMnager -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- 定义事务管理拦截器 -->
+	<bean id="transactionInterceptor"
+		class="org.springframework.transaction.interceptor.TransactionInterceptor">
+		<property name="transactionManager" ref="transactionManager" />
+		<!-- 配置事务属性 -->
+		<property name="transactionAttributes">
+			<props>
+				<prop key="*">PROPAGATION_REQUIRED</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- 定义bean自动代理容器，为bean织入指定的拦截器，例如：事物、安全等拦截  -->
+	<bean
+		class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+		<property name="interceptorNames">
+			<list>
+				<!-- 配置实现Advice的拦截器 -->
+				<value>transactionInterceptor</value>
+			</list>
+		</property>
+		<property name="beanNames">
+			<list>
+				<!-- 需要拦截serivce的beanName,支持通配  -->
+				<value>*Service</value>
+			</list>
+		</property>
+		<!-- 值为false，根据Target类型动态使用代理技术(proxy与cglib)；值为true，强制使用cglib -->
+		<property name="proxyTargetClass" value="true" />
+		<!-- 暴露代理对象，可以使用AopContext -->
+		<property name="exposeProxy" value="true" />
+	</bean>
+
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="jdbc:mysql://localhost:3306/test" />
+		<property name="username" value="root" />
+		<property name="password" value="" />
+	</bean>
+
+	<!-- define the SqlSessionFactory，同时指定数据源 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<!-- 指定sqlMapConfig总配置文件，config.xml中订制的environment在spring容器中不在生效 -->
+		<property name="configLocation"
+			value="classpath:com/wp/study/spring/transaction/byspringaop/mybatis-config.xml" />
+		<!-- 实例对象所属包位置，已经配置在config.xml文件中，故省略之 -->
+		<!-- <property name="typeAliasesPackage" value="spring.transaction.byspringaop.entity" 
+			/> -->
+	</bean>
+
+	<!-- define mapper bean，数据映射器必须为接口 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- 指定使用的sqlSessionFactory -->
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+		<!-- 指定数据映射接口所属包位置 -->
+		<property name="basePackage" value="com.wp.study.jdbc.mysql.dao" />
+	</bean>
+
+</beans>

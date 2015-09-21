@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC   
+    "-//mybatis.org//DTD Mapper 3.0//EN"  
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">  
+<!--这块为dao接口的实现，namespace必须和接口的类路径一样，返回值类型也可以配置在configuration.xml的typeAliases标签中 -->
+<mapper namespace="com.wp.study.jdbc.derby.dao.EntityMapper">  
+    <resultMap id="EntityResultMap" type="com.wp.study.jdbc.derby.pojo.Entity">
+    	<result property="id" column="id" />
+		<result property="site" column="site" />
+		<result property="name" column="name" />
+		<result property="code" column="code" />
+		<result property="appCode" column="app_code" />
+		<result property="payCode" column="pay_code" />
+		<result property="secCode" column="sec_code" />
+		<result property="mesCode" column="mes_code" />
+		<result property="compCode" column="comp_code" />
+		<result property="priority" column="priority" />
+		<result property="email" column="email" />
+		<result property="contact" column="contact" />
+		<result property="description" column="description" />
+		<result property="createTime" column="create_time" />
+		<result property="updateTime" column="update_time" />
+	</resultMap>
+    
+    <insert id="addEntity" parameterType="com.wp.study.jdbc.derby.pojo.Entity">
+		INSERT INTO MST_ENTITY (	
+		    site,
+        	name,
+  			code,
+  			app_code,
+  			pay_code,
+  			sec_code,
+  			mes_code,
+  			comp_code,
+  			priority,
+  			email,
+  			contact,
+  			description,
+  			create_time)
+		VALUES ( 
+			#{site},
+        	#{name,jdbcType=VARCHAR},
+  			#{code,jdbcType=VARCHAR},
+    		#{appCode,jdbcType=VARCHAR},
+    		#{payCode,jdbcType=VARCHAR},
+        	#{secCode,jdbcType=VARCHAR},
+  			#{mesCode,jdbcType=VARCHAR},
+    		#{compCode,jdbcType=VARCHAR},
+    		#{priority,jdbcType=VARCHAR},
+        	#{email,jdbcType=VARCHAR},
+  			#{contact,jdbcType=VARCHAR},
+    		#{description,jdbcType=VARCHAR},
+    		CURRENT_DATE)
+	</insert>
+	
+	<update id="editEntity" parameterType="com.wp.study.jdbc.derby.pojo.Entity">
+		UPDATE 
+			MST_ENTITY 
+		SET 
+			site=#{site,jdbcType=VARCHAR},
+			name=#{name,jdbcType=VARCHAR},
+			code=#{code,jdbcType=VARCHAR},
+  			app_code=#{appCode,jdbcType=VARCHAR},
+  			pay_code=#{payCode,jdbcType=VARCHAR},
+  			sec_code=#{secCode,jdbcType=VARCHAR},
+  			mes_code=#{mesCode,jdbcType=VARCHAR},
+  			comp_code=#{compCode,jdbcType=VARCHAR},
+  			priority=#{priority,jdbcType=VARCHAR},
+  			email=#{email,jdbcType=VARCHAR},
+  			contact=#{contact,jdbcType=VARCHAR},
+  			description=#{description,jdbcType=VARCHAR},
+  			update_time=CURRENT_TIMESTAMP
+	    WHERE 
+	    	id=#{id}
+	</update>
+	
+	<select id="queryAllEntity" resultMap="EntityResultMap">  
+		SELECT	
+			id,
+		    site,
+        	name,
+  			code,
+  			app_code,
+  			pay_code,
+  			sec_code,
+  			mes_code,
+  			comp_code,
+  			priority,
+  			email,
+  			contact,
+  			description,
+  			update_time
+  		FROM
+  			MST_ENTITY
+  		ORDER BY 
+  			priority,email,site,name
+    </select> 
+    
+    <select id="queryEntityWithConditions" parameterType="HashMap" resultMap="EntityResultMap">  
+		SELECT	
+			id,
+		    site,
+        	name,
+  			code,
+  			app_code,
+  			pay_code,
+  			sec_code,
+  			mes_code,
+  			comp_code,
+  			priority,
+  			email,
+  			contact,
+  			description,
+  			update_time
+  		FROM
+  			MST_ENTITY
+  		WHERE
+  			1=1
+  		<if test="level!=null and level!=''">    
+        AND 
+	    	priority=#{level}
+        </if>
+  		<if test="site!=null and site!=''">    
+        AND 
+	    	site=#{site}
+        </if>
+  		<if test="name!=null and name!=''">    
+        AND 
+	    	name=#{name}
+        </if>
+        ORDER BY 
+  			priority,email,site,name
+    </select> 
+    
+    <delete id="deleteEntityById" parameterType="HashMap">  
+		DELETE FROM 
+			MST_ENTITY
+		WHERE
+			id=#{id}
+    </delete> 
+</mapper>

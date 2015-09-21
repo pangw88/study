@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd">
+	
+	<!-- 前置增强 -->
+	<bean id="sampleBeforeAdvice" class="com.wp.study.spring.aop.autoproxy.advice.SampleBeforeAdvice" />
+	
+	<!-- 后置增强 -->
+	<bean id="sampleAfterAdvice" class="com.wp.study.spring.aop.autoproxy.advice.SampleAfterAdvice" />
+	
+	<!-- 环绕增强，使用AOP联盟MethodInterceptor作为环绕接口 -->
+	<bean id="sampleSurroundAdvice" class="com.wp.study.spring.aop.autoproxy.advice.SampleMethodInterceptor" />
+	
+	<!-- 异常增强，在抛出异常后进行增强业务处理 -->
+	<bean id="sampleThrowsAdvice" class="com.wp.study.spring.aop.autoproxy.advice.SampleThrowsAdvice" />
+	
+	<!-- 被代理的类 -->
+	<bean id="target" class="com.wp.study.spring.aop.autoproxy.service.SampleServiceImpl" />
+	
+	<!-- 代理类 -->
+	<bean id="sampleService" class="org.springframework.aop.framework.ProxyFactoryBean">
+		<!-- 被代理的类 -->
+		<property name="target" ref="target" />
+		<!-- 代理所要实现的接口 -->
+		<property name="proxyInterfaces" value="com.wp.study.spring.aop.autoproxy.service.SampleService" />
+		<!-- 要织入被代理类的增强列表 -->
+		<property name="interceptorNames">
+			<list>
+				<value>sampleBeforeAdvice</value>
+				<value>sampleAfterAdvice</value>
+				<value>sampleSurroundAdvice</value>
+				<value>sampleThrowsAdvice</value>
+			</list>
+		</property>
+		<!-- 是否对类进行代理（而不是对接口代理：JDK代理），设置为true使用cglib代理，且忽略proxyInterfaces属性的设置 -->
+		<!-- <property name="proxyTargetClass" value="true" /> -->
+	</bean>
+	
+</beans>

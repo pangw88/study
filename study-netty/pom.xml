@@ -1,0 +1,30 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.wp.study</groupId>
+    <artifactId>study-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>study-netty4</artifactId>
+  
+  <dependencies>
+    <!-- nio通信组件 -->
+	<dependency>
+	  <groupId>io.netty</groupId>
+	  <artifactId>netty-transport-udt</artifactId>
+	  <version>4.0.9.Final</version>
+	</dependency>
+	<dependency>
+	  <groupId>io.netty</groupId>
+	  <artifactId>netty-transport-udt</artifactId>
+	  <version>4.0.9.Final</version>
+	  <classifier>sources</classifier>
+	</dependency>
+	<dependency>
+	  <groupId>io.netty</groupId>
+	  <artifactId>netty-transport-udt</artifactId>
+	  <version>4.0.9.Final</version>
+	  <classifier>javadoc</classifier>
+	</dependency>
+  </dependencies>
+</project>
