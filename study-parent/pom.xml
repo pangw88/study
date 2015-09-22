@@ -192,12 +192,13 @@
   </dependencies>
   
  <modules>
+ 	<module>study-algorithm</module>
  	<module>study-common</module>
  	<module>study-hadoop</module>
  	<module>study-jdbc</module>
  	<module>study-netty</module>
+ 	<module>study-praxis</module>
  	<module>study-spring</module>
  	<module>study-swing</module>
- 	<module>study-praxis</module>
  </modules>
 </project>

@@ -23,6 +23,11 @@ public class ExcelOperation {
 		readExcel(new File("F:/test.xls"));
 	}
 	
+	/**
+	 * 读excel表格
+	 * 
+	 * @param excel
+	 */
 	public static void readExcel(File excel) {
 		FileInputStream fis = null;
 		Workbook wb = null;
@@ -80,6 +85,11 @@ public class ExcelOperation {
 		}
 	}
 
+	/**
+	 * 写excel表格
+	 * 
+	 * @param excel
+	 */
 	public static void writeExcel(File excel) {
 		FileOutputStream fos = null;
 		Workbook wb = null;
@@ -142,6 +152,11 @@ public class ExcelOperation {
 		}
 	}
 	
+	/**
+	 * 移除excel表格指定行
+	 * 
+	 * @param excel
+	 */
 	private static void removeRow(Sheet sh, Row row, boolean retainRow) {
 		if(retainRow) {
 			// 移除表格中指定行，但是会留下空行，操作在Workbook调用write方法时才会执行
@@ -153,6 +168,11 @@ public class ExcelOperation {
 		}
 	}
 	
+	/**
+	 * 将excel表格列值转换为字符串
+	 * 
+	 * @param excel
+	 */
 	private static String convertCellToString(Cell cell) {
 		if(cell == null) {
 			return null;
