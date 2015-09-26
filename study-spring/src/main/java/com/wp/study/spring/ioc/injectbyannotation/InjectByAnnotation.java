@@ -7,7 +7,7 @@ import com.wp.study.spring.ioc.injectbyannotation.service.InjectedService;
 
 public class InjectByAnnotation {
 
-	public static void test() {
+	public static void main(String[] args) {
 		try {
 			String configLocation = "com/wp/study/spring/ioc/injectbyannotation/beans.xml";
 			// 加载应用上下文
@@ -21,9 +21,5 @@ public class InjectByAnnotation {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-	}
-	
-	public static void main(String[] args) {
-		test();
 	}
 }

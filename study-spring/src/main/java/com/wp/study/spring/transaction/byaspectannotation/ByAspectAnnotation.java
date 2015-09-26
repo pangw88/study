@@ -7,8 +7,8 @@ import com.wp.study.jdbc.mysql.pojo.Sample;
 import com.wp.study.spring.transaction.byaspectannotation.service.SampleService;
 
 public class ByAspectAnnotation {
-
-	public static void test() {
+	
+	public static void main(String[] args) {
 		try {
 			String configLocation = "com/wp/study/spring/transaction/byaspectannotation/beans.xml";
 			// 加载应用上下文
@@ -24,9 +24,5 @@ public class ByAspectAnnotation {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-	}
-	
-	public static void main(String[] args) {
-		test();
 	}
 }
