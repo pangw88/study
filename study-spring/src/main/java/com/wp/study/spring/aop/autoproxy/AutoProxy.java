@@ -7,7 +7,7 @@ import com.wp.study.spring.aop.autoproxy.service.SampleService;
 
 public class AutoProxy {
 	
-	public static void test() {
+	public static void main(String[] args) {
 		try {
 			String configLocation = "com/wp/study/spring/aop/autoproxy/beans.xml";
 			// 加载应用上下文
@@ -21,9 +21,5 @@ public class AutoProxy {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-	}
-	
-	public static void main(String[] args) {
-		test();
 	}
 }

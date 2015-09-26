@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/tx
+           http://www.springframework.org/schema/tx/spring-tx.xsd
+           http://www.springframework.org/schema/aop
+           http://www.springframework.org/schema/aop/spring-aop.xsd">
+	
+	<!-- 扫描指定包下添加@Component注解，以及其子注解@Controller、@Service、@Repository注解的类，
+	将这些类委托给spring的BeanFactory管理，context:component-scan标签内包含了context:annotation-config，
+	所以context:annotation-config在这里可以省略 -->
+	<context:component-scan base-package="com.wp.study.spring.property.*" />
+	
+	<!-- 使用PropertyPlaceholderConfigurer可以加载指定路径下配置文件，现在可以使用context:property-placeholder标签简化配置，
+	使用该标签spring容器会注入相应的类进行处理 -->
+    <!-- <bean id="testProperties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">  
+        <property name="locations">  
+            <list>  
+                <value>classpath*:/com/wp/study/spring/property/conf/*.properties</value>  
+            </list>  
+        </property>  
+    </bean> -->
+	<context:property-placeholder location="classpath:com/wp/study/spring/property/conf/*.properties" />
+	<!-- 使用property-override会覆盖spring配置文件中同名属性，若同名属性已存在值property-placeholder则不会替换 -->
+	<!-- <context:property-override location="classpath:com/wp/study/spring/property/conf/*.properties"/> -->
+</beans>

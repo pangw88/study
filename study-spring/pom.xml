@@ -15,7 +15,7 @@
 	  <version>0.0.1-SNAPSHOT</version>
 	</dependency>
   
-	<!-- spring beans组件 -->
+	<!-- Spring beans(依赖注入等)基础组件 -->
 	<dependency>
 	  <groupId>org.springframework</groupId>
 	  <artifactId>spring-beans</artifactId>
@@ -34,7 +34,7 @@
 	  <classifier>javadoc</classifier>
 	</dependency>
 	
-	<!-- spring core组件 -->
+	<!-- Spring core组件 -->
 	<dependency>
 	  <groupId>org.springframework</groupId>
 	  <artifactId>spring-core</artifactId>
@@ -53,7 +53,9 @@
 	  <classifier>javadoc</classifier>
 	</dependency>
 
-	<!-- spring core组件 -->
+	<!-- Spring context组件，提供IoC功能上扩展，
+		还提供邮件服务、任务调度、JNDI定位、EJB
+		集成、远程访问、缓存以及各种视图层框架封装-->
 	<dependency>
 	  <groupId>org.springframework</groupId>
 	  <artifactId>spring-context</artifactId>
@@ -72,7 +74,26 @@
 	  <classifier>javadoc</classifier>
 	</dependency>
 	
-	<!-- spring jdbc组件 -->
+	<!-- Spring context扩展组件，用于mvc方面支持 -->
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-context-support</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	</dependency>
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-context-support</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	  <classifier>sources</classifier>
+	</dependency>
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-context-support</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	  <classifier>javadoc</classifier>
+	</dependency>
+	
+	<!-- Spring jdbc数据库组件 -->
 	<dependency>
 	  <groupId>org.springframework</groupId>
 	  <artifactId>spring-jdbc</artifactId>
@@ -91,45 +112,27 @@
 	  <classifier>javadoc</classifier>
 	</dependency>
 	
-	<!-- spring aop组件 -->
+	<!-- Spring与hibernate、ibatis、jdo等orm框架整合，
+		以及spring JPA实现组件 -->
 	<dependency>
 	  <groupId>org.springframework</groupId>
-	  <artifactId>spring-aop</artifactId>
+	  <artifactId>spring-orm</artifactId>
 	  <version>3.2.9.RELEASE</version>
 	</dependency>
 	<dependency>
 	  <groupId>org.springframework</groupId>
-	  <artifactId>spring-aop</artifactId>
-	  <version>3.2.9.RELEASE</version>
-	  <classifier>sources</classifier>
-	</dependency>
-	<dependency>
-	  <groupId>org.springframework</groupId>
-	  <artifactId>spring-aop</artifactId>
-	  <version>3.2.9.RELEASE</version>
-	  <classifier>javadoc</classifier>
-	</dependency>
-	
-  	<!-- spring异步消息组件 -->
-	<dependency>
-	  <groupId>org.springframework</groupId>
-	  <artifactId>spring-jms</artifactId>
-	  <version>3.2.9.RELEASE</version>
-	</dependency>
-	<dependency>
-	  <groupId>org.springframework</groupId>
-	  <artifactId>spring-jms</artifactId>
+	  <artifactId>spring-orm</artifactId>
 	  <version>3.2.9.RELEASE</version>
 	  <classifier>sources</classifier>
 	</dependency>
 	<dependency>
 	  <groupId>org.springframework</groupId>
-	  <artifactId>spring-jms</artifactId>
+	  <artifactId>spring-orm</artifactId>
 	  <version>3.2.9.RELEASE</version>
 	  <classifier>javadoc</classifier>
 	</dependency>
 	
-  	<!-- spring事务组件 -->
+  	<!-- Spring tx数据库事务组件 -->
 	<dependency>
 	  <groupId>org.springframework</groupId>
 	  <artifactId>spring-tx</artifactId>
@@ -148,7 +151,178 @@
 	  <classifier>javadoc</classifier>
 	</dependency>
 	
-  	<!-- spring测试组件 -->
+	<!-- Spring aop面向切面组件 -->
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-aop</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	</dependency>
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-aop</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	  <classifier>sources</classifier>
+	</dependency>
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-aop</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	  <classifier>javadoc</classifier>
+	</dependency>
+	
+	<!-- Spring jms异步消息组件 -->
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-jms</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	</dependency>
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-jms</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	  <classifier>sources</classifier>
+	</dependency>
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-jms</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	  <classifier>javadoc</classifier>
+	</dependency>
+
+	<!-- Spring AspectJ框架整合组件 -->
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-aspects</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	</dependency>
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-aspects</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	  <classifier>sources</classifier>
+	</dependency>
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-aspects</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	  <classifier>javadoc</classifier>
+	</dependency>
+	
+	<!-- Spring表达式语言组件 -->
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-expression</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	</dependency>
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-expression</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	  <classifier>sources</classifier>
+	</dependency>
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-expression</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	  <classifier>javadoc</classifier>
+	</dependency>
+	
+	<!-- Spring Object与XMl转换映射组件 -->
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-oxm</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	</dependency>
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-oxm</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	  <classifier>sources</classifier>
+	</dependency>
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-oxm</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	  <classifier>javadoc</classifier>
+	</dependency>
+	
+	<!-- Spring web基础支持组件 -->
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-web</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	</dependency>
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-web</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	  <classifier>sources</classifier>
+	</dependency>
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-web</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	  <classifier>javadoc</classifier>
+	</dependency>
+
+	<!-- Spring基于servlet的mvc实现组件 -->
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-webmvc</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	</dependency>
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-webmvc</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	  <classifier>sources</classifier>
+	</dependency>
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-webmvc</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	  <classifier>javadoc</classifier>
+	</dependency>
+	
+	<!-- Spring基于portlet的mvc实现组件 -->
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-webmvc-portlet</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	</dependency>
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-webmvc-portlet</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	  <classifier>sources</classifier>
+	</dependency>
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-webmvc-portlet</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	  <classifier>javadoc</classifier>
+	</dependency>
+	
+	<!-- Spring服务器代理接口组件 -->
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-instrument</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	</dependency>
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-instrument</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	  <classifier>sources</classifier>
+	</dependency>
+	<dependency>
+	  <groupId>org.springframework</groupId>
+	  <artifactId>spring-instrument</artifactId>
+	  <version>3.2.9.RELEASE</version>
+	  <classifier>javadoc</classifier>
+	</dependency>
+	
+  	<!-- Spring test测试组件 -->
 	<dependency>
 	  <groupId>org.springframework</groupId>
 	  <artifactId>spring-test</artifactId>
@@ -167,7 +341,7 @@
 	  <classifier>javadoc</classifier>
 	</dependency>
 	
-	<!-- activeMq异步jms组件 -->
+	<!-- activeMq jms异步消息组件 -->
 	<dependency>
 	  <groupId>org.apache.activemq</groupId>
 	  <artifactId>activemq-all</artifactId>
@@ -180,7 +354,7 @@
 	  <classifier>sources</classifier>
 	</dependency>
 	
-	<!-- aspectj面向切面组件 -->
+	<!-- aspectj面向切面(动态代码生成)组件 -->
 	<dependency>
 	  <groupId>org.aspectj</groupId>
 	  <artifactId>aspectjrt</artifactId>

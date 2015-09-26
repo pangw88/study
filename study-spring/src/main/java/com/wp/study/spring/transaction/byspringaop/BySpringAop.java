@@ -8,7 +8,7 @@ import com.wp.study.spring.transaction.byspringaop.service.SampleService;
 
 public class BySpringAop {
 	
-	public static void test() {
+	public static void main(String[] args) {
 		try {
 			String configLocation = "com/wp/study/spring/transaction/byspringaop/beans.xml";
 			// 加载应用上下文
@@ -24,9 +24,5 @@ public class BySpringAop {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-	}
-	
-	public static void main(String[] args) {
-		test();
 	}
 }

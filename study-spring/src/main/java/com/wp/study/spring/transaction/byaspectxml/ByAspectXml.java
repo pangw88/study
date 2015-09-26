@@ -8,7 +8,7 @@ import com.wp.study.spring.transaction.byaspectxml.service.SampleService;
 
 public class ByAspectXml {
 	
-	public static void test() {
+	public static void main(String[] args) {
 		try {
 			String configLocation = "com/wp/study/spring/transaction/byaspectxml/beans.xml";
 			// 加载应用上下文
@@ -24,9 +24,5 @@ public class ByAspectXml {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-	}
-	
-	public static void main(String[] args) {
-		test();
 	}
 }
