@@ -10,7 +10,7 @@
             <transactionManager type="jdbc" />
             <dataSource type="POOLED">  
                 <property name="driver" value="org.apache.derby.jdbc.EmbeddedDriver" />  
-                <property name="url" value="jdbc:derby:D:/release/db-derby-10.10.2.0-bin/demo/study;create=false" />  
+                <property name="url" value="jdbc:derby:C:/Release/db-derby-10.10.2.0-bin/demo/study;create=false" />  
                 <property name="username" value="app" />  
                 <property name="password" value="123456" />  
             </dataSource>
