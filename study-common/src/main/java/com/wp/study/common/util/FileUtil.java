@@ -288,7 +288,7 @@ public class FileUtil {
 	 * @param info
 	 * 		记录着需要检查文件列表的文件
 	 */
-	public static void checkNotExistFile(File dir, File info) {
+	public static void checkFileExist(File dir, File info) {
 		if(dir == null || !dir.exists() || !dir.isDirectory()) {
 			LOG.error("can not find directory <{}>", dir);
 			return;
@@ -311,24 +311,67 @@ public class FileUtil {
 		FileWriter fw = null;
 		try {
 			br = new BufferedReader(new FileReader(info));
-			String readLine = null;
+			String line = null;
 			// 从记录文件列表的info中按行加载文件详情
-			while((readLine = br.readLine()) != null) {
-				String temp = readLine.substring(readLine.indexOf(">") + 1);
-				String[] infos = temp.substring(0, temp.indexOf("<")).split("-");
-				String file = infos[0].trim();
-				String name = file.split("\\.")[0];
-				String type = file.split("\\.")[1];
-				String uri = readLine.substring(readLine.indexOf("\"", readLine.indexOf("href")) + 1);
-				uri = uri.substring(0, uri.indexOf("\""));
-				if(type.equalsIgnoreCase("zip")) {
-					sortMap.put(name, uri);
-				} else if(type.equalsIgnoreCase("mp4") || type.equalsIgnoreCase("wmv")) {
-					sortMap.put(name.replaceFirst("_mov", "").replaceFirst("_mk", "") + "." + type, uri);
+			while((line = br.readLine()) != null) {
+				// 获取文件的类型，以及文件名开始和结尾索引
+				int start = -1;
+				int end = -1;
+				String type = "";
+				if(line.indexOf(".zip") > 0) {
+					end = line.indexOf(".zip");
+					type = ".zip";
+				} else if(line.indexOf(".mp4") > 0) {
+					end = line.indexOf(".mp4");
+					type = ".mp4";
+				} else if(line.indexOf(".wmv") > 0) {
+					end = line.indexOf(".wmv");
+					type = ".wmv";
+				} else {
+					continue;
 				}
+				for(int i = end - 1; 0 <= i; i --) {
+					char ch = line.charAt(i);
+					if((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') 
+							|| (ch >= '0' && ch <= '9') || ch == '_' || ch == '-') {
+					} else {
+						start = i;
+						break;
+					}
+				}
+				// 获取本地文件格式文件名
+				String name = line.substring(start + 1, end);
+				String filename = name + type;
+				if(!type.equals(".zip")) {
+					int index = 0;
+					char ch;
+					if(filename.indexOf("_mov") > 0) {
+						index = filename.indexOf("_mov");
+						ch = filename.charAt(index - 1);
+						if(ch >= '0' && ch <= '9') {
+							name = filename.replaceFirst("mov", "");
+						} else {
+							name = filename.replaceFirst("_mov", "");
+						}
+					} else if(filename.indexOf("_mk") > 0) {
+						index = filename.indexOf("_mk");
+						ch = filename.charAt(index - 1);
+						if(ch >= '0' && ch <= '9') {
+							name = filename.replaceFirst("mk", "");
+						} else {
+							name = filename.replaceFirst("_mk", "");
+						}
+					} else {
+						name = filename;
+					}
+				}
+				// 获取文件实际下载地址
+				int uriStart = line.indexOf("http://filecloud.cc");
+				int uriEnd = line.indexOf(filename, uriStart);
+				String uri = line.substring(uriStart, uriEnd + filename.length()) + ".html"; 
+				sortMap.put(name, uri);
 			}
 			br.close();
-			
 			// 移除本地已经存在的文件
 			String[] files = dir.list();
 			if(files !=null && files.length > 0) {
@@ -340,7 +383,6 @@ public class FileUtil {
 			} else {
 				LOG.error("<{}> sub file list is null", dir);
 			}
-			
 			// 打印本地不存在的文件信息
 			fw = new FileWriter(check) {
 				@Override
