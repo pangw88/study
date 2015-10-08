@@ -314,87 +314,83 @@ public class FileUtil {
 			String line = null;
 			// 从记录文件列表的info中按行加载文件详情
 			while((line = br.readLine()) != null) {
-				try {
-					// 获取文件的类型，以及文件名开始和结尾索引
-					int start = -1;
-					int end = -1;
-					String type = "";
-					if(line.indexOf(".zip") > 0) {
-						end = line.indexOf(".zip");
-						type = ".zip";
-					} else if(line.indexOf(".mp4") > 0) {
-						end = line.indexOf(".mp4");
-						type = ".mp4";
-					} else if(line.indexOf(".wmv") > 0) {
-						end = line.indexOf(".wmv");
-						type = ".wmv";
-					} else {
-						continue;
-					}
-					for(int i = end - 1; 0 <= i; i --) {
-						char ch = line.charAt(i);
-						if((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') 
-								|| (ch >= '0' && ch <= '9') || ch == '_' || ch == '-') {
-						} else {
-							start = i;
-							break;
-						}
-					}
-					// 获取本地文件格式文件名
-					String name = line.substring(start + 1, end);
-					String filename = name + type;
-					if(!type.equals(".zip")) {
-						int index = 0;
-						char ch;
-						if(filename.indexOf("_mov") > 0) {
-							index = filename.indexOf("_mov");
-							ch = filename.charAt(index - 1);
-							if(ch >= '0' && ch <= '9') {
-								name = filename.replaceFirst("mov", "");
-							} else {
-								name = filename.replaceFirst("_mov", "");
-							}
-						} else if(filename.indexOf("_mk") > 0) {
-							index = filename.indexOf("_mk");
-							ch = filename.charAt(index - 1);
-							if(ch >= '0' && ch <= '9') {
-								name = filename.replaceFirst("mk", "");
-							} else {
-								name = filename.replaceFirst("_mk", "");
-							}
-						} else {
-							name = filename;
-						}
-					}
-					// 获取文件实际下载地址
-					int uriStart = -1;
-					int uriEnd = -1;
-					String uri = "";
-					String uriTemp = "/" + filename;
-					uriEnd = line.indexOf(uriTemp);
-					if(uriEnd > 0 && (uriStart = line.substring(0, uriEnd).lastIndexOf("http")) >= 0) {
-						uriEnd += uriTemp.length();
-						// 区别处理下载地址是以.html等形式
-						if(uriEnd < line.length() && line.charAt(uriEnd) == '.') {
-							for(int i = uriEnd + 1; i < line.length(); i ++) {
-								char ch = line.charAt(i);
-								if(!(ch >= 'a' && ch <= 'z')) {
-									uriEnd = i;
-									break;
-								} 
-								if(i == line.length() - 1) {
-									uriEnd = i + 1;
-								}
-							}
-						}
-						uri = line.substring(uriStart, uriEnd);
-					} else {
-						uri = filename;
-					}
-					sortMap.put(name, uri);
-				} catch(Exception e) {
-					e.printStackTrace();
+				// 获取文件的类型，以及文件名开始和结尾索引
+				int start = -1;
+				int end = -1;
+				String type = "";
+				if(line.indexOf(".zip") > 0) {
+					end = line.indexOf(".zip");
+					type = ".zip";
+				} else if(line.indexOf(".mp4") > 0) {
+					end = line.indexOf(".mp4");
+					type = ".mp4";
+				} else if(line.indexOf(".wmv") > 0) {
+					end = line.indexOf(".wmv");
+					type = ".wmv";
+				} else {
+					continue;
 				}
+				for(int i = end - 1; 0 <= i; i --) {
+					char ch = line.charAt(i);
+					if((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') 
+							|| (ch >= '0' && ch <= '9') || ch == '_' || ch == '-') {
+					} else {
+						start = i;
+						break;
+					}
+				}
+				// 获取本地文件格式文件名
+				String name = line.substring(start + 1, end);
+				String filename = name + type;
+				if(!type.equals(".zip")) {
+					int index = 0;
+					char ch;
+					if(filename.indexOf("_mov") > 0) {
+						index = filename.indexOf("_mov");
+						ch = filename.charAt(index - 1);
+						if(ch >= '0' && ch <= '9') {
+							name = filename.replaceFirst("mov", "");
+						} else {
+							name = filename.replaceFirst("_mov", "");
+						}
+					} else if(filename.indexOf("_mk") > 0) {
+						index = filename.indexOf("_mk");
+						ch = filename.charAt(index - 1);
+						if(ch >= '0' && ch <= '9') {
+							name = filename.replaceFirst("mk", "");
+						} else {
+							name = filename.replaceFirst("_mk", "");
+						}
+					} else {
+						name = filename;
+					}
+				}
+				// 获取文件实际下载地址
+				int uriStart = -1;
+				int uriEnd = -1;
+				String uri = "";
+				String uriTemp = "/" + filename;
+				uriEnd = line.indexOf(uriTemp);
+				if(uriEnd > 0 && (uriStart = line.substring(0, uriEnd).lastIndexOf("http")) >= 0) {
+					uriEnd += uriTemp.length();
+					// 区别处理下载地址是以.html等形式
+					if(uriEnd < line.length() && line.charAt(uriEnd) == '.') {
+						for(int i = uriEnd + 1; i < line.length(); i ++) {
+							char ch = line.charAt(i);
+							if(!(ch >= 'a' && ch <= 'z')) {
+								uriEnd = i;
+								break;
+							} 
+							if(i == line.length() - 1) {
+								uriEnd = i + 1;
+							}
+						}
+					}
+					uri = line.substring(uriStart, uriEnd);
+				} else {
+					uri = filename;
+				}
+				sortMap.put(name, uri);
 			}
 			br.close();
 			// 移除本地已经存在的文件

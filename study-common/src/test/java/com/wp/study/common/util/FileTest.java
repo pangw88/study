@@ -38,7 +38,7 @@ public class FileTest {
 		try {
 			// 任务开始
 			LOG.info("Task start!");
-			rename(new File("D:/Course"));
+			//rename(new File("D:/Course"));
 			/*Long time1 = new Date().getTime();
 			FileUtil.copyFile(new File("E:/r2_kaneko_m03.mp4"), new File("D:/a1"));
 			Long time2 = new Date().getTime();
@@ -46,11 +46,10 @@ public class FileTest {
 			Long time3 = new Date().getTime();
 			System.out.println(time2 - time1);
 			System.out.println(time3 - time2);*/
-			/*String name = "Miho Kaneko";
-			File file = new File("F:/Album/Beauty/" + name);
-			File info = new File("C:/Users/wp/Desktop/" + name + ".txt");
-			FileUtil.checkNotExistFile(file, info);*/
-			String path = "E:\\Downloads\\natsusyoujyo10_rei04";
+			/*File file = new File("K:/Album/U15/Yuuka Himekawa");
+			File info = new File("C:/Users/wp/Desktop/Yuuka Himekawa.txt");
+			FileUtil.checkFileExist(file, info);*/
+			String path = "F:\\Downloads\\temp\\st1_hitorijime2_kouzuki_a01";
 			FileUtil.rename(new File(path));
 			/*File f1 = new File("K:\\Album\\Beauty\\Momo Shiina");
 			File f2 = new File("E:\\Downloads\\OIMO-675");
