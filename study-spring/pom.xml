@@ -8,7 +8,7 @@
   <artifactId>study-spring</artifactId>
   
   <dependencies>
-  	<!-- 自定义common组件 -->
+  	<!-- 自定义jdbc组件 -->
 	<dependency>
 	  <groupId>com.wp.study</groupId>
 	  <artifactId>study-jdbc</artifactId>

@@ -2,6 +2,7 @@ package com.wp.study.praxis.address;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -9,10 +10,18 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
@@ -21,58 +30,119 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
+import com.wp.study.similar.StringSimilarty;
+
 public class AddressSimilar {
 	
-	private static HashMap<String, String> addresses = new HashMap<String, String>();
-	// 匹配结果集
-	private static Map<Integer, HashMap<Integer, Float>> matchResults = new HashMap<Integer, HashMap<Integer, Float>>();
-	// 需要匹配的新地址集
-	private static Map<Integer, HashMap<String, Integer>> matchAddresses = new HashMap<Integer, HashMap<String, Integer>>();
-
+	// 历史订单地址和新订单地址合集，主键为tid，值为订单地址
+	private static Map<String, String> addresses = new ConcurrentHashMap<String, String>();
+	// 每个要匹配新订单文件下每个Sheet表格中抽取的新订单地址信息，Map参数从左到右分别为：新订单文件，订单文件中Sheet表格序号，订单要匹配信息
+	private static Map<File, Map<Integer, List<OrderInfo>>> needCalculateAddresses = new HashMap<File, Map<Integer, List<OrderInfo>>>();
+	
+	
 	/**
 	 * 计算新订单地址与历史订单地址中满足指定相似度的地址
+	 * 
+	 * 只是当前文件进行相似度计算
+	 * 
+	 * @param newFilePath
+	 * @param threshold
+	 */
+	public static void calculateDistance(String newFilePath, final float threshold) {
+		calculateDistance(null, newFilePath, threshold);
+	}
+	
+	/**
+	 * 计算新订单地址与历史订单地址中满足指定相似度的地址
+	 * 
+	 * 对比当前文件的同时，对比历史文件
 	 * 
 	 * @param oldFilePath
 	 * @param newFilePath
 	 * @param threshold
 	 */
-	public static void CalculateDistance(String oldFilePath, String newFilePath, final float threshold) {
+	public static void calculateDistance(String oldFilePath, String newFilePath, final float threshold) {
 		try {
 			// 加载历史订单信息
-			loadHistoryAddress(oldFilePath);
+			if(oldFilePath != null) {
+				loadOldAddress(oldFilePath);
+			}
+			
 			// 加载新订单信息
 			loadNewAddress(newFilePath);
 			
-			// 标记每张表格中匹配度大于阀值的行
-	        if(matchAddresses.size() > 0) {
-	        	for(Integer key : matchAddresses.keySet()) {
-	        		final HashMap<String, Integer> matchAddr = matchAddresses.get(key);
-	        		final HashMap<Integer, Float> matchRes;
-	        		if(matchResults.get(key) == null) {
-	        			matchRes = new HashMap<Integer, Float>();
-	        			matchResults.put(key, matchRes);
-	        		} else {
-	        			matchRes = matchResults.get(key);
-	        		}
-	        		
-	        		for(final String newAddr : matchAddr.keySet()) {
-	        			// 先移除当前地址
-	        			String value = addresses.get(newAddr);
-	        			addresses.remove(newAddr);
-	        			for(String oldAddr : addresses.keySet()) {
-		        			Float res = calculateSimilarity(newAddr, oldAddr);
-		        			if(res >= threshold) {
-		        				matchRes.put(matchAddr.get(newAddr), res);
-		        				break;
-		        			}
+			// 计算每个Sheet表格中地址相似度
+			if(needCalculateAddresses.size() > 0) {
+				for(File file : needCalculateAddresses.keySet()) {
+					// 当前新订单文件下要匹配地址信息
+					Map<Integer, List<OrderInfo>> fileNeedCalculateAddresses = needCalculateAddresses.get(file);
+					if(fileNeedCalculateAddresses.size() > 0) {
+						for(Integer sheetIndex : fileNeedCalculateAddresses.keySet()) {
+							// 每个表格下要匹配的订单地址
+							List<OrderInfo> sheetNeedCalculateAddresses = fileNeedCalculateAddresses.get(sheetIndex);
+							if(sheetNeedCalculateAddresses.size() > 0) {
+								calculateDistanceOfSheet(file, sheetIndex, sheetNeedCalculateAddresses, threshold);
+							}
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * 计算单个Sheet表格中地址相似度，并输出结果
+	 * 
+	 * @param file
+	 * @param sheetIndex
+	 * @param orderInfoList
+	 * @param threshold
+	 */
+	private static void calculateDistanceOfSheet(File file, Integer sheetIndex, 
+			List<OrderInfo> orderInfoList, final float threshold) {
+		try {
+			// 执行相似度计算线程池
+			ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
+			// 线程相似度计算结果集
+			List<Future<Boolean>> futures = new ArrayList<Future<Boolean>>();
+			final Map<Integer, Float> sheetCalculateResults = new ConcurrentHashMap<Integer, Float>();
+			for(OrderInfo oi : orderInfoList) {
+				final Integer rowNum = oi.getRowNum();
+				final String tid = oi.getTid();
+				final String address = oi.getAddress();
+				futures.add(pool.submit(new Callable<Boolean>(){
+					public Boolean call() {
+						float res = 0;
+						float temp = 0;
+	        			for(String key : addresses.keySet()) {
+	        				// 匹配前先剔除当前地址
+	        				if(key != null && !key.equals(tid)) {
+	        					temp = StringSimilarty.levenshteinDistance(address, addresses.get(key));
+		        				if(temp == 1.0f) {
+		        					res = 1.0f;
+		        					break;
+		        				} else if(temp > res) {
+		        					res = temp;
+		        				}
+	        				}
 		        		}
-	        			// 匹配结果将当前地址重新添加
-	        			addresses.put(newAddr, value);
-	        		}
-		        }
+	        			// 添加相似度大于阀值的订单信息
+	        			if(res >= threshold) {
+	        				sheetCalculateResults.put(rowNum, res);
+	        			}
+	        			return true;
+					}
+				}));
+			}
+			pool.shutdown();
+	        for(Future<Boolean> future : futures) {
+	        	// 等待线程执行结果
+	        	future.get();
 	        }
 	        // 输出结果集
-	        outputSimilarResult(newFilePath);
+	        outputSimilarResult(file, sheetIndex, sheetCalculateResults);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -81,70 +151,126 @@ public class AddressSimilar {
 	/**
 	 * 加载历史订单中的地址
 	 * 
+	 * 若oldFilePath是一个文件，则加载文件中地址信息；
+	 * 若oldFilePath是一个文件夹，则加载文件夹下有效文件中地址信息
+	 * 
 	 * @param oldFilePath
 	 * @throws FileNotFoundException
+	 * @throws IOException
 	 */
-	private static void loadHistoryAddress(String oldFilePath) throws FileNotFoundException, IOException {
-		BufferedReader br = new BufferedReader(new FileReader(oldFilePath));
-		String line = null;
-		// 第一行，表头："tid,receiver_address"，忽略
-		line = br.readLine();
-		while (null != (line = br.readLine())) {
-			String[] arr = line.split(",", 2);
-			if (null == arr || arr.length != 2) {
-				continue;
-			}
-			if(addresses.containsKey(arr[1])) {
-				String value = addresses.get(arr[1]);
-				if(value.compareTo(arr[0]) < 0) {
-					continue;
+	private static void loadOldAddress(String oldFilePath) throws FileNotFoundException, IOException {
+		// 获取要加载的历史文件列表
+		File oldFile = new File(oldFilePath);
+		List<File> fileList = new ArrayList<File>();
+		if(!oldFile.exists()) {
+			throw new FileNotFoundException(oldFilePath + "not found!");
+		} else if(oldFile.isDirectory()) {
+			File[] files = oldFile.listFiles();
+			if(files != null && files.length > 0) {
+				for(File f : files) {
+					if(f.isFile()) {
+						fileList.add(f);
+					}
 				}
-			} 
-			addresses.put(arr[1], arr[0]);
+			}
+			
+		} else {
+			fileList.add(oldFile);
 		}
-		br.close();
+		
+		// 读取每个要加载的历史文件，获取需要加载数据
+		BufferedReader br;
+		String line;
+		if(fileList.size() > 0) {
+			for(File f : fileList) {
+				br = new BufferedReader(new FileReader(f));
+				// 第一行，表头："tid,receiver_address"，忽略
+				line = br.readLine();
+				while (null != (line = br.readLine())) {
+					String[] arr = line.split(",", 2);
+					if (null == arr || arr.length != 2) {
+						continue;
+					}
+					addresses.put(arr[0], arr[1]);
+				}
+				br.close();
+			}
+		}
 	}
 	
 	/**
 	 * 加载新订单地址
 	 * 
-	 * @param file
-	 * @param ignoreRows
+	 * 若newFilePath是一个文件，则加载文件中地址信息；
+	 * 若newFilePath是一个文件夹，则加载文件夹下有效文件中地址信息
+	 * 
+	 * @param newFilePath
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
 	public static void loadNewAddress(String newFilePath) throws FileNotFoundException, IOException {
-		BufferedInputStream bis = new BufferedInputStream(new FileInputStream(newFilePath));
-		// 打开HSSFWorkbook
-		POIFSFileSystem fs = new POIFSFileSystem(bis);
-		HSSFWorkbook wb = new HSSFWorkbook(fs);
-		// 遍历excel中所有表格
-		for (int i = 0; i < wb.getNumberOfSheets(); i ++) {
-			HSSFSheet st = wb.getSheetAt(i);
-			// 遍历表格下每一行。第一行为标题，不取
-			HashMap<Integer, Float> matchRes = new HashMap<Integer, Float>();
-			HashMap<String, Integer> matchAddr = new HashMap<String, Integer>();
-			for (int rowIndex = 1; rowIndex <= st.getLastRowNum(); rowIndex ++) {
-				HSSFRow row = st.getRow(rowIndex);
-				if (row == null || getColumn(row.getCell(0)) == null) {
-					continue;
-				}
-				// get tid
-				String tid = getColumn(row.getCell(1));
-				// get address
-				String address = getColumn(row.getCell(2));
-				if(addresses.containsKey(address) && !addresses.get(address).equals(tid)) {
-					matchRes.put(rowIndex, 1.0f);
-				} else {
-					addresses.put(address, tid);
-					matchAddr.put(address, rowIndex);
+		// 获取要加载的历史文件列表
+		File newFile = new File(newFilePath);
+		List<File> fileList = new ArrayList<File>();
+		if(!newFile.exists()) {
+			throw new FileNotFoundException(newFilePath + "not found!");
+		} else if(newFile.isDirectory()) {
+			File[] files = newFile.listFiles();
+			if(files != null && files.length > 0) {
+				for(File f : files) {
+					if(f.isFile()) {
+						fileList.add(f);
+					}
 				}
 			}
-			matchResults.put(i, matchRes);
-			matchAddresses.put(i, matchAddr);
+			
+		} else {
+			fileList.add(newFile);
 		}
-		bis.close();
-		wb.close();
+		
+		// 读取每个要加载的新文件，获取需要加载数据
+		BufferedInputStream bis;
+		POIFSFileSystem fs;
+		HSSFWorkbook wb;
+		HSSFSheet st;
+		HSSFRow row;
+		if(fileList.size() > 0) {
+			for(File f : fileList) {
+				// 当前新订单文件下要匹配地址信息
+				Map<Integer, List<OrderInfo>> fileNeedCalculateAddresses = new HashMap<Integer, List<OrderInfo>>();
+				bis = new BufferedInputStream(new FileInputStream(f));
+				fs = new POIFSFileSystem(bis);
+				// 打开HSSFWorkbook
+				wb = new HSSFWorkbook(fs);
+				// 遍历excel中所有表格
+				for (int i = 0; i < wb.getNumberOfSheets(); i ++) {
+					// 每个表格下要匹配的订单地址
+					List<OrderInfo> sheetNeedCalculateAddresses = new ArrayList<OrderInfo>();
+					st = wb.getSheetAt(i);
+					// 遍历表格下每一行。第一行为标题，不取
+					for (int rowNum = 1; rowNum <= st.getLastRowNum(); rowNum ++) {
+						row = st.getRow(rowNum);
+						if (row == null || getColumn(row.getCell(0)) == null) {
+							continue;
+						}
+						// 获取该行序号为3单元格中的tid信息
+						String tid = getColumn(row.getCell(3));
+						// 获取该行序号为11单元格中的address信息
+						String address = getColumn(row.getCell(11));
+						// 添加地址到地址匹配合集中
+						addresses.put(tid, address);
+						// 添加Sheet表格中每行要匹配地址
+						sheetNeedCalculateAddresses.add(new OrderInfo(rowNum, tid, address));
+					}
+					// 添加文件中每个Sheet表格中要匹配地址
+					fileNeedCalculateAddresses.put(i, sheetNeedCalculateAddresses);
+				}
+				// 添加每个文件要匹配地址
+				needCalculateAddresses.put(f, fileNeedCalculateAddresses);
+				bis.close();
+				wb.close();
+			}
+		}
 	}
 
 	/**
@@ -154,29 +280,33 @@ public class AddressSimilar {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	private static void outputSimilarResult(String filePath) throws FileNotFoundException, IOException {
-		BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filePath));
+	private static void outputSimilarResult(File file, Integer sheetIndex, 
+			Map<Integer, Float> sheetCalculateResults) throws FileNotFoundException, IOException {
+		BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
 		// 打开HSSFWorkbook
 		POIFSFileSystem fs = new POIFSFileSystem(bis);
 		HSSFWorkbook wb = new HSSFWorkbook(fs);
-		for(int sheetIndex : matchResults.keySet()) {
-			HSSFSheet st = wb.getSheetAt(sheetIndex);
-			HashMap<Integer, Float> matchRes = matchResults.get(sheetIndex);
-			Set<Integer> rows = matchRes.keySet();
-			// 添加相似度
-			for(Integer rowIndex : rows) {
-				HSSFRow row = st.getRow(rowIndex);
-				row.createCell(3).setCellValue(matchRes.get(rowIndex));
-			}
-			// 移除不符合条件的行
-			for(int i = 1; i <= st.getLastRowNum(); i ++) {
-				if(!rows.contains(i)) {
-					st.createRow(i);
+		HSSFSheet st = wb.getSheetAt(sheetIndex);
+		Set<Integer> rowNums = new HashSet<Integer>();
+		rowNums.addAll(sheetCalculateResults.keySet());
+		int i = st.getLastRowNum();
+		HSSFRow row;
+		while(i > 0) {
+			row = st.getRow(i);
+			if(rowNums.contains(i)) {
+				row.createCell(12).setCellValue(sheetCalculateResults.get(i));
+				rowNums.remove(i);
+			} else if(i == st.getLastRowNum()) {
+				if(row != null) {
+					st.removeRow(row);
 				}
+			} else {
+				st.shiftRows(i + 1, st.getLastRowNum(), -1);
 			}
+			i --;
 		}
 		// 输出不可以定义在前面，会出现异常
-		FileOutputStream fos = new FileOutputStream(filePath);
+		FileOutputStream fos = new FileOutputStream(file);
 		wb.write(fos);
 		bis.close();
 		fos.close();
@@ -184,43 +314,7 @@ public class AddressSimilar {
 	}
 
 	/**
-	 * 编辑距离算法，计算两个字符串相似度
-	 * 
-	 * @param addr1
-	 * @param addr2
-	 * @return
-	 */
-	private static float calculateSimilarity(String addr1, String addr2) {
-		// 计算两个字符串的长度。
-		int len1 = addr1.length();
-		int len2 = addr2.length();
-		// 建立上面说的数组，比字符长度大一个空间
-		int[][] dif = new int[len1 + 1][len2 + 1];
-		// 赋初值，步骤B。
-		for (int a = 0; a <= len1; a++) {
-			dif[a][0] = a;
-		}
-		for (int a = 0; a <= len2; a++) {
-			dif[0][a] = a;
-		}
-		// 计算两个字符是否一样，计算左上的值
-		int temp;
-		for (int i = 1; i <= len1; i++) {
-			for (int j = 1; j <= len2; j++) {
-				if (addr1.charAt(i - 1) == addr2.charAt(j - 1)) {
-					temp = 0;
-				} else {
-					temp = 1;
-				}
-				// 取三个值中最小的
-				dif[i][j] = Math.min(Math.min(dif[i - 1][j - 1] + temp, dif[i][j - 1] + 1), dif[i - 1][j] + 1);
-			}
-		}
-		return (1 - (float) dif[len1][len2] / Math.max(addr1.length(), addr2.length()));
-	}
-
-	/**
-	 * 获取指定一列的值
+	 * 获取指定单元格的值
 	 * 
 	 * @param cell
 	 * @return
@@ -232,47 +326,67 @@ public class AddressSimilar {
 		String value = null;
 		// 注意：一定要设成这个，否则可能会出现乱码
 		switch (cell.getCellType()) {
-		case HSSFCell.CELL_TYPE_STRING:
-			value = cell.getStringCellValue();
-			break;
-		case HSSFCell.CELL_TYPE_NUMERIC:
-			if (HSSFDateUtil.isCellDateFormatted(cell)) {
-				Date date = cell.getDateCellValue();
-				if (date != null) {
-					value = new SimpleDateFormat("yyyy-MM-dd").format(date);
-				} else {
-					value = "";
-				}
-			} else {
-				value = new DecimalFormat("0").format(cell.getNumericCellValue());
-			}
-			break;
-		case HSSFCell.CELL_TYPE_FORMULA:
-			// 导入时如果为公式生成的数据则无值
-			if (!cell.getStringCellValue().equals("")) {
+			case HSSFCell.CELL_TYPE_STRING:
 				value = cell.getStringCellValue();
-			} else {
-				value = cell.getNumericCellValue() + "";
-			}
-			break;
-		case HSSFCell.CELL_TYPE_BLANK:
-			break;
-		case HSSFCell.CELL_TYPE_ERROR:
-			value = "";
-			break;
-		case HSSFCell.CELL_TYPE_BOOLEAN:
-			value = (cell.getBooleanCellValue() == true ? "Y" : "N");
-			break;
-		default:
-			value = "";
+				break;
+			case HSSFCell.CELL_TYPE_NUMERIC:
+				if (HSSFDateUtil.isCellDateFormatted(cell)) {
+					Date date = cell.getDateCellValue();
+					if (date != null) {
+						value = new SimpleDateFormat("yyyy-MM-dd").format(date);
+					}
+				} else {
+					value = new DecimalFormat("0").format(cell.getNumericCellValue());
+				}
+				break;
+			case HSSFCell.CELL_TYPE_FORMULA:
+				// 导入时如果为公式生成的数据则无值
+				if (!"".equals(cell.getStringCellValue())) {
+					value = cell.getStringCellValue();
+				} else {
+					value = cell.getNumericCellValue() + "";
+				}
+				break;
+			case HSSFCell.CELL_TYPE_BLANK:
+				break;
+			case HSSFCell.CELL_TYPE_ERROR:
+				value = "";
+				break;
+			case HSSFCell.CELL_TYPE_BOOLEAN:
+				value = (cell.getBooleanCellValue() == true ? "Y" : "N");
+				break;
+			default:
+				break;
 		}
 		return value;
+	}
+	
+	private static class OrderInfo {
+		private Integer rowNum;
+		private String tid;
+		private String address;
+		
+		OrderInfo(Integer rowNum, String tid, String address) {
+			this.rowNum = rowNum;
+			this.tid = tid;
+			this.address = address;
+		}
+		
+		public Integer getRowNum() {
+			return rowNum;
+		}
+		public String getTid() {
+			return tid;
+		}
+		public String getAddress() {
+			return address;
+		}
 	}
 
 	public static void main(String[] args) {
 		Date start = new Date();
 		System.out.println("task start time is : " + start.getTime());
-		CalculateDistance("F:/calculate/old/2015921.csv", "F:/calculate/in/9.21支付宝.xls", 0.7f);
+		calculateDistance("F:/new", 0.7f);
 		Date end = new Date();
 		System.out.println("task end time is : " + end.getTime());
 		System.out.println("task waste time is : " + (end.getTime() - start.getTime()));

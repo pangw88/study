@@ -20,7 +20,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 public class ExcelOperation {
 	
 	public static void main(String[] args) {
-		readExcel(new File("F:/test.xls"));
+		//readExcel(new File("F:/test.xls"));
 	}
 	
 	/**
@@ -155,16 +155,35 @@ public class ExcelOperation {
 	/**
 	 * 移除excel表格指定行
 	 * 
+	 * 若删除表格中多行，则要从Sheet表格的最后一行开始遍历，确保删除操作不会打乱表格上方尚未删除行的位置。
+	 * 需要注意删除行会导致表格有效行数，所以每次都要以getLastRowNum取得最后一行的行标。
+	 * 表格最后一行如果是空行，不做任何操作；如果不是空行，则使用removeRow方法删除。
+	 * 对于删除非最后一行，使用shiftRows将该行下方区域上移，覆盖要删除的行。
+	 * 
 	 * @param excel
 	 */
 	private static void removeRow(Sheet sh, Row row, boolean retainRow) {
+		if(row == null) {
+			return;
+		}
 		if(retainRow) {
 			// 移除表格中指定行，但是会留下空行，操作在Workbook调用write方法时才会执行
 			sh.removeRow(row);
 		} else {
-			// 移除指定行，不留空行，但是删除多行有问题，需要修改
+			/* 移除指定行，不留空行，利用shiftRows(int startRow, int endRow, int n)方法。
+			 * shiftRows方法提供指定表格区域的移动，startRow表示需移动区域起始行，endRow表示需移动区域终止行，
+			 * n表示向上（负数值）或向下（正数值）移动行数。
+			 * 需要注意的是，Workbook调用write方法时才实际执行，每一次进行shiftRows操作都会动态改变Sheet中
+			 * 的有效行数，以及被移动区域中Row的实际行标Num值，所以进行Sheet遍历移动操作时，一定要时刻注意有效行数，
+			 * 以及需要操作Row的当前行标值。*/
 			int rowNum = row.getRowNum();
-			sh.shiftRows(rowNum, rowNum + 1, -1);
+			if(rowNum + 1 <= sh.getLastRowNum()) {
+				// 通过移动被删除行下方表格区域，将要删除的行覆盖，实现删除不留空行
+				sh.shiftRows(rowNum + 1, sh.getLastRowNum(), -1);
+			} else if(rowNum == sh.getLastRowNum()) {
+				// 最后一行的移除，无法通过移动区域覆盖，使用removeRow将该行删除为空行
+				sh.removeRow(row);
+			}
 		}
 	}
 	

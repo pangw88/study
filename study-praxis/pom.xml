@@ -8,6 +8,18 @@
   <artifactId>study-praxis</artifactId>
   
   <dependencies>
-  
+    <!-- 自定义common组件 -->
+	<dependency>
+	  <groupId>com.wp.study</groupId>
+	  <artifactId>study-common</artifactId>
+	  <version>0.0.1-SNAPSHOT</version>
+	</dependency>
+	
+    <!-- 自定义algorithm组件 -->
+	<dependency>
+	  <groupId>com.wp.study</groupId>
+	  <artifactId>study-algorithm</artifactId>
+	  <version>0.0.1-SNAPSHOT</version>
+	</dependency>
   </dependencies>
 </project>

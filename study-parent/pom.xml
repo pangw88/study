@@ -132,6 +132,12 @@
 	  <artifactId>poi</artifactId>
 	  <version>3.12</version>
 	</dependency>
+	<dependency>
+	  <groupId>org.apache.poi</groupId>
+	  <artifactId>poi</artifactId>
+	  <version>3.12</version>
+	  <classifier>sources</classifier>
+	</dependency>
 	
 	<!-- mybatis数据持久化组件 -->
 	<dependency>
