@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -143,6 +144,8 @@ public class AddressSimilar {
 	        }
 	        // 输出结果集
 	        outputSimilarResult(file, sheetIndex, sheetCalculateResults);
+	        // 文件重命名
+	        fileRename(file);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -165,7 +168,12 @@ public class AddressSimilar {
 		if(!oldFile.exists()) {
 			throw new FileNotFoundException(oldFilePath + "not found!");
 		} else if(oldFile.isDirectory()) {
-			File[] files = oldFile.listFiles();
+			File[] files = oldFile.listFiles(new FilenameFilter() {
+				@Override
+				public boolean accept(File dir, String name) {
+					return true;
+				}
+			});
 			if(files != null && files.length > 0) {
 				for(File f : files) {
 					if(f.isFile()) {
@@ -215,7 +223,12 @@ public class AddressSimilar {
 		if(!newFile.exists()) {
 			throw new FileNotFoundException(newFilePath + "not found!");
 		} else if(newFile.isDirectory()) {
-			File[] files = newFile.listFiles();
+			File[] files = newFile.listFiles(new FilenameFilter() {
+				@Override
+				public boolean accept(File dir, String name) {
+					return !(name.indexOf("_匹配结果") > -1);
+				}
+			});
 			if(files != null && files.length > 0) {
 				for(File f : files) {
 					if(f.isFile()) {
@@ -311,6 +324,21 @@ public class AddressSimilar {
 		bis.close();
 		fos.close();
 		wb.close();
+	}
+	
+	private static void fileRename(File file) {
+		if(!file.exists() || file.isDirectory()) {
+			return;
+		}
+		File parentDir = file.getParentFile();
+		String filename = file.getName();
+		int separator = filename.lastIndexOf(".");
+		if(separator > -1) {
+			filename = filename.substring(0, separator) + "_匹配结果" + filename.substring(separator, filename.length());
+		} else {
+			filename += "_匹配结果"; 
+		}
+		file.renameTo(new File(parentDir, filename));
 	}
 
 	/**
