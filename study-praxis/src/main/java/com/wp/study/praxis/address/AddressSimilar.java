@@ -14,10 +14,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -35,10 +33,10 @@ import com.wp.study.similar.StringSimilarty;
 
 public class AddressSimilar {
 	
-	// 历史订单地址和新订单地址合集，主键为tid，值为订单地址
+	// 历史订单地址和新订单地址合集，主键为oid，值为订单地址
 	private static Map<String, String> addresses = new ConcurrentHashMap<String, String>();
-	// 每个要匹配新订单文件下每个Sheet表格中抽取的新订单地址信息，Map参数从左到右分别为：新订单文件，订单文件中Sheet表格序号，订单要匹配信息
-	private static Map<File, Map<Integer, List<OrderInfo>>> needCalculateAddresses = new HashMap<File, Map<Integer, List<OrderInfo>>>();
+	// 每个要匹配新订单文件下每个Sheet表格中抽取的新订单地址信息，Map参数从左到右分别为：新订单文件，订单文件中Sheet表格序号，sheet表格行号，订单要匹配信息
+	private static Map<File, Map<Integer, Map<Integer, OrderInfo>>> needCalculateAddresses = new HashMap<File, Map<Integer, Map<Integer, OrderInfo>>>();
 	
 	
 	/**
@@ -68,19 +66,17 @@ public class AddressSimilar {
 			if(oldFilePath != null) {
 				loadOldAddress(oldFilePath);
 			}
-			
 			// 加载新订单信息
 			loadNewAddress(newFilePath);
-			
 			// 计算每个Sheet表格中地址相似度
 			if(needCalculateAddresses.size() > 0) {
 				for(File file : needCalculateAddresses.keySet()) {
 					// 当前新订单文件下要匹配地址信息
-					Map<Integer, List<OrderInfo>> fileNeedCalculateAddresses = needCalculateAddresses.get(file);
+					Map<Integer, Map<Integer, OrderInfo>> fileNeedCalculateAddresses = needCalculateAddresses.get(file);
 					if(fileNeedCalculateAddresses.size() > 0) {
 						for(Integer sheetIndex : fileNeedCalculateAddresses.keySet()) {
 							// 每个表格下要匹配的订单地址
-							List<OrderInfo> sheetNeedCalculateAddresses = fileNeedCalculateAddresses.get(sheetIndex);
+							Map<Integer, OrderInfo> sheetNeedCalculateAddresses = fileNeedCalculateAddresses.get(sheetIndex);
 							if(sheetNeedCalculateAddresses.size() > 0) {
 								calculateDistanceOfSheet(file, sheetIndex, sheetNeedCalculateAddresses, threshold);
 							}
@@ -102,25 +98,23 @@ public class AddressSimilar {
 	 * @param threshold
 	 */
 	private static void calculateDistanceOfSheet(File file, Integer sheetIndex, 
-			List<OrderInfo> orderInfoList, final float threshold) {
+			final Map<Integer, OrderInfo> orderInfoMap, final float threshold) {
 		try {
 			// 执行相似度计算线程池
 			ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 			// 线程相似度计算结果集
 			List<Future<Boolean>> futures = new ArrayList<Future<Boolean>>();
-			final Map<Integer, Float> sheetCalculateResults = new ConcurrentHashMap<Integer, Float>();
-			for(OrderInfo oi : orderInfoList) {
-				final Integer rowNum = oi.getRowNum();
-				final String tid = oi.getTid();
-				final String address = oi.getAddress();
+			for(Map.Entry<Integer, OrderInfo> entry : orderInfoMap.entrySet()) {
+				final Integer rowNum = entry.getKey();
+				final OrderInfo oi = entry.getValue();
 				futures.add(pool.submit(new Callable<Boolean>(){
 					public Boolean call() {
 						float res = 0;
 						float temp = 0;
 	        			for(String key : addresses.keySet()) {
 	        				// 匹配前先剔除当前地址
-	        				if(key != null && !key.equals(tid)) {
-	        					temp = StringSimilarty.levenshteinDistance(address, addresses.get(key));
+	        				if(key != null && !key.equals(oi.getOid())) {
+	        					temp = StringSimilarty.levenshteinDistance(oi.getAddress(), addresses.get(key));
 		        				if(temp == 1.0f) {
 		        					res = 1.0f;
 		        					break;
@@ -131,7 +125,12 @@ public class AddressSimilar {
 		        		}
 	        			// 添加相似度大于阀值的订单信息
 	        			if(res >= threshold) {
-	        				sheetCalculateResults.put(rowNum, res);
+	        				oi.setSimilar(res);
+	        			} else {
+	        				// 没有相似度大于阀值的匹配地址，为提高效率在addresses中移除该记录。
+	        				// addresses为ConcurrentHashMap，支持多线程并发操作，弱一致性
+	        				addresses.remove(oi.getOid());
+	        				orderInfoMap.remove(rowNum);
 	        			}
 	        			return true;
 					}
@@ -143,7 +142,7 @@ public class AddressSimilar {
 	        	future.get();
 	        }
 	        // 输出结果集
-	        outputSimilarResult(file, sheetIndex, sheetCalculateResults);
+	        outputSimilarResult(file, sheetIndex, orderInfoMap);
 	        // 文件重命名
 	        fileRename(file);
 		} catch (Exception e) {
@@ -181,18 +180,16 @@ public class AddressSimilar {
 					}
 				}
 			}
-			
 		} else {
 			fileList.add(oldFile);
 		}
-		
 		// 读取每个要加载的历史文件，获取需要加载数据
 		BufferedReader br;
 		String line;
 		if(fileList.size() > 0) {
 			for(File f : fileList) {
 				br = new BufferedReader(new FileReader(f));
-				// 第一行，表头："tid,receiver_address"，忽略
+				// 第一行，表头："oid,receiver_address"，忽略
 				line = br.readLine();
 				while (null != (line = br.readLine())) {
 					String[] arr = line.split(",", 2);
@@ -216,7 +213,7 @@ public class AddressSimilar {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static void loadNewAddress(String newFilePath) throws FileNotFoundException, IOException {
+	private static void loadNewAddress(String newFilePath) throws FileNotFoundException, IOException {
 		// 获取要加载的历史文件列表
 		File newFile = new File(newFilePath);
 		List<File> fileList = new ArrayList<File>();
@@ -236,11 +233,9 @@ public class AddressSimilar {
 					}
 				}
 			}
-			
 		} else {
 			fileList.add(newFile);
 		}
-		
 		// 读取每个要加载的新文件，获取需要加载数据
 		BufferedInputStream bis;
 		POIFSFileSystem fs;
@@ -250,7 +245,7 @@ public class AddressSimilar {
 		if(fileList.size() > 0) {
 			for(File f : fileList) {
 				// 当前新订单文件下要匹配地址信息
-				Map<Integer, List<OrderInfo>> fileNeedCalculateAddresses = new HashMap<Integer, List<OrderInfo>>();
+				Map<Integer, Map<Integer, OrderInfo>> fileNeedCalculateAddresses = new HashMap<Integer, Map<Integer, OrderInfo>>();
 				bis = new BufferedInputStream(new FileInputStream(f));
 				fs = new POIFSFileSystem(bis);
 				// 打开HSSFWorkbook
@@ -258,22 +253,40 @@ public class AddressSimilar {
 				// 遍历excel中所有表格
 				for (int i = 0; i < wb.getNumberOfSheets(); i ++) {
 					// 每个表格下要匹配的订单地址
-					List<OrderInfo> sheetNeedCalculateAddresses = new ArrayList<OrderInfo>();
+					Map<Integer, OrderInfo> sheetNeedCalculateAddresses = new ConcurrentHashMap<Integer, OrderInfo>();
 					st = wb.getSheetAt(i);
-					// 遍历表格下每一行。第一行为标题，不取
-					for (int rowNum = 1; rowNum <= st.getLastRowNum(); rowNum ++) {
-						row = st.getRow(rowNum);
-						if (row == null || getColumn(row.getCell(0)) == null) {
-							continue;
+					// 遍历表格下每一行。第一行为标题，取关键列列标
+					if(st.getLastRowNum() > 0) {
+						row = st.getRow(0);
+						int oidColumnNO = -1;
+						int addressColumnNO = -1;
+						// 取oid和address所在列的列标
+						for(int j = 0; j < row.getLastCellNum(); j ++) {
+							HSSFCell cell = row.getCell(j);
+							if(cell != null) {
+								if ("订单号".equals(getColumn(cell))) {
+									oidColumnNO = j;
+								} else if("收货地址".equals(getColumn(cell))) {
+									addressColumnNO = j;
+								}
+							}
 						}
-						// 获取该行序号为3单元格中的tid信息
-						String tid = getColumn(row.getCell(3));
-						// 获取该行序号为11单元格中的address信息
-						String address = getColumn(row.getCell(11));
-						// 添加地址到地址匹配合集中
-						addresses.put(tid, address);
-						// 添加Sheet表格中每行要匹配地址
-						sheetNeedCalculateAddresses.add(new OrderInfo(rowNum, tid, address));
+						if(oidColumnNO != -1 && addressColumnNO != -1) {
+							for (int rowNum = 1; rowNum <= st.getLastRowNum(); rowNum ++) {
+								row = st.getRow(rowNum);
+								if (row == null || getColumn(row.getCell(0)) == null) {
+									continue;
+								}
+								// 获取oid信息
+								String oid = getColumn(row.getCell(oidColumnNO));
+								// 获取address信息
+								String address = getColumn(row.getCell(addressColumnNO));
+								// 添加地址到地址匹配合集中
+								addresses.put(oid, address);
+								// 添加Sheet表格中每行要匹配地址
+								sheetNeedCalculateAddresses.put(rowNum, new OrderInfo(oid, address));
+							}
+						}
 					}
 					// 添加文件中每个Sheet表格中要匹配地址
 					fileNeedCalculateAddresses.put(i, sheetNeedCalculateAddresses);
@@ -294,21 +307,21 @@ public class AddressSimilar {
 	 * @throws IOException
 	 */
 	private static void outputSimilarResult(File file, Integer sheetIndex, 
-			Map<Integer, Float> sheetCalculateResults) throws FileNotFoundException, IOException {
+			Map<Integer, OrderInfo> orderInfoMap) throws FileNotFoundException, IOException {
 		BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
 		// 打开HSSFWorkbook
 		POIFSFileSystem fs = new POIFSFileSystem(bis);
 		HSSFWorkbook wb = new HSSFWorkbook(fs);
 		HSSFSheet st = wb.getSheetAt(sheetIndex);
-		Set<Integer> rowNums = new HashSet<Integer>();
-		rowNums.addAll(sheetCalculateResults.keySet());
 		int i = st.getLastRowNum();
 		HSSFRow row;
+		// 新增相似度结果列，getLastCellNum获取的是当前行有多少列
+		int similarColumn = st.getRow(0).getLastCellNum();
+		// i>0，保留第一列标题列
 		while(i > 0) {
 			row = st.getRow(i);
-			if(rowNums.contains(i)) {
-				row.createCell(12).setCellValue(sheetCalculateResults.get(i));
-				rowNums.remove(i);
+			if(orderInfoMap.containsKey(i)) {
+				row.createCell(similarColumn).setCellValue(orderInfoMap.get(i).getSimilar());
 			} else if(i == st.getLastRowNum()) {
 				if(row != null) {
 					st.removeRow(row);
@@ -390,24 +403,26 @@ public class AddressSimilar {
 	}
 	
 	private static class OrderInfo {
-		private Integer rowNum;
-		private String tid;
+		private String oid;
 		private String address;
+		private Float similar;
 		
-		OrderInfo(Integer rowNum, String tid, String address) {
-			this.rowNum = rowNum;
-			this.tid = tid;
+		OrderInfo(String oid, String address) {
+			this.oid = oid;
 			this.address = address;
 		}
 		
-		public Integer getRowNum() {
-			return rowNum;
-		}
-		public String getTid() {
-			return tid;
+		public String getOid() {
+			return oid;
 		}
 		public String getAddress() {
 			return address;
+		}
+		public Float getSimilar() {
+			return similar;
+		}
+		public void setSimilar(Float similar) {
+			this.similar = similar;
 		}
 	}
 

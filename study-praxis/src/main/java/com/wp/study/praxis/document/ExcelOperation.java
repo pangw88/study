@@ -50,7 +50,7 @@ public class ExcelOperation {
 						continue;
 					}
 					
-					// 获取该行长度
+					// getLastCellNum获取的是该行cell的个数，即lastCellIndex+1
 					int cellLast = row.getLastCellNum();
 					Cell cell = null;
 					// 遍历行中的列
@@ -87,6 +87,9 @@ public class ExcelOperation {
 
 	/**
 	 * 写excel表格
+	 * 需要注意，xls格式的excel文档中一个sheet最多可以有60000行，
+	 * 使用Apache poi进行写操作，有每次Short.MAX_VALUE = 32767行的上限限制，
+	 * 超过会报IllegalArgumentException异常。
 	 * 
 	 * @param excel
 	 */
