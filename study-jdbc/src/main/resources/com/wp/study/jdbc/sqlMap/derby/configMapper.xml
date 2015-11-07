@@ -4,7 +4,7 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">  
 <!--这块为dao接口的实现，namespace必须和接口的类路径一样，返回值类型也可以配置在configuration.xml的typeAliases标签中 -->
 <mapper namespace="com.wp.study.jdbc.derby.dao.ConfigMapper"> 
-    <resultMap id="ConfigResultMap" type="com.wp.study.jdbc.derby.pojo.Config">
+    <resultMap id="ConfigResultMap" type="com.wp.study.base.pojo.Config">
 		<result property="confKey" column="conf_key" />
 		<result property="confValue" column="conf_value" />
 		<result property="description" column="description" />

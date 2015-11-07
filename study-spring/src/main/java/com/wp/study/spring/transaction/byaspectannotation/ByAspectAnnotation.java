@@ -3,7 +3,7 @@ package com.wp.study.spring.transaction.byaspectannotation;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.wp.study.jdbc.mysql.pojo.Sample;
+import com.wp.study.base.pojo.Sample;
 import com.wp.study.spring.transaction.byaspectannotation.service.SampleService;
 
 public class ByAspectAnnotation {

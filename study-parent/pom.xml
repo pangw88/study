@@ -1,244 +1,154 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.wp.study</groupId>
-  <artifactId>study-parent</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <packaging>pom</packaging>
-  
-  <dependencies>
-  	<!-- 通用日志接口api -->
-  	<dependency>
-	  <groupId>org.slf4j</groupId>
-	  <artifactId>slf4j-api</artifactId>
-	  <version>1.7.12</version>
-	</dependency>
-	<dependency>
-	  <groupId>org.slf4j</groupId>
-	  <artifactId>slf4j-api</artifactId>
-	  <version>1.7.12</version>
-	  <classifier>sources</classifier>
-	</dependency>
-	<dependency>
-	  <groupId>org.slf4j</groupId>
-	  <artifactId>slf4j-api</artifactId>
-	  <version>1.7.12</version>
-	  <classifier>javadoc</classifier>
-	</dependency>
-	
-	<!-- logback日志实现 -->
-	<dependency>
-	  <groupId>ch.qos.logback</groupId>
-	  <artifactId>logback-core</artifactId>
-	  <version>1.1.3</version>
-	</dependency>
-	<dependency>
-	  <groupId>ch.qos.logback</groupId>
-	  <artifactId>logback-core</artifactId>
-	  <version>1.1.3</version>
-	  <classifier>sources</classifier>
-	</dependency>
-	<dependency>
-	  <groupId>ch.qos.logback</groupId>
-	  <artifactId>logback-core</artifactId>
-	  <version>1.1.3</version>
-	  <classifier>javadoc</classifier>
-	</dependency>
-	<dependency>
-	  <groupId>ch.qos.logback</groupId>
-	  <artifactId>logback-classic</artifactId>
-	  <version>1.1.3</version>
-	</dependency>
-	<dependency>
-	  <groupId>ch.qos.logback</groupId>
-	  <artifactId>logback-classic</artifactId>
-	  <version>1.1.3</version>
-	  <classifier>sources</classifier>
-	</dependency>
-	<dependency>
-	  <groupId>ch.qos.logback</groupId>
-	  <artifactId>logback-classic</artifactId>
-	  <version>1.1.3</version>
-	  <classifier>javadoc</classifier>
-	</dependency>
-	
-	<!-- Apache通用编解码算法组件  -->
-	<dependency>
-	  <groupId>commons-codec</groupId>
-	  <artifactId>commons-codec</artifactId>
-	  <version>1.10</version>
-	</dependency>
-	<dependency>
-	  <groupId>commons-codec</groupId>
-	  <artifactId>commons-codec</artifactId>
-	  <version>1.10</version>
-	  <classifier>sources</classifier>
-	</dependency>
-	<dependency>
-	  <groupId>commons-codec</groupId>
-	  <artifactId>commons-codec</artifactId>
-	  <version>1.10</version>
-	  <classifier>javadoc</classifier>
-	</dependency>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.wp.study</groupId>
+	<artifactId>study-parent</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
-	<!-- Apache数据库连接池组件，需依赖commons-pool组件  -->
-	<dependency>
-	  <groupId>commons-dbcp</groupId>
-	  <artifactId>commons-dbcp</artifactId>
-	  <version>1.4</version>
-	</dependency>
-	<dependency>
-	  <groupId>commons-dbcp</groupId>
-	  <artifactId>commons-dbcp</artifactId>
-	  <version>1.4</version>
-	  <classifier>sources</classifier>
-	</dependency>
-	<dependency>
-	  <groupId>commons-dbcp</groupId>
-	  <artifactId>commons-dbcp</artifactId>
-	  <version>1.4</version>
-	  <classifier>javadoc</classifier>
-	</dependency>
+	<dependencies>
+		<!-- 通用日志接口api -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.12</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.12</version>
+			<classifier>sources</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.12</version>
+			<classifier>javadoc</classifier>
+		</dependency>
 
-	<!-- Apache池化组件  -->
-	<dependency>
-	  <groupId>commons-pool</groupId>
-	  <artifactId>commons-pool</artifactId>
-	  <version>1.6</version>
-	</dependency>
-	<dependency>
-	  <groupId>commons-pool</groupId>
-	  <artifactId>commons-pool</artifactId>
-	  <version>1.6</version>
-	  <classifier>sources</classifier>
-	</dependency>
-	<dependency>
-	  <groupId>commons-pool</groupId>
-	  <artifactId>commons-pool</artifactId>
-	  <version>1.6</version>
-	  <classifier>javadoc</classifier>
-	</dependency>
-	
-	<!-- Apache Microsoft Office格式文档读写  
-		HSSF － 提供读写Microsoft Excel XLS格式档案的功能。
-		XSSF － 提供读写Microsoft Excel OOXML XLSX格式档案的功能。
-		HWPF － 提供读写Microsoft Word DOC格式档案的功能。
-		HSLF － 提供读写Microsoft PowerPoint格式档案的功能。
-		HDGF － 提供读Microsoft Visio格式档案的功能。
-		HPBF － 提供读Microsoft Publisher格式档案的功能。
-		HSMF － 提供读Microsoft Outlook格式档案的功能。
-	-->
-	<dependency>
-	  <groupId>org.apache.poi</groupId>
-	  <artifactId>poi</artifactId>
-	  <version>3.12</version>
-	</dependency>
-	<dependency>
-	  <groupId>org.apache.poi</groupId>
-	  <artifactId>poi</artifactId>
-	  <version>3.12</version>
-	  <classifier>sources</classifier>
-	</dependency>
-	
-	<!-- mybatis数据持久化组件 -->
-	<dependency>
-	  <groupId>org.mybatis</groupId>
-	  <artifactId>mybatis</artifactId>
-	  <version>3.2.8</version>
-	</dependency>
-	<dependency>
-	  <groupId>org.mybatis</groupId>
-	  <artifactId>mybatis</artifactId>
-	  <version>3.2.8</version>
-	  <classifier>sources</classifier>
-	</dependency>
-	<dependency>
-	  <groupId>org.mybatis</groupId>
-	  <artifactId>mybatis</artifactId>
-	  <version>3.2.8</version>
-	  <classifier>javadoc</classifier>
-	</dependency>
-	
-	<!-- cglib字节码动态生成及动态代理组件 -->
-	<dependency>
-	  <groupId>cglib</groupId>
-	  <artifactId>cglib-nodep</artifactId>
-	  <version>3.1</version>
-	</dependency>
-	<dependency>
-	  <groupId>cglib</groupId>
-	  <artifactId>cglib-nodep</artifactId>
-	  <version>3.1</version>
-	  <classifier>sources</classifier>
-	</dependency>
-	<dependency>
-	  <groupId>cglib</groupId>
-	  <artifactId>cglib-nodep</artifactId>
-	  <version>3.1</version>
-	  <classifier>javadoc</classifier>
-	</dependency>
-		
-	<!-- junit单元测试  -->
-	<dependency>
-	  <groupId>junit</groupId>
-	  <artifactId>junit</artifactId>
-	  <version>4.12</version>
-	</dependency>
-	<dependency>
-	  <groupId>junit</groupId>
-	  <artifactId>junit</artifactId>
-	  <version>4.12</version>
-	  <classifier>sources</classifier>
-	</dependency>
-	<dependency>
-	  <groupId>junit</groupId>
-	  <artifactId>junit</artifactId>
-	  <version>4.12</version>
-	  <classifier>javadoc</classifier>
-	</dependency>
-  </dependencies>
-  
-  <build>
-	<finalName>spider-parent</finalName>
-	<!-- <filters>
-		<filter>${basedir}/pros/pros.properties</filter>
-	</filters>
-	<resources>
-	    <resource>
-			<directory>src/main/resources</directory>
-			<includes>
-				<include>**/*</include>
-			</includes>
-		</resource>
-		<resource>
-			<directory>src/main/resources</directory>
-			<includes>
-				<include>conf/*.properties</include>
-			</includes>
-			<filtering>true</filtering>
-		</resource>
-	</resources> -->
-	<plugins>
-		<plugin>
-			<groupId>org.apache.maven.plugins</groupId>
-			<artifactId>maven-compiler-plugin</artifactId>
-			<version>2.5.1</version>
-			<configuration>
-				<source>1.7</source>
-				<target>1.7</target>
-				<encoding>UTF-8</encoding>
-			</configuration>
-		</plugin>
-	</plugins>
- </build>
-  
- <modules>
- 	<module>study-algorithm</module>
- 	<module>study-common</module>
- 	<module>study-hadoop</module>
- 	<module>study-jdbc</module>
- 	<module>study-netty</module>
- 	<module>study-praxis</module>
- 	<module>study-spring</module>
- 	<module>study-swing</module>
- </modules>
+		<!-- logback日志实现 -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>1.1.3</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>1.1.3</version>
+			<classifier>sources</classifier>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>1.1.3</version>
+			<classifier>javadoc</classifier>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.1.3</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.1.3</version>
+			<classifier>sources</classifier>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.1.3</version>
+			<classifier>javadoc</classifier>
+		</dependency>
+
+		<!-- apache池化组件 -->
+		<dependency>
+			<groupId>commons-pool</groupId>
+			<artifactId>commons-pool</artifactId>
+			<version>1.6</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-pool</groupId>
+			<artifactId>commons-pool</artifactId>
+			<version>1.6</version>
+			<classifier>sources</classifier>
+		</dependency>
+		<dependency>
+			<groupId>commons-pool</groupId>
+			<artifactId>commons-pool</artifactId>
+			<version>1.6</version>
+			<classifier>javadoc</classifier>
+		</dependency>
+
+		<!-- apache对java.lang扩展 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.3</version>
+			<classifier>sources</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.3</version>
+			<classifier>javadoc</classifier>
+		</dependency>
+
+		<!-- junit单元测试 -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<classifier>sources</classifier>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<classifier>javadoc</classifier>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<finalName>spider-parent</finalName>
+		<!-- <filters> <filter>${basedir}/pros/pros.properties</filter> </filters> 
+			<resources> <resource> <directory>src/main/resources</directory> <includes> 
+			<include>**/*</include> </includes> </resource> <resource> <directory>src/main/resources</directory> 
+			<includes> <include>conf/*.properties</include> </includes> <filtering>true</filtering> 
+			</resource> </resources> -->
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.5.1</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<modules>
+		<module>study-algorithm</module>
+		<module>study-base</module>
+		<module>study-hadoop</module>
+		<module>study-jdbc</module>
+		<module>study-netty</module>
+		<module>study-praxis</module>
+		<module>study-spring</module>
+		<module>study-swing</module>
+	</modules>
 </project>

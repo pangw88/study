@@ -2,7 +2,7 @@ package com.wp.study.jdbc.derby.dao;
 
 import java.util.List;
 
-import com.wp.study.jdbc.derby.pojo.Config;
+import com.wp.study.base.pojo.Config;
 
 public interface ConfigMapper {
 	

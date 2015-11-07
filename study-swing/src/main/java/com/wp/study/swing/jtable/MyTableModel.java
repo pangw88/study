@@ -2,7 +2,7 @@ package com.wp.study.swing.jtable;
 
 import java.util.List;
 
-import com.wp.study.jdbc.derby.pojo.Entity;
+import com.wp.study.base.pojo.Entity;
 
 public class MyTableModel extends MyAbstractTableModel<Entity> {
 

@@ -31,14 +31,14 @@ import javax.swing.JTextField;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.wp.study.common.encryption.ClassicalCoder;
-import com.wp.study.common.util.CacheUtil;
-import com.wp.study.common.util.CommonUtil;
-import com.wp.study.jdbc.derby.pojo.Entity;
-import com.wp.study.swing.service.EntityService;
+import com.wp.study.algorithm.digester.DigesterCoder;
+import com.wp.study.algorithm.encryption.ClassicalCoder;
+import com.wp.study.base.pojo.Entity;
+import com.wp.study.base.util.CacheUtil;
 import com.wp.study.swing.gbcs.GBCsUtil;
 import com.wp.study.swing.jdialog.JDialogTest;
 import com.wp.study.swing.jtable.JTableTest;
@@ -46,6 +46,8 @@ import com.wp.study.swing.jtable.MyCellEditor;
 import com.wp.study.swing.jtable.MyCellRenderer;
 import com.wp.study.swing.jtable.MyTableModel;
 import com.wp.study.swing.service.DBConfigService;
+import com.wp.study.swing.service.EntityService;
+import com.wp.study.swing.util.CommonUtil;
 
 public class JFrameTest extends JFrame {
 
@@ -201,11 +203,11 @@ public class JFrameTest extends JFrame {
 						// add entity
 						for(int i=0; i<dataColumns.size(); i++) {
 							String value = ((JTextField)cp.getComponent(i*3+1)).getText();
-							if(CommonUtil.isNotEmpty(value)) {
+							if(StringUtils.isNotEmpty(value)) {
 								CommonUtil.setField(entity, dataColumns.get(i), value);
 							}
 						}
-						if(CommonUtil.isEmpty(entity.getSite())) {
+						if(StringUtils.isEmpty(entity.getSite())) {
 							return;
 						}
 						int result = es.addEntity(entity, key, key1);
@@ -245,7 +247,7 @@ public class JFrameTest extends JFrame {
 					try {
 						String qs = qts.getText();
 						String qn = qtn.getText();
-						if(CommonUtil.isEmpty(qs) || CommonUtil.isEmpty(qn)) {
+						if(StringUtils.isEmpty(qs) || StringUtils.isEmpty(qn)) {
 							 JOptionPane.showMessageDialog(cp, "Parameters error!");
 							 return;
 						}
@@ -299,7 +301,7 @@ public class JFrameTest extends JFrame {
 				public void actionPerformed(ActionEvent e) {
 					try {
 						String qlev = levt.getText();
-						String qkey = CommonUtil.isEmpty(keyt.getPassword()) ?
+						String qkey = keyt.getPassword() == null ?
 								null : new String(keyt.getPassword());
 						String qs = qts.getText();
 						String qn = qtn.getText();
@@ -409,15 +411,15 @@ public class JFrameTest extends JFrame {
 					System.exit(0);
 				}
 				JDialogTest jd = new JDialogTest(frame, "check");
-				while(CommonUtil.isEmpty(key1) || CommonUtil.isEmpty(key2)) {
+				while(StringUtils.isEmpty(key1) || StringUtils.isEmpty(key2)) {
 					try {
 						jd.setVisible(true);
 						List<String> inputs = jd.getInputs();
 						if(inputs != null) {
 							String t1 = ClassicalCoder.substitutionDecrypt(temp1, inputs.get(0));
 							String t2 = ClassicalCoder.substitutionDecrypt(temp2, inputs.get(1));
-							if(CommonUtil.getStringDigest(inputs.get(0), "MD5").equals(t1) &&
-									CommonUtil.getStringDigest(inputs.get(1), "MD5").equals(t2)) {
+							if(DigesterCoder.getStringDigest(inputs.get(0), "MD5").equals(t1) &&
+									DigesterCoder.getStringDigest(inputs.get(1), "MD5").equals(t2)) {
 								key1 = inputs.get(0);
 								key2 = inputs.get(1);
 								key = ClassicalCoder.substitutionDecrypt(key, key2);

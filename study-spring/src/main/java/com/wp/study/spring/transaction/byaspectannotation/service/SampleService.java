@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.wp.study.base.pojo.Sample;
 import com.wp.study.jdbc.mysql.dao.SampleDao;
-import com.wp.study.jdbc.mysql.pojo.Sample;
 
 /**
  * SampleService没有实现接口，故spring通过cglib为该类织入事务

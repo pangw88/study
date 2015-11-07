@@ -3,8 +3,8 @@ package com.wp.study.spring.transaction.byspringaop.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.wp.study.base.pojo.Sample;
 import com.wp.study.jdbc.mysql.dao.SampleDao;
-import com.wp.study.jdbc.mysql.pojo.Sample;
 
 @Service("sampleService")
 public class SampleService {

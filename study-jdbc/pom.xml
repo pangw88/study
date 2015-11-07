@@ -1,56 +1,95 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.wp.study</groupId>
-    <artifactId>study-parent</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-  </parent>
-  <artifactId>study-jdbc</artifactId>
-  <dependencies>
-  	<!-- 自定义common组件 -->
-	<dependency>
-	  <groupId>com.wp.study</groupId>
-	  <artifactId>study-common</artifactId>
-	  <version>0.0.1-SNAPSHOT</version>
-	</dependency>
-	
-	<!-- derby数据库驱动组件 -->
-	<dependency>
-	  <groupId>org.apache.derby</groupId>
-	  <artifactId>derby</artifactId>
-	  <version>10.10.2.0</version>
-	</dependency>
-	
-	<!-- mysql数据库驱动组件 -->
-	<dependency>
-	  <groupId>mysql</groupId>
-	  <artifactId>mysql-connector-java</artifactId>
-	  <version>5.1.36</version>
-	</dependency>
-	<dependency>
-	  <groupId>mysql</groupId>
-	  <artifactId>mysql-connector-java</artifactId>
-	  <version>5.1.36</version>
-	  <classifier>sources</classifier>
-	</dependency>
-  
-  	<!-- mybatis orm 组件 -->
-	<dependency>
-	  <groupId>org.mybatis</groupId>
-	  <artifactId>mybatis</artifactId>
-	  <version>3.2.8</version>
-	</dependency>
-	<dependency>
-	  <groupId>org.mybatis</groupId>
-	  <artifactId>mybatis</artifactId>
-	  <version>3.2.8</version>
-	  <classifier>sources</classifier>
-	</dependency>
-	<dependency>
-	  <groupId>org.mybatis</groupId>
-	  <artifactId>mybatis</artifactId>
-	  <version>3.2.8</version>
-	  <classifier>javadoc</classifier>
-	</dependency>  
-  </dependencies>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.wp.study</groupId>
+		<artifactId>study-parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+	<artifactId>study-jdbc</artifactId>
+	<dependencies>
+		<!-- 自定义base组件 -->
+		<dependency>
+			<groupId>com.wp.study</groupId>
+			<artifactId>study-base</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
+		<!-- derby数据库驱动组件 -->
+		<dependency>
+			<groupId>org.apache.derby</groupId>
+			<artifactId>derby</artifactId>
+			<version>10.10.2.0</version>
+		</dependency>
+
+		<!-- mysql数据库驱动组件 -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.36</version>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.36</version>
+			<classifier>sources</classifier>
+		</dependency>
+
+		<!-- apache数据库连接池组件，需依赖commons-pool组件 -->
+		<dependency>
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+			<version>1.4</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+			<version>1.4</version>
+			<classifier>sources</classifier>
+		</dependency>
+		<dependency>
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+			<version>1.4</version>
+			<classifier>javadoc</classifier>
+		</dependency>
+
+		<!-- mybatis数据持久化组件 -->
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis</artifactId>
+			<version>3.2.8</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis</artifactId>
+			<version>3.2.8</version>
+			<classifier>sources</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis</artifactId>
+			<version>3.2.8</version>
+			<classifier>javadoc</classifier>
+		</dependency>
+
+		<!-- mybatis orm 组件 -->
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis</artifactId>
+			<version>3.2.8</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis</artifactId>
+			<version>3.2.8</version>
+			<classifier>sources</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.mybatis</groupId>
+			<artifactId>mybatis</artifactId>
+			<version>3.2.8</version>
+			<classifier>javadoc</classifier>
+		</dependency>
+	</dependencies>
 </project>

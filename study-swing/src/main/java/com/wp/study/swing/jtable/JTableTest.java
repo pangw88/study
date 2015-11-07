@@ -14,7 +14,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
-import com.wp.study.jdbc.derby.pojo.Entity;
+import com.wp.study.base.pojo.Entity;
 
 @SuppressWarnings("rawtypes")
 public class JTableTest extends JTable {

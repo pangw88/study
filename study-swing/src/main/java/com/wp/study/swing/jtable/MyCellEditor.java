@@ -17,10 +17,10 @@ import javax.swing.table.TableCellEditor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.wp.study.common.util.CacheUtil;
-import com.wp.study.common.util.CommonUtil;
+import com.wp.study.base.pojo.Entity;
+import com.wp.study.base.util.CacheUtil;
 import com.wp.study.swing.service.EntityService;
-import com.wp.study.jdbc.derby.pojo.Entity;
+import com.wp.study.swing.util.CommonUtil;
 
 public class MyCellEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
 

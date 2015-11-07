@@ -10,8 +10,8 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.wp.study.base.pojo.Config;
 import com.wp.study.jdbc.derby.dao.ConfigMapper;
-import com.wp.study.jdbc.derby.pojo.Config;
 
 public class DBConfigService {
 	

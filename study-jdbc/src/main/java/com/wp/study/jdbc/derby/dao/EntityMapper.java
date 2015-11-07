@@ -3,7 +3,7 @@ package com.wp.study.jdbc.derby.dao;
 import java.util.List;
 import java.util.Map;
 
-import com.wp.study.jdbc.derby.pojo.Entity;
+import com.wp.study.base.pojo.Entity;
 
 public interface EntityMapper {
 

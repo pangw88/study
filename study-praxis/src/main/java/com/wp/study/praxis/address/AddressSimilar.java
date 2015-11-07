@@ -29,7 +29,7 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
-import com.wp.study.similar.StringSimilarty;
+import com.wp.study.algorithm.similar.StringSimilarty;
 
 public class AddressSimilar {
 	
@@ -109,8 +109,8 @@ public class AddressSimilar {
 				final OrderInfo oi = entry.getValue();
 				futures.add(pool.submit(new Callable<Boolean>(){
 					public Boolean call() {
-						float res = 0;
-						float temp = 0;
+						double res = 0;
+						double temp = 0;
 	        			for(String key : addresses.keySet()) {
 	        				// 匹配前先剔除当前地址
 	        				if(key != null && !key.equals(oi.getOid())) {
@@ -405,7 +405,7 @@ public class AddressSimilar {
 	private static class OrderInfo {
 		private String oid;
 		private String address;
-		private Float similar;
+		private double similar;
 		
 		OrderInfo(String oid, String address) {
 			this.oid = oid;
@@ -418,10 +418,10 @@ public class AddressSimilar {
 		public String getAddress() {
 			return address;
 		}
-		public Float getSimilar() {
+		public double getSimilar() {
 			return similar;
 		}
-		public void setSimilar(Float similar) {
+		public void setSimilar(double similar) {
 			this.similar = similar;
 		}
 	}

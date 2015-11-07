@@ -18,7 +18,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 
-import com.wp.study.common.util.CommonUtil;
 import com.wp.study.swing.gbcs.GBCsUtil;
 
 public class JDialogTest extends JDialog {
@@ -74,7 +73,7 @@ public class JDialogTest extends JDialog {
     		public void actionPerformed(ActionEvent e) {
     			char[] in1 = jp1.getPassword();
     			char[] in2 = jp2.getPassword();
-    			if(CommonUtil.isNotEmpty(in1) && CommonUtil.isNotEmpty(in2)) {
+    			if(in1 != null && in2 != null) {
     				inputs = new ArrayList<String>();
         			inputs.add(new String(in1));
         			inputs.add(new String(in2));

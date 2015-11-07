@@ -5,16 +5,18 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.wp.study.common.encryption.*;
-import com.wp.study.common.util.*;
+import com.wp.study.algorithm.encryption.ClassicalCoder;
+import com.wp.study.algorithm.encryption.IDEACoder;
+import com.wp.study.base.pojo.Entity;
 import com.wp.study.jdbc.derby.dao.EntityMapper;
-import com.wp.study.jdbc.derby.pojo.Entity;
+import com.wp.study.swing.util.CommonUtil;
 
 public class EntityService {
 	
@@ -182,7 +184,7 @@ public class EntityService {
 			Integer prior = CommonUtil.calLevel(entity.getPriority());
 			for (String column : basicCols) {
 				String value = (String) CommonUtil.getField(entity, column);
-				if (CommonUtil.isNotEmpty(value)) {
+				if (StringUtils.isNotEmpty(value)) {
 					value = ClassicalCoder.substitutionEncrypt(
 							Base64.encodeBase64String(value.getBytes()), key1);
 					CommonUtil.setField(entity, column, value);
@@ -190,7 +192,7 @@ public class EntityService {
 			}
 			for (String column : usedCols) {
 				String value = (String) CommonUtil.getField(entity, column);
-				if (CommonUtil.isNotEmpty(value)) {
+				if (StringUtils.isNotEmpty(value)) {
 					if (prior == 0) {
 						value = ClassicalCoder.transpositionEncrypt(value);
 					} else {
@@ -225,7 +227,7 @@ public class EntityService {
 			Integer prior = CommonUtil.calLevel(entity.getPriority());
 			for (String column : basicCols) {
 				String value = (String) CommonUtil.getField(entity, column);
-				if (CommonUtil.isNotEmpty(value)) {
+				if (StringUtils.isNotEmpty(value)) {
 					value = new String(Base64.decodeBase64(ClassicalCoder
 							.substitutionDecrypt(value, key1)));
 					CommonUtil.setField(entity, column, value);
@@ -233,7 +235,7 @@ public class EntityService {
 			}
 			for (String column : usedCols) {
 				String value = (String) CommonUtil.getField(entity, column);
-				if (CommonUtil.isNotEmpty(value)) {
+				if (StringUtils.isNotEmpty(value)) {
 					if (prior == 0) {
 						value = ClassicalCoder.transpositionDecrypt(value);
 					} else {
