@@ -106,7 +106,7 @@ public class FileOperation {
 								// 过滤数据库缓存文件
 								LOG.info("exist .db file <{}>", path);
 							} else if(path.toLowerCase().
-									matches("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov)$")) {
+									matches("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov|m4v)$")) {
 								String name = f.getName();
 								// .*匹配除换行符外任意长度字符串
 								if(name.matches("^.*(_mov|_mk).*$")) {
