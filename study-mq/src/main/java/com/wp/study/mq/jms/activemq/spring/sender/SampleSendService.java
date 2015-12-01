@@ -1,4 +1,4 @@
-package com.wp.study.spring.jms.sender;
+package com.wp.study.mq.jms.activemq.spring.sender;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -9,7 +9,7 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Service;
 
-import com.wp.study.spring.jms.message.SampleMessage;
+import com.wp.study.mq.jms.activemq.spring.message.SampleMessage;
 
 @Service("sampleSendService")
 public class SampleSendService {

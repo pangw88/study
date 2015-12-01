@@ -1,4 +1,4 @@
-package com.wp.study.spring.jms.receiver1;
+package com.wp.study.mq.jms.activemq.spring.receiver1;
 
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
-import com.wp.study.spring.jms.message.SampleMessage;
+import com.wp.study.mq.jms.activemq.spring.message.SampleMessage;
 
 @Service("sampleReceiveService")
 public class SampleReceiveService {

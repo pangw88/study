@@ -1,8 +1,8 @@
-package com.wp.study.spring.jms.receiver2;
+package com.wp.study.mq.jms.activemq.spring.receiver2;
 
 import org.springframework.stereotype.Service;
 
-import com.wp.study.spring.jms.message.SampleMessage;
+import com.wp.study.mq.jms.activemq.spring.message.SampleMessage;
 
 @Service("sampleReceiveService")
 public class SampleReceiveService {

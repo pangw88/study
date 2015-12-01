@@ -1,4 +1,4 @@
-package com.wp.study.spring.jms.receiver2;
+package com.wp.study.mq.jms.activemq.spring.receiver2;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -7,7 +7,7 @@ public class SampleReceiver {
 
 	public static void test() {
 		try {
-			String configLocation = "com/wp/study/spring/jms/receive/receiver2-beans.xml";
+			String configLocation = "com/wp/study/mq/jms/activemq/spring/receiver2-beans.xml";
 			// 加载应用上下文
 			ApplicationContext ctx = new ClassPathXmlApplicationContext(configLocation);
 			

@@ -339,19 +339,6 @@
 			<classifier>javadoc</classifier>
 		</dependency>
 
-		<!-- activeMq jms异步消息组件 -->
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-all</artifactId>
-			<version>5.10.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-all</artifactId>
-			<version>5.10.0</version>
-			<classifier>sources</classifier>
-		</dependency>
-
 		<!-- aspectj面向切面(动态代码生成)组件 -->
 		<dependency>
 			<groupId>org.aspectj</groupId>

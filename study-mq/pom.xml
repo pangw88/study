@@ -1,0 +1,127 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.wp.study</groupId>
+    <artifactId>study-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>study-mq</artifactId>
+  
+  <dependencies>
+  		<!-- spring beans(依赖注入等)基础组件 -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>3.2.9.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>3.2.9.RELEASE</version>
+			<classifier>sources</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>3.2.9.RELEASE</version>
+			<classifier>javadoc</classifier>
+		</dependency>
+		
+		<!-- spring core组件 -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>3.2.9.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>3.2.9.RELEASE</version>
+			<classifier>sources</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>3.2.9.RELEASE</version>
+			<classifier>javadoc</classifier>
+		</dependency>
+
+		<!-- spring context组件，提供IoC功能上扩展， 还提供邮件服务、任务调度、JNDI定位、EJB 集成、远程访问、缓存以及各种视图层框架封装 -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>3.2.9.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>3.2.9.RELEASE</version>
+			<classifier>sources</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>3.2.9.RELEASE</version>
+			<classifier>javadoc</classifier>
+		</dependency>
+		
+		<!-- spring jms异步消息组件 -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jms</artifactId>
+			<version>3.2.9.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jms</artifactId>
+			<version>3.2.9.RELEASE</version>
+			<classifier>sources</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jms</artifactId>
+			<version>3.2.9.RELEASE</version>
+			<classifier>javadoc</classifier>
+		</dependency>
+		
+		<!-- activeMq jms异步消息组件 -->
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-all</artifactId>
+			<version>5.10.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-all</artifactId>
+			<version>5.10.0</version>
+			<classifier>sources</classifier>
+		</dependency>
+		
+		<!-- rabbitMq amqp异步消息组件，包含两部分：spring-amqp是协议抽象，
+			spring-rabbit是RabbitMQ具体实现 -->
+		<dependencies>
+		    <dependency>
+		        <groupId>org.springframework.amqp</groupId>
+		        <artifactId>spring-rabbit</artifactId>
+		        <version>1.5.2.RELEASE</version>
+		    </dependency>
+		</dependencies>
+		<dependencies>
+		    <dependency>
+		        <groupId>org.springframework.amqp</groupId>
+		        <artifactId>spring-rabbit</artifactId>
+		        <version>1.5.2.RELEASE</version>
+		        <classifier>sources</classifier>
+		    </dependency>
+		</dependencies>
+		<dependencies>
+		    <dependency>
+		        <groupId>org.springframework.amqp</groupId>
+		        <artifactId>spring-rabbit</artifactId>
+		        <version>1.5.2.RELEASE</version>
+		        <classifier>javadoc</classifier>
+		    </dependency>
+		</dependencies>
+  
+  </dependencies>
+</project>

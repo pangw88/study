@@ -1,18 +1,18 @@
-package com.wp.study.spring.jms.sender;
+package com.wp.study.mq.jms.activemq.spring.receiver1;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class SampleSender {
+public class SampleReceiver {
 
 	public static void test() {
 		try {
-			String configLocation = "com/wp/study/spring/jms/sender/beans.xml";
+			String configLocation = "com/wp/study/mq/jms/activemq/spring/receiver1-beans.xml";
 			// 加载应用上下文
 			ApplicationContext ctx = new ClassPathXmlApplicationContext(configLocation);
 			
-			SampleSendService sampleSendService = (SampleSendService) ctx.getBean("sampleSendService");
-			sampleSendService.sendMessage();
+			SampleReceiveService sampleReceiveService = (SampleReceiveService) ctx.getBean("sampleReceiveService");
+			sampleReceiveService.receiveMessage();
 			
 			// ApplicationContext接口没有定义close方法，需要调用实现类的close方法
 			((ClassPathXmlApplicationContext)ctx).close();

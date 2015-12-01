@@ -62,7 +62,7 @@ public class GenerateUtil {
 		LOG.info("Task start!");
 		for (int i = 0; i < 10; i++) {
 			String str = getStr(10, true);
-			LOG.info(i + "  " + str);
+			LOG.info(i + "  " + str.toLowerCase());
 		}
 		// 任务结束
 		LOG.info("Task end!");

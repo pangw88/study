@@ -49,7 +49,7 @@ public class FileOperationTest {
 			/*File file = new File("K:/Album/U15/Rei Kuromiya");
 			File info = new File("C:/Users/wp/Desktop/Rei Kuromiya.txt");
 			FileOperation.checkFileExist(file, info);*/
-			String path = "K:\\Album\\Beauty\\Mayuyu";
+			String path = "F:\\Downloads\\dgc_sugihara_no1257";
 			FileOperation.rename(new File(path));
 			/*File f1 = new File("F:\\Downloads\\Mayumi Yamanaka");
 			File f2 = new File("F:\\Downloads\\pics");

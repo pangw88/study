@@ -122,19 +122,32 @@
 
 	<build>
 		<finalName>spider-parent</finalName>
-		<!-- <filters> <filter>${basedir}/pros/pros.properties</filter> </filters> 
-			<resources> <resource> <directory>src/main/resources</directory> <includes> 
-			<include>**/*</include> </includes> </resource> <resource> <directory>src/main/resources</directory> 
-			<includes> <include>conf/*.properties</include> </includes> <filtering>true</filtering> 
-			</resource> </resources> -->
+		<!-- <filters>
+			<filter>${basedir}/pros/pros.properties</filter>
+		</filters>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>**/*</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>conf/*.properties</include>
+				</includes>
+				<filtering>true</filtering>
+			</resource>
+		</resources> -->
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.5.1</version>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>1.8</source>
+					<target>1.8</target>
 					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
@@ -146,6 +159,7 @@
 		<module>study-base</module>
 		<module>study-hadoop</module>
 		<module>study-jdbc</module>
+		<module>study-mq</module>
 		<module>study-netty</module>
 		<module>study-praxis</module>
 		<module>study-spring</module>

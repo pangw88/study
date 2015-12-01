@@ -1,4 +1,4 @@
-package com.wp.study.spring.jms.message;
+package com.wp.study.mq.jms.activemq.spring.message;
 
 import java.io.Serializable;
 
