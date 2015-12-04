@@ -153,6 +153,10 @@
 			</plugin>
 		</plugins>
 	</build>
+	
+	<properties>
+		<spring.version>4.2.3.RELEASE</spring.version>
+	</properties>
 
 	<modules>
 		<module>study-algorithm</module>

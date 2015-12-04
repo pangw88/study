@@ -7,7 +7,7 @@ public class SampleReceiver {
 
 	public static void test() {
 		try {
-			String configLocation = "com/wp/study/mq/jms/activemq/spring/receiver1-beans.xml";
+			String configLocation = "com/wp/study/mq/jms/activemq/spring/receiver1.xml";
 			// 加载应用上下文
 			ApplicationContext ctx = new ClassPathXmlApplicationContext(configLocation);
 			
