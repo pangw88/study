@@ -159,14 +159,14 @@
 	</properties>
 
 	<modules>
-		<module>study-algorithm</module>
-		<module>study-base</module>
-		<module>study-hadoop</module>
-		<module>study-jdbc</module>
-		<module>study-mq</module>
-		<module>study-netty</module>
-		<module>study-praxis</module>
-		<module>study-spring</module>
-		<module>study-swing</module>
+		<module>../study-algorithm</module>
+		<module>../study-base</module>
+		<module>../study-hadoop</module>
+		<module>../study-jdbc</module>
+		<module>../study-mq</module>
+		<module>../study-netty</module>
+		<module>../study-praxis</module>
+		<module>../study-spring</module>
+		<module>../study-swing</module>
 	</modules>
 </project>

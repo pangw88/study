@@ -10,8 +10,8 @@ public class SampleSender {
 
 	    AbstractApplicationContext ctx = new ClassPathXmlApplicationContext("com/wp/study/mq/amqp/rabbitmq/spring/beans.xml");
 	    RabbitTemplate template = ctx.getBean(RabbitTemplate.class);
-	    template.setRoutingKey("foo.bar");
-	    template.convertAndSend("Hello, world!");
+	    //template.setRoutingKey("foo.bar");
+	    template.convertAndSend("{\"declareBody\":{},\"declareType\":\"nanShaDeclare\"}");
 	    Thread.sleep(1000);
 	    ctx.destroy();
 	}

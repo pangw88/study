@@ -4,7 +4,8 @@
 	<parent>
 		<groupId>com.wp.study</groupId>
 		<artifactId>study-parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>${project.version}</version>
+		<relativePath>../study-parent/pom.xml</relativePath>
 	</parent>
 	<artifactId>study-spring</artifactId>
 
@@ -13,7 +14,7 @@
 		<dependency>
 			<groupId>com.wp.study</groupId>
 			<artifactId>study-jdbc</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<!-- spring beans(依赖注入等)基础组件 -->

@@ -4,7 +4,8 @@
 	<parent>
 		<groupId>com.wp.study</groupId>
 		<artifactId>study-parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>${project.version}</version>
+		<relativePath>../study-parent/pom.xml</relativePath>
 	</parent>
 	<artifactId>study-praxis</artifactId>
 
@@ -13,19 +14,13 @@
 		<dependency>
 			<groupId>com.wp.study</groupId>
 			<artifactId>study-algorithm</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<!-- 自定义base组件 -->
 		<dependency>
 			<groupId>com.wp.study</groupId>
 			<artifactId>study-base</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
-		<!-- 自定义algorithm组件 -->
-		<dependency>
-			<groupId>com.wp.study</groupId>
-			<artifactId>study-algorithm</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<!-- apache microsoft office格式文档读写 HSSF － 提供读写Microsoft Excel XLS格式档案的功能。 

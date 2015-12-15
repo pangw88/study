@@ -15,12 +15,11 @@
 	<!-- addresses配置集群节点 -->
 	<rabbit:connection-factory id="connectionFactory" addresses="localhost:5672,127.0.0.1:5672" />
 	
-	<rabbit:template id="amqpTemplate" connection-factory="connectionFactory"
-		exchange="myExchange" />
+	<rabbit:template id="amqpTemplate" connection-factory="connectionFactory" exchange="exchange.customs.declare" />
 	
 	<rabbit:admin connection-factory="connectionFactory" />
 	
-	<rabbit:queue name="myQueue" />
+<!-- 	<rabbit:queue name="myQueue" />
 	
 	<rabbit:topic-exchange name="myExchange">
 		<rabbit:bindings>
@@ -30,6 +29,18 @@
 	
 	<rabbit:listener-container connection-factory="connectionFactory">
 		<rabbit:listener ref="foo" method="listen" queue-names="myQueue" />
-	</rabbit:listener-container>
+	</rabbit:listener-container> -->
+	
+		<rabbit:queue name="queue.customs.declare" />
+
+	<rabbit:fanout-exchange id="exchange.customs.declare" name="exchange.customs.declare" durable="true" auto-delete="false">
+		<rabbit:bindings>
+			<rabbit:binding queue="queue.customs.declare" />
+		</rabbit:bindings>
+	</rabbit:fanout-exchange>
+
+<!-- 	<rabbit:listener-container connection-factory="connectionFactory">
+		<rabbit:listener ref="foo" method="listen" queues="queue.customs.declare" />
+	</rabbit:listener-container> -->
 	
 </beans>

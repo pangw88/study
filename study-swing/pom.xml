@@ -4,27 +4,29 @@
 	<parent>
 		<groupId>com.wp.study</groupId>
 		<artifactId>study-parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>${project.version}</version>
+		<relativePath>../study-parent/pom.xml</relativePath>
 	</parent>
 	<artifactId>study-swing</artifactId>
+	
 	<dependencies>
 		<!-- 自定义algorithm组件 -->
 		<dependency>
 			<groupId>com.wp.study</groupId>
 			<artifactId>study-algorithm</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<!-- 自定义base组件 -->
 		<dependency>
 			<groupId>com.wp.study</groupId>
 			<artifactId>study-base</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<!-- 自定义jdbc组件 -->
 		<dependency>
 			<groupId>com.wp.study</groupId>
 			<artifactId>study-jdbc</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 </project>
