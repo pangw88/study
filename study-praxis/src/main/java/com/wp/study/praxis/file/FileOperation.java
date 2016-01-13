@@ -202,7 +202,7 @@ public class FileOperation {
 	 * 		是否剪切MD5值重复的文件
 	 * @return
 	 */
-	public static void getFileMD5(File[] files, String regex, boolean isCut) {
+	public static void getFileMD5(String regex, boolean isCut, File... files) {
 		if(files == null || files.length == 0) {
 			LOG.error("files is null");
 			return;

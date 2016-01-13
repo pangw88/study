@@ -46,15 +46,17 @@ public class FileOperationTest {
 			Long time3 = new Date().getTime();
 			System.out.println(time2 - time1);
 			System.out.println(time3 - time2);*/
-			/*File file = new File("K:/Album/U15/Rei Kuromiya");
-			File info = new File("C:/Users/wp/Desktop/Rei Kuromiya.txt");
+			/*File file = new File("F:/ftp/karen nishino");
+			File info = new File("F:/1.txt");
 			FileOperation.checkFileExist(file, info);*/
-			String path = "F:\\u15";
+			String path = "L:/Album/Beauty/Hiyori Izumi";
 			FileOperation.rename(new File(path));
 			/*File f1 = new File("F:\\Downloads\\Mayumi Yamanaka");
 			File f2 = new File("F:\\Downloads\\pics");
 			File[] files = {f1, f2};
-			FileOperation.getFileMD5(files, "^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov)$", true);*/
+			FileOperation.getFileMD5("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov)$", true, files);*/
+			/*File f = new File("K:/Album/Beauty/Hiyori Izumi");
+			FileOperation.getFileMD5("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov)$", true, f);*/
 			// 任务结束
 			LOG.info("Task end!");
 		} catch(Exception e) {
