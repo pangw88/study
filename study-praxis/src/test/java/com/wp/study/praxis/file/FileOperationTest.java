@@ -49,13 +49,13 @@ public class FileOperationTest {
 			/*File file = new File("F:/ftp/karen nishino");
 			File info = new File("F:/1.txt");
 			FileOperation.checkFileExist(file, info);*/
-			String path = "L:/Album/Beauty/Hiyori Izumi";
+			String path = "F:/u15";
 			FileOperation.rename(new File(path));
 			/*File f1 = new File("F:\\Downloads\\Mayumi Yamanaka");
 			File f2 = new File("F:\\Downloads\\pics");
 			File[] files = {f1, f2};
 			FileOperation.getFileMD5("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov)$", true, files);*/
-			/*File f = new File("K:/Album/Beauty/Hiyori Izumi");
+			/*File f = new File("K:/Album/Beauty/Mayumi Yamanaka");
 			FileOperation.getFileMD5("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov)$", true, f);*/
 			// 任务结束
 			LOG.info("Task end!");

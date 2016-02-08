@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.wp.study</groupId>
 		<artifactId>study-parent</artifactId>
-		<version>${project.version}</version>
+		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>../study-parent/pom.xml</relativePath>
 	</parent>
 	<artifactId>study-jdbc</artifactId>
@@ -21,7 +21,7 @@
 		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derby</artifactId>
-			<version>10.10.2.0</version>
+			<version>10.12.1.1</version>
 		</dependency>
 
 		<!-- mysql数据库驱动组件 -->

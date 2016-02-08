@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.wp.study</groupId>
 		<artifactId>study-parent</artifactId>
-		<version>${project.version}</version>
+		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>../study-parent/pom.xml</relativePath>
 	</parent>
 	<artifactId>study-swing</artifactId>
