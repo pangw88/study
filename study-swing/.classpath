@@ -6,11 +6,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry excluding="**" kind="src" output="target/test-classes" path="src/test/resources">
-		<attributes>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="src" output="target/classes" path="src/main/java">
 		<attributes>
 			<attribute name="optional" value="true"/>
@@ -73,7 +68,6 @@
 	<classpathentry kind="var" path="M2_REPO/org/apache/httpcomponents/httpmime/4.3.2/httpmime-4.3.2-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/httpcomponents/httpmime/4.3.2/httpmime-4.3.2-javadoc.jar"/>
 	<classpathentry kind="src" path="/study-jdbc"/>
-	<classpathentry kind="var" path="M2_REPO/org/apache/derby/derby/10.10.2.0/derby-10.10.2.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/mysql/mysql-connector-java/5.1.36/mysql-connector-java-5.1.36.jar" sourcepath="M2_REPO/mysql/mysql-connector-java/5.1.36/mysql-connector-java-5.1.36-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/mysql/mysql-connector-java/5.1.36/mysql-connector-java-5.1.36-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/commons-dbcp/commons-dbcp/1.4/commons-dbcp-1.4.jar" sourcepath="M2_REPO/commons-dbcp/commons-dbcp/1.4/commons-dbcp-1.4-sources.jar"/>

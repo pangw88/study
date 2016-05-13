@@ -75,8 +75,8 @@ public class JFrameTest extends JFrame {
 		Dimension screenSize = kit.getScreenSize();
 		int screenHeight = screenSize.height;
 		int screenWidth = screenSize.width;
-		int height = 600;
-		int width = 500;
+		int height = 700;
+		int width = 600;
 		setBounds((screenWidth-width)/2, (screenHeight-height)/5, width, height);
 		setResizable(false);
 		
