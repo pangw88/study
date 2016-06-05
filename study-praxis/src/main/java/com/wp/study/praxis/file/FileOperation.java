@@ -36,7 +36,7 @@ public class FileOperation {
 	 * @param file
 	 * @return
 	 */
-	public static long getFileSize(File file) {
+	public static long getSize(File file) {
 		long bytes = 0L;
 		if(file == null || !file.exists()) {
 			LOG.error("<{}> not exist", file);
@@ -202,7 +202,7 @@ public class FileOperation {
 	 * 		是否剪切MD5值重复的文件
 	 * @return
 	 */
-	public static void getFileMD5(String regex, boolean isCut, File... files) {
+	public static void getMD5(String regex, boolean isCut, File... files) {
 		if(files == null || files.length == 0) {
 			LOG.error("files is null");
 			return;
@@ -254,7 +254,7 @@ public class FileOperation {
 											File root = new File(index == -1 ? filePath : 
 													filePath.substring(0, index));
 											File temp = new File(root, "temp");
-											cutFile(f, temp);
+											cut(f, temp);
 										}
 									} else {
 										md5Map.put(md5, f.getPath());
@@ -291,7 +291,7 @@ public class FileOperation {
 	 * @param info
 	 * 		记录着需要检查文件列表的文件
 	 */
-	public static void checkFileExist(File dir, File info) {
+	public static void checkExist(File dir, File info) {
 		if(dir == null || !dir.exists() || !dir.isDirectory()) {
 			LOG.error("can not find directory <{}>", dir);
 			return;
@@ -448,7 +448,7 @@ public class FileOperation {
 	 * @param path
 	 * 		指定文件夹
 	 */
-	public static boolean copyFile0(File origin, File path) {
+	public static boolean copy0(File origin, File path) {
 		boolean result = false;
 		if(origin == null || !origin.exists() || !origin.isFile()) {
 			LOG.error("can not find copy file <{}>", origin);
@@ -508,7 +508,7 @@ public class FileOperation {
 	 * @param path
 	 * 		指定文件夹
 	 */
-	public static boolean copyFile(File origin, File path) {
+	public static boolean copy(File origin, File path) {
 		boolean result = false;
 		if(origin == null || !origin.exists() || !origin.isFile()) {
 			LOG.error("can not find copy file <{}>", origin);
@@ -574,10 +574,10 @@ public class FileOperation {
 	 * @param path
 	 * 		指定文件夹
 	 */
-	public static boolean cutFile(File origin, File path) {
+	public static boolean cut(File origin, File path) {
 		boolean result = false;
 		// 文件复制
-		result = copyFile(origin, path);
+		result = copy(origin, path);
 		if(result) {
 			// 删除origin文件
 			if(origin.delete()) {
@@ -598,7 +598,7 @@ public class FileOperation {
 	 * 		是否忽略文件夹，true：忽略，false：保留
 	 * @return
 	 */
-	public static List<File> searchFile(String regex, boolean ignoreDir) {
+	public static List<File> search(String regex, boolean ignoreDir) {
 		List<File> matches = new ArrayList<File>();
         // 获取系统盘符
 		File[] roots = File.listRoots();
@@ -650,7 +650,7 @@ public class FileOperation {
 	 * 		压缩密码，为null时无密码压缩
 	 * @return
 	 */
-	public static boolean compressFile(File origin, String password) {
+	public static boolean compress(File origin, String password) {
 		boolean result = false;
 		if(origin.getName().matches("^[\\s\\S]*\\.(rar|zip|7z)$")) {
 			LOG.error("<{}> has been compress file", origin);
@@ -663,7 +663,7 @@ public class FileOperation {
 			winrar = CacheUtil.getCache("winrar", File.class);
 		} else {
 			String winrarName = "WinRAR\\.exe";
-			List<File> programs = searchFile(winrarName, true);
+			List<File> programs = search(winrarName, true);
 			if(programs == null || programs.size() != 1) {
 				LOG.error("get compress program <{}> failed", winrarName);
 				return result;
@@ -736,7 +736,7 @@ public class FileOperation {
 	 * 		解压密码，为null时无密码解压
 	 * @return
 	 */
-	public static boolean uncompressFile(File origin, String password) {
+	public static boolean uncompress(File origin, String password) {
 		boolean result = false;
 		if(!origin.getName().matches("^[\\s\\S]*\\.(rar|zip|7z)$")) {
 			LOG.error("<{}> is not compress file", origin);
@@ -749,7 +749,7 @@ public class FileOperation {
 			winrar = CacheUtil.getCache("winrar", File.class);
 		} else {
 			String winrarName = "WinRAR\\.exe";
-			List<File> programs = searchFile(winrarName, true);
+			List<File> programs = search(winrarName, true);
 			if(programs == null || programs.size() != 1) {
 				LOG.error("get compress program <{}> failed", winrarName);
 				return result;
@@ -786,7 +786,7 @@ public class FileOperation {
 		return result;
 	}
 	
-	public static void compressFile(File dir, String password, int layer) {
+	public static void compress(File dir, String password, int layer) {
 		if(dir == null || !dir.exists() || !dir.isDirectory()) {
 			LOG.error("can not find directory <{}>", dir);
 		}
@@ -817,9 +817,85 @@ public class FileOperation {
 		
 		if(childs != null && childs.size() > 0) {
 			for(File comp : childs) {
-				compressFile(comp, password);
+				compress(comp, password);
 			}
 		}
 	}
+	
+	/**
+	 * 将一组文件合并为指定文件
+	 * 使用文件通道（FileChannel）实现
+	 * 
+	 * @param mergedFile
+	 * 		合并后文件
+	 * @param files
+	 * 		源文件列表
+	 */
+	public static boolean merge(File mergedFile, File... files) {
+		boolean result = false;
+		if (mergedFile == null || mergedFile.isDirectory()) {
+			LOG.warn("merged file is null or is directory");
+			return result;
+		}
+		if(files == null || files.length == 0) {
+			LOG.warn("orgin files is empty");
+			return result;
+		}
+		FileInputStream fis = null;
+		FileOutputStream fos = null;
+		FileChannel in = null;
+        FileChannel out = null;
+		try {
+			if (!mergedFile.exists()) {
+				mergedFile.getParentFile().mkdirs();
+				mergedFile.createNewFile();
+			}
+			// 获取输出文件通道
+			fos = new FileOutputStream(mergedFile);
+			out = fos.getChannel();
+			for (File file : files) {
+				if(file != null && file.exists() && file.isFile()) {
+					try {
+						// 获取输入文件通道
+						fis = new FileInputStream(file);
+						in = fis.getChannel();
+						// 连接两个通道，从in通道读取，然后写入out通道
+						in.transferTo(0, in.size(), out);
+						// 关闭输入流
+						fis.close();
+						in.close();
+					} catch(Exception e) {
+						if(fis != null) {
+							fis.close();
+						}
+						if(in != null) {
+							in.close();
+						}
+					}
+					
+				}
+			}
+			// 关闭输出流
+			fos.flush();
+			fos.close();
+			out.close();
+			result = true;
+		} catch(Exception e) {
+			LOG.error("merge file fail, e:", e);
+		} finally {
+			try {
+				if(fos != null) {
+					fos.close();
+				}
+				if(out != null) {
+					out.close();
+				}
+			} catch(IOException ioe) {
+				LOG.error(ioe.getMessage());
+			}
+		}
+		return result;
+	}
+	
 }
 
