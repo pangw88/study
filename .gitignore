@@ -2,3 +2,5 @@
 .recommenders/
 RemoteSystemsTempFiles/
 Servers/
+*.log
+*/*.log
