@@ -3,4 +3,6 @@
 RemoteSystemsTempFiles/
 Servers/
 *.log
-*/*.log
+/*/*.log
+.DS_Store
+/*/.classpath
