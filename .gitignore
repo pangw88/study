@@ -2,3 +2,7 @@
 .recommenders/
 RemoteSystemsTempFiles/
 Servers/
+*.log
+/*/*.log
+.DS_Store
+/*/.classpath

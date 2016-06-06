@@ -87,7 +87,7 @@ public class StringSimilarty {
 				}
 			}
 			for (int i = 0; i < str2.length(); i++) {
-				int charIndex = str1.charAt(i);
+				int charIndex = str2.charAt(i);
 				int[] fq = vectorDictionary.get(charIndex);
 				if (fq != null && fq.length == 2) {
 					fq[1]++;

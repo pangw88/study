@@ -1,6 +1,7 @@
 package com.wp.study.praxis.file;
 
 import java.io.File;
+import java.util.Date;
 import java.util.Stack;
 
 import org.slf4j.Logger;
@@ -38,25 +39,35 @@ public class FileOperationTest {
 		try {
 			// 任务开始
 			LOG.info("Task start!");
-			//rename(new File("D:/Course"));
-			/*Long time1 = new Date().getTime();
-			FileOperation.copyFile(new File("E:/r2_kaneko_m03.mp4"), new File("D:/a1"));
+			/*rename(new File("D:/Course"));
+			Long time1 = new Date().getTime();
+			FileOperation.copy(new File("E:/r2_kaneko_m03.mp4"), new File("D:/a1"));
 			Long time2 = new Date().getTime();
-			FileOperation.copyFile0(new File("E:/r2_kaneko_m03.mp4"), new File("D:/a2"));
+			FileOperation.copy0(new File("E:/r2_kaneko_m03.mp4"), new File("D:/a2"));
 			Long time3 = new Date().getTime();
 			System.out.println(time2 - time1);
 			System.out.println(time3 - time2);*/
 			/*File file = new File("F:/ftp/karen nishino");
 			File info = new File("F:/1.txt");
-			FileOperation.checkFileExist(file, info);*/
-			String path = "F:/u15";
-			FileOperation.rename(new File(path));
+			FileOperation.checkExist(file, info);*/
+			/*String path = "F:/u15/st1_nyancolle2_kouzuki_a01";
+			FileOperation.rename(new File(path));*/
 			/*File f1 = new File("F:\\Downloads\\Mayumi Yamanaka");
 			File f2 = new File("F:\\Downloads\\pics");
 			File[] files = {f1, f2};
-			FileOperation.getFileMD5("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov)$", true, files);*/
+			FileOperation.getMD5("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov)$", true, files);*/
 			/*File f = new File("K:/Album/Beauty/Mayumi Yamanaka");
-			FileOperation.getFileMD5("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov)$", true, f);*/
+			FileOperation.getMD5("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov)$", true, f);*/
+			File f1 = new File("E:/IMBD-048.mkv.001");
+			File f2 = new File("E:/IMBD-048.mkv.002");
+			File f3 = new File("E:/IMBD-048.mkv.003");
+			File f4 = new File("E:/IMBD-048.mkv.004");
+			File f5 = new File("E:/IMBD-048.mkv.005");
+			File f6 = new File("E:/IMBD-048.mkv.006");
+			File f7 = new File("E:/IMBD-048.mkv.007");
+			File f8 = new File("E:/IMBD-048.mkv.008");
+			File f9 = new File("E:/IMBD-048.mkv.009");
+			FileOperation.merge(new File("E:/1/test.mkv"), f1, f2, f3, f4, f5, f6, f7, f8, f9);
 			// 任务结束
 			LOG.info("Task end!");
 		} catch(Exception e) {
