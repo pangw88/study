@@ -1,3 +1,4 @@
 /target/
 derby*
 derby.log
+/bin/
