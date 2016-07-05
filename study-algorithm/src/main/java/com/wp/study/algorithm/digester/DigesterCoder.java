@@ -121,7 +121,7 @@ public class DigesterCoder {
 		}
 		return str;
 	}
-
+	
 	/**
 	 * 将十六进制字符串转换为byte数组
 	 * 
