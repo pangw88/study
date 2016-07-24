@@ -54,7 +54,7 @@ public class ExcelOperation {
 					int cellLast = row.getLastCellNum();
 					Cell cell = null;
 					// 遍历行中的列
-					for(int k = 0; k <= cellLast; k ++) {
+					for(int k = 0; k < cellLast; k ++) {
 						cell = row.getCell(k);
 						// 将列值转换为String类型
 						String value = convertCellToString(cell);
