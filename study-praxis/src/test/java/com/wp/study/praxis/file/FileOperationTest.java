@@ -1,7 +1,6 @@
 package com.wp.study.praxis.file;
 
 import java.io.File;
-import java.util.Date;
 import java.util.Stack;
 
 import org.slf4j.Logger;
@@ -50,15 +49,15 @@ public class FileOperationTest {
 			/*File file = new File("F:/ftp/karen nishino");
 			File info = new File("F:/1.txt");
 			FileOperation.checkExist(file, info);*/
-			/*String path = "F:/u15/st1_nyancolle2_kouzuki_a01";
-			FileOperation.rename(new File(path));*/
+			String path = "F:/u15";
+			FileOperation.rename(new File(path));
 			/*File f1 = new File("F:\\Downloads\\Mayumi Yamanaka");
 			File f2 = new File("F:\\Downloads\\pics");
 			File[] files = {f1, f2};
 			FileOperation.getMD5("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov)$", true, files);*/
 			/*File f = new File("K:/Album/Beauty/Mayumi Yamanaka");
 			FileOperation.getMD5("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov)$", true, f);*/
-			File f1 = new File("E:/IMBD-048.mkv.001");
+			/*File f1 = new File("E:/IMBD-048.mkv.001");
 			File f2 = new File("E:/IMBD-048.mkv.002");
 			File f3 = new File("E:/IMBD-048.mkv.003");
 			File f4 = new File("E:/IMBD-048.mkv.004");
@@ -67,7 +66,7 @@ public class FileOperationTest {
 			File f7 = new File("E:/IMBD-048.mkv.007");
 			File f8 = new File("E:/IMBD-048.mkv.008");
 			File f9 = new File("E:/IMBD-048.mkv.009");
-			FileOperation.merge(new File("E:/1/test.mkv"), f1, f2, f3, f4, f5, f6, f7, f8, f9);
+			FileOperation.merge(new File("E:/1/test.mkv"), f1, f2, f3, f4, f5, f6, f7, f8, f9);*/
 			// 任务结束
 			LOG.info("Task end!");
 		} catch(Exception e) {
