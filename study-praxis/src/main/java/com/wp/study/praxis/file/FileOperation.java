@@ -165,7 +165,11 @@ public class FileOperation {
 						}
 						String rename = sb.append(num).toString();
 						if (suffix != null) {
-							rename += suffix.toLowerCase();
+							suffix = suffix.toLowerCase();
+							if(suffix.equals(".jpeg")) {
+								suffix = ".jpg";
+							}
+							rename += suffix;
 						}
 						if (!rename.equals(name)) {
 							f.renameTo(new File(dir, rename));
