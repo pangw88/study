@@ -1,6 +1,10 @@
 package com.wp.study.base.util;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +34,12 @@ public class HttpUtil {
 	private static final int DEFAULT_CONNECT_TIMEOUT = 3000;
 	private static final int DEFAULT_SOCKET_TIMEOUT = 20000;
 	
+	public static void main(String[] args) {
+		String url = "http://chronos.to/t/032/03878/xg6d7qf76g1z";
+		RequestConfig reqConfig = RequestConfig.custom().setConnectTimeout(
+				30000).setSocketTimeout(200000).build();
+		doDownload(url, reqConfig, new File("F:/photo/abc.jpg"));
+	}
 	
 	public static void doGet(String url) {
 		doGet(url, Void.class);
@@ -57,6 +67,12 @@ public class HttpUtil {
 		return doGet(url, requestConfig, charset, requiredType);
 	}
 	
+	public static int doDownload(String url, int connectTimeout, int socketTimeout, File output) {
+		RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(
+				connectTimeout).setSocketTimeout(socketTimeout).build();
+		return doDownload(url, requestConfig, output);
+	}
+	
 	public static <T> T doGet(String url, RequestConfig requestConfig, String charset, Class<T> requiredType) {
 		T t = null;
 		if(StringUtils.isNotEmpty(url)) {
@@ -68,13 +84,12 @@ public class HttpUtil {
 				httpClient = HttpClients.createDefault();
 			    httpGet = new HttpGet(url);
 				// set request config
-				if(requestConfig != null) {
-					httpGet.setConfig(requestConfig);
-				} else {
+				if(requestConfig == null) {
 					// default connect and socket timeout is -1, so need set default value!
 					requestConfig = RequestConfig.custom().setConnectTimeout(
 							DEFAULT_CONNECT_TIMEOUT).setSocketTimeout(DEFAULT_SOCKET_TIMEOUT).build();
 				}
+				httpGet.setConfig(requestConfig);
 				// set charset
 				if(charset == null) {
 					charset = DEFAULT_CHARSET;
@@ -100,7 +115,6 @@ public class HttpUtil {
 		return t;
 	}
 	
-	
 	public static <T> T doPost(String url, RequestConfig requestConfig, String charset, Map<String, Object> params, Class<T> requiredType) {
 		T t = null;
 		if(StringUtils.isNotEmpty(url)) {
@@ -112,13 +126,12 @@ public class HttpUtil {
 				httpClient = HttpClients.createDefault();
 				httpPost = new HttpPost(url);
 				// set request config
-				if(requestConfig != null) {
-					httpPost.setConfig(requestConfig);
-				} else {
+				if(requestConfig == null) {
 					// default connect and socket timeout is -1, so need set default value!
 					requestConfig = RequestConfig.custom().setConnectTimeout(
 							DEFAULT_CONNECT_TIMEOUT).setSocketTimeout(DEFAULT_SOCKET_TIMEOUT).build();
 				}
+				httpPost.setConfig(requestConfig);
 				// set charset
 				if(charset == null) {
 					charset = DEFAULT_CHARSET;
@@ -155,6 +168,65 @@ public class HttpUtil {
 		return t;
 	}
 	
+	public static int doDownload(String url, RequestConfig requestConfig, File output) {
+		int status = HttpStatus.SC_OK;
+		if(StringUtils.isNotEmpty(url)) {
+			// DefaultHttpClient is deprecated, use CloseableHttpClient
+			CloseableHttpClient httpClient = null;
+			HttpGet httpGet = null;
+			CloseableHttpResponse response = null;
+			try {
+				httpClient = HttpClients.createDefault();
+			    httpGet = new HttpGet(url);
+				// set request config
+			    if(requestConfig == null) {
+					// default connect and socket timeout is -1, so need set default value!
+					requestConfig = RequestConfig.custom().setConnectTimeout(
+							DEFAULT_CONNECT_TIMEOUT).setSocketTimeout(DEFAULT_SOCKET_TIMEOUT).build();
+				}
+				httpGet.setConfig(requestConfig);
+			    response = httpClient.execute(httpGet);
+			    status = response.getStatusLine().getStatusCode();
+			    if (status == HttpStatus.SC_OK) {
+			    	InputStream is = response.getEntity().getContent();
+				    OutputStream os = new FileOutputStream(output);
+				    try {
+				    	int bytesRead = 0;
+				    	byte[] buffer = new byte[8192];
+				    	while ((bytesRead = is.read(buffer, 0, 8192)) != -1) {
+				    		os.write(buffer, 0, bytesRead);
+				    	}
+				    	os.flush();
+				    } finally {
+				    	if(null != os) {
+				    		os.close();
+				    	}
+				    	if(null != is) {
+				    		is.close();
+				    	}
+				    }
+			    }
+			    // 建立的http连接，仍被response保持着，为了释放资源，手动取消连接
+		        response.close();
+			} catch (Exception e) {
+				status = -1;
+				LOG.error(e.getMessage());
+			} finally {
+				try {
+					if (response != null) {
+						response.close();
+					}
+				} catch(IOException ioe) {
+					LOG.error(ioe.getMessage());
+				}
+		    }
+		} else {
+			LOG.warn("url is empty!");
+		}
+		return status;
+	}
+	
+	
 	private static <T> T getResponse(HttpResponse response, String charset, Class<T> requiredType) throws Exception {
 		T t = null;
 		int statusCode = response.getStatusLine().getStatusCode();
@@ -163,7 +235,9 @@ public class HttpUtil {
 	    	String res = EntityUtils.toString(httpEntity, charset);
 	    	if(StringUtils.isNotEmpty(res)) {
 	    		// if need not void result
-	    		if(!Void.class.isAssignableFrom(requiredType)) {
+	    		if(String.class.isAssignableFrom(requiredType)) {
+	    			t = (T) res;
+	    		} else if(!Void.class.isAssignableFrom(requiredType)) {
 	    			t = JsonUtil.convertJsonToBean(res, requiredType);
 	    		}
 	    	} else {

@@ -52,7 +52,6 @@ public class FileTest {
 			picDic.mkdirs();
 		}
 		StringBuilder sb = new StringBuilder();
-		List<File> delList = new ArrayList<File>();
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new FileReader(log));
@@ -70,9 +69,6 @@ public class FileTest {
 							exists = true;
 							pic.renameTo(new File(picDic, index + picName.substring(picName.lastIndexOf("."))));
 							iterator.remove();
-							if (pic.exists()) {
-								delList.add(pic);
-							}
 						}
 					}
 					if(!exists) {
@@ -112,9 +108,7 @@ public class FileTest {
 		}
 		if(sb.length() == 0) {
 			FileOperation.rename(picDic);
-			for(File del : delList) {
-				del.delete();
-			}
+			log.delete();
 		}
 	}
 
