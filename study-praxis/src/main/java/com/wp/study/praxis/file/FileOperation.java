@@ -101,8 +101,10 @@ public class FileOperation {
 					for (File f : list) {
 						if (f.isFile()) {
 							String path = f.getPath();
-							// \s匹配任意的空白符，\S则是匹配任意非空白符的字符
-							if (path.matches("^[\\s\\S]*\\.db$")) {
+							if (path.matches("^[\\s\\S]*\\.ini$")) {
+								LOG.info("exist .ini file <{}>", path);
+								f.delete();
+							} else if (path.matches("^[\\s\\S]*\\.db$")) { // \s匹配任意的空白符，\S则是匹配任意非空白符的字符
 								// 过滤数据库缓存文件
 								LOG.info("exist .db file <{}>", path);
 							} else if(path.toLowerCase().

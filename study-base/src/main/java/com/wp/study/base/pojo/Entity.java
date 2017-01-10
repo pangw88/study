@@ -11,9 +11,11 @@ public class Entity implements Serializable {
 	// serialVersionUID
 	private static final long serialVersionUID = -3271936173707284595L;
 	
-	public static final int OPERATE_INDEX = 16;
+	public static final int OPERATE_INDEX = 17;
 	// id
 	private Integer id;
+	// site name
+	private String siteName;
 	// site
 	private String site;
 	// name
@@ -53,6 +55,14 @@ public class Entity implements Serializable {
 
 	public void setId(Integer id) {
 		this.id = id;
+	}
+
+	public String getSiteName() {
+		return siteName;
+	}
+
+	public void setSiteName(String siteName) {
+		this.siteName = siteName;
 	}
 
 	public String getSite() {
@@ -192,6 +202,7 @@ public class Entity implements Serializable {
 			private static final long serialVersionUID = 7062626003441927001L;
 			{
 				add("id");
+				add("siteName");
 				add("site");
 				add("name");
 				add("key1");
@@ -221,6 +232,7 @@ public class Entity implements Serializable {
 			private static final long serialVersionUID = 7062626003441927001L;
 			{
 				add("id");
+				add("siteName");
 				add("site");
 				add("name");
 				add("key1");
@@ -262,6 +274,7 @@ public class Entity implements Serializable {
 		return new ArrayList<String>() {
 			private static final long serialVersionUID = 7062626003441927001L;
 			{
+				add("siteName");
 				add("code");
 				add("appCode");
 				add("payCode");
