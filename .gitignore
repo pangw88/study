@@ -6,3 +6,5 @@ Servers/
 /*/*.log
 .DS_Store
 /*/.classpath
+*/.settings
+*/.project
