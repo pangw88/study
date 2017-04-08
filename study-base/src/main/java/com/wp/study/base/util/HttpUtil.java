@@ -176,7 +176,11 @@ public class HttpUtil {
 			HttpGet httpGet = null;
 			CloseableHttpResponse response = null;
 			try {
-				httpClient = HttpClients.createDefault();
+				if(url.startsWith("https")) {
+					httpClient = SeeSSLCloseableHttpClient.getCloseableHttpClient();
+				} else {
+					httpClient = HttpClients.createDefault();
+				}
 			    httpGet = new HttpGet(url);
 				// set request config
 			    if(requestConfig == null) {

@@ -20,6 +20,7 @@ import java.util.TreeMap;
 
 import javax.swing.filechooser.FileSystemView;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -641,6 +642,54 @@ public class FileOperation {
 		return matches;
 	}
 	
+	public static void compress(File dir, String password, int layer) {
+		
+	}
+	
+	/**
+	 * 执行子目录内容的压缩
+	 * 
+	 * @param winrar
+	 * @param dir
+	 * @param password
+	 * @param layer
+	 */
+	public static void compress(File winrar, File dir, String password, int layer) {
+		if(null == dir || !dir.exists() || !dir.isDirectory()) {
+			LOG.error("can not find directory <{}>", dir);
+		}
+
+		List<File> parents = new ArrayList<File>();
+		List<File> childs = null;
+		parents.add(dir);
+		for(int i = 0; i < layer; i ++) {
+			childs = new ArrayList<File>();
+			if(parents != null && parents.size() > 0) {
+				for(File parent : parents) {
+					if(parent.isDirectory()) {
+						FileSystemView fsv = FileSystemView.getFileSystemView();
+						// 系统顶级目录C:\，D:\...是隐藏属性
+						if(fsv.isFileSystemRoot(parent) || !parent.isHidden()) {
+							File[] files = parent.listFiles();
+							if(files != null && files.length != 0) {
+								for(File file : files) {
+									childs.add(file);
+								}
+							}
+						}
+					}
+				}
+			}
+			parents = childs;
+		}
+		
+		if(childs != null && childs.size() > 0) {
+			for(File comp : childs) {
+				compress(winrar, comp, password);
+			}
+		}
+	}
+	
 	/**
 	 * 压缩文件（夹）到同级目录，文件以rar标准格式压缩，文件夹以zip标准格式压缩
 	 * rar <命令> -<参数 1> -<参数 N> <压缩文件> <文件...> <@列表文件...> <解压路径\>
@@ -653,36 +702,49 @@ public class FileOperation {
 	 * @param origin
 	 * 		需压缩文件
 	 * @param password
-	 * 		压缩密码，为null时无密码压缩
+	 * 		压缩密码，为空时无密码压缩
 	 * @return
 	 */
-	public static boolean compress(File origin, String password) {
+	public static boolean compress(File winrar, File origin, String password) {
 		boolean result = false;
 		if(origin.getName().matches("^[\\s\\S]*\\.(rar|zip|7z)$")) {
 			LOG.error("<{}> has been compress file", origin);
 			return result;
 		}
 		
-		// 获取压缩文件程序
-		File winrar = null;
-		if(CacheUtil.exists("winrar")) {
-			winrar = CacheUtil.getCache("winrar", File.class);
-		} else {
-			String winrarName = "WinRAR\\.exe";
-			List<File> programs = search(winrarName, true);
-			if(programs == null || programs.size() != 1) {
-				LOG.error("get compress program <{}> failed", winrarName);
-				return result;
+		// 获取WinRAR压缩程序
+		if(null == winrar || !winrar.exists()) {
+			if(CacheUtil.exists("winrar")) {
+				winrar = CacheUtil.getCache("winrar", File.class);
+			} else {
+				String winrarName = "WinRAR\\.exe";
+				List<File> programs = search(winrarName, true);
+				if(programs == null || programs.size() != 1) {
+					LOG.error("get compress program <{}> failed", winrarName);
+					return result;
+				}
+				winrar = programs.get(0);
+				CacheUtil.setCache("winrar", programs.get(0));
 			}
-			winrar = programs.get(0);
-			CacheUtil.setCache("winrar", programs.get(0));
+		} else {
+			// 缓存WinRAR
+			CacheUtil.setCache("winrar", winrar);
 		}
 		
 		// -m3采用标准方式压缩文件
 		StringBuffer cmd = new StringBuffer(winrar.getPath());
 		cmd.append(" a -m3");
-		if(password != null) {
-			// hp开关加密文件数据、文件名、大小、属性、注释等所有可感知压缩文件区域
+		
+		/* 压缩时不保留父级目录结构
+		 * ep：完全排除目录路径
+		 * ep1：排除父级及以上目录路径
+		 * ep2：保留完整目录路径
+		 * ep3：保留包含盘符完整目录路径
+		 */
+		cmd.append(" -ep1 ");
+		
+		// hp开关加密文件数据、文件名、大小、属性、注释等所有可感知压缩文件区域
+		if(StringUtils.isNotBlank(password)) {
 			cmd.append(" -hp").append(password);
 		}
 		
@@ -739,7 +801,7 @@ public class FileOperation {
 	 * @param origin
 	 * 		需解压文件
 	 * @param password
-	 * 		解压密码，为null时无密码解压
+	 * 		解压密码，为空时无密码解压
 	 * @return
 	 */
 	public static boolean uncompress(File origin, String password) {
@@ -790,42 +852,6 @@ public class FileOperation {
 			LOG.error("<{}> uncompress failed, error <{}>", origin, e.getMessage());
 		}
 		return result;
-	}
-	
-	public static void compress(File dir, String password, int layer) {
-		if(dir == null || !dir.exists() || !dir.isDirectory()) {
-			LOG.error("can not find directory <{}>", dir);
-		}
-
-		List<File> parents = new ArrayList<File>();
-		List<File> childs = null;
-		parents.add(dir);
-		for(int i = 0; i < layer; i ++) {
-			childs = new ArrayList<File>();
-			if(parents != null && parents.size() > 0) {
-				for(File parent : parents) {
-					if(parent.isDirectory()) {
-						FileSystemView fsv = FileSystemView.getFileSystemView();
-						// 系统顶级目录C:\、D:\...是隐藏属性
-						if(fsv.isFileSystemRoot(parent) || !parent.isHidden()) {
-							File[] files = parent.listFiles();
-							if(files != null && files.length != 0) {
-								for(File file : files) {
-									childs.add(file);
-								}
-							}
-						}
-					}
-				}
-			}
-			parents = childs;
-		}
-		
-		if(childs != null && childs.size() > 0) {
-			for(File comp : childs) {
-				compress(comp, password);
-			}
-		}
 	}
 	
 	/**

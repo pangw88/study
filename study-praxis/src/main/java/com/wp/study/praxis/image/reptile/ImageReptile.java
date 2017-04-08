@@ -65,70 +65,57 @@ public class ImageReptile {
 	 * 生成图集名称
 	 * 
 	 * @param input
-	 * @param albumBorder
 	 * @return
 	 */
-	public static String getAlbumName(String input, String albumBorder) {
+	public static String getAlbumName(String input) {
 		String albumName = null;
 		try {
 			if (StringUtils.isBlank(input)) {
 				throw new RuntimeException("input is blank");
 			}
-			String pendingStr = null;
-			loop: for (int i = 0; i < input.length(); i++) {
-				if (input.startsWith(albumBorder, i)) {
-					int offset = i + albumBorder.length();
-					while (offset < input.length()) {
-						char nextCh = input.charAt(offset);
-						if (nextCh == '>') {
-							int startP = offset + 1;
-							while (offset < input.length()) {
-								nextCh = input.charAt(offset);
-								if (nextCh == '<') {
-									pendingStr = input.substring(startP, offset);
+			int offset = 0;
+			int begin = 0;
+			int end = 0;
+			for (int i = 0; i < input.length(); i++) {
+				if (input.startsWith("Reload this Page", i)) {
+					offset = i;
+					break;
+				}
+			}
+			for(int i = offset; i >= 0; i--) {
+				if (input.startsWith("<a", i)) {
+					begin = i;
+					break;
+				}
+			}
+			for(int i = offset; ; i++) {
+				if (input.startsWith(">", i)) {
+					end = i;
+					break;
+				}
+			}
+			String title = input.substring(begin, end + 1);
+			for(int i = 0; i < title.length(); i++) {
+				if (title.startsWith("href", i)) {
+					int nameBegin = 0;
+					int nameEnd = 0;
+					loop: for(int j = i + 1; j < title.length(); j++) {
+						if(title.startsWith("threads/", j)) {
+							j = j + 8;
+							nameBegin = j;
+							for(int k = j + 1; k < title.length(); k++) {
+								if(title.startsWith("?s=", k)) {
+									nameEnd = k;
 									break loop;
 								}
-								offset++;
-							}
-						}
-						offset++;
-					}
-				}
-			}
-			if (StringUtils.isNotBlank(pendingStr)) {
-				loop: for(int i = input.length() - 1; i >= 0; i--) {
-					char ch = input.charAt(i);
-					if(ch >= '1' && ch <= '9') {
-						int offset = i - 1;
-						ch = input.charAt(offset--);
-						if(ch >= '0' && ch <= '9') {
-							ch = input.charAt(offset--);
-							if(ch >= 'a' && ch <= 'z') {
-								ch = input.charAt(offset--);
-								if(ch == '_') {
-									while(offset >= 0) {
-										ch = input.charAt(offset--);
-										if(!(ch >= 'a' && ch <= 'z') && 
-												!(ch >= '0' && ch <= '9') && ch != '_') {
-											albumName = input.substring(offset + 2, i + 1);
-											break loop;
-										}
-									}
-								}
-							} else if(ch == '_') {
-								while(offset >= 0) {
-									ch = input.charAt(offset--);
-									if(!(ch >= 'a' && ch <= 'z') && 
-											!(ch >= '0' && ch <= '9') && ch != '_') {
-										albumName = input.substring(offset + 2, i + 1);
-										break loop;
-									}
-								}
 							}
 						}
 					}
+					albumName = title.substring(nameBegin, nameEnd);
+					break;
 				}
 			}
+			System.out.println(albumName);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -146,16 +133,16 @@ public class ImageReptile {
 		String downloadLink = null;
 		try {
 			if (StringUtils.isBlank(imgUrl)) {
-				throw new RuntimeException("input parameter is blank");
+				throw new RuntimeException("input parameter is blank, imgUrl=" + imgUrl);
 			}
 			if (!imgUrl.startsWith("http")) {
-				throw new RuntimeException("not support protocol");
+				throw new RuntimeException("not support protocol, imgUrl=" + imgUrl);
 			}
 			if (imgUrl.length() <= 10) {
-				throw new RuntimeException("invalid url length");
+				throw new RuntimeException("invalid url length, imgUrl=" + imgUrl);
 			}
 			if (imgUrl.endsWith(".gif") || imgUrl.endsWith(".png")) {
-				throw new RuntimeException("not support image format");
+				throw new RuntimeException("not support image format, imgUrl=" + imgUrl);
 			}
 			if (imgUrl.startsWith("https://img.yt") || imgUrl.startsWith("http://img.yt")
 					|| imgUrl.startsWith("http://imgcandy.net")) {
@@ -166,6 +153,8 @@ public class ImageReptile {
 				downloadLink = imgUrl.substring(0, imgUrl.lastIndexOf("/") + 1);
 				downloadLink += aUrl.substring(aUrl.lastIndexOf("/") + 1);
 				downloadLink += imgUrl.substring(imgUrl.lastIndexOf("."));
+			} else if (aUrl.contains("imagetwist.com")) {
+				downloadLink = imgUrl.replace("/th/", "/i/") + "/photo_001.jpg";
 			} else if (aUrl.startsWith("http://imgcandy.net")) {
 				
 			}
@@ -208,6 +197,7 @@ public class ImageReptile {
 							long startTime = System.currentTimeMillis();
 							File output = new File(dic, index + 100 + ".jpg");
 							int status = HttpUtil.doDownload(downloadUrls.get(index), 30000, 300000, output);
+							System.out.println(output.getPath());
 							log = downloadUrls.get(index) + " status=" + status + " waste=" + (System.currentTimeMillis() - startTime);
 							System.out.println(log);
 						} catch(Throwable t) {
@@ -229,7 +219,7 @@ public class ImageReptile {
 			}
 			sb.setLength(sb.length() - 2);
 			// 输出
-			fw = new FileWriter(new File(dic, albumName + ".output"));
+			fw = new FileWriter(new File(dic.getParentFile(), albumName + ".output"));
 			fw.write(sb.toString());
 			fw.flush();
 		} catch(Exception e) {
@@ -248,9 +238,8 @@ public class ImageReptile {
 	/**
 	 * 
 	 * @param urlFilePath
-	 * @param albumBorder
 	 */
-	public static void batchReptile(String urlFilePath, String albumBorder) {
+	public static void batchReptile(String urlFilePath) {
 		// 加载要下载的页面地址
 		Set<String> pageUrls = loadPageUrl(urlFilePath);
 		if (null == pageUrls || pageUrls.size() == 0) {
@@ -263,7 +252,7 @@ public class ImageReptile {
 					throw new RuntimeException("page content is blank");
 				}
 				// 获取文件名
-				String albumName =  getAlbumName(pageContent, albumBorder);
+				String albumName =  getAlbumName(pageContent);
 				List<String> downloadUrls = new ArrayList<String>();
 				
 				// 生成下载链接
@@ -301,9 +290,8 @@ public class ImageReptile {
 	
 	public static void main(String[] args) {
 		System.out.println("start time:" + new Date());
-		String urlFilePath = "F:/photo/page_url.txt";
-		String albumBorder = "Reload this Page";
-		batchReptile(urlFilePath, albumBorder);
+		String urlFilePath = "F:/page_url.txt";
+		batchReptile(urlFilePath);
 		threadPool.shutdown();
 		System.out.println("end time:" + new Date());
 	}
