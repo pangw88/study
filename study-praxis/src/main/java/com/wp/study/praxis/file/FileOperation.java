@@ -234,44 +234,71 @@ public class FileOperation {
 					continue;
 				}
 				if (file.isFile()) {
-					md5Map.put(DigesterCoder.getFileDigest(file, "MD5"), file.getPath());
+					String filePath = file.getPath();
+					// 过滤匹配这则表达式的文件
+					if(filePath.matches(regex)) {
+						LOG.info("<{}> is filtered", filePath);
+						continue;
+					}
+					String md5 = DigesterCoder.getFileDigest(file, "MD5");
+					if (md5Map.containsKey(md5)) {
+						// 记录MD5值相同的文件
+						fw.write(md5Map.get(md5) + " === " + filePath
+								+ "，md5 = " + md5);
+						if(isCut) {
+							// 剪切重复文件到磁盘根目录的temp临时文件夹
+							int index = filePath.indexOf(File.separator);
+							File root = new File(index == -1 ? filePath : 
+									filePath.substring(0, index));
+							File temp = new File(root, "temp");
+							cut(file, temp);
+						}
+					} else {
+						md5Map.put(md5, file.getPath());
+					}
 				} else {
 					// 遍历文件夹下文件计算md5值
 					dirs = new ArrayList<File>();
 					dirs.add(file);
 					while (dirs.size() > 0) {
-						File[] list = dirs.get(0).listFiles();
-						if (list != null && list.length > 0) {
-							for (File f : list) {
-								String filePath = f.getPath();
-								// 过滤匹配这则表达式的文件
-								if(filePath.matches(regex)) {
-									LOG.info("<{}> is filtered", filePath);
-									continue;
+						File dir = dirs.get(0);
+						// 取出文件夹后从堆栈移除
+						dirs.remove(0);
+						if (null == dir.listFiles() || dir.listFiles().length == 0) {
+							// 文件夹为空，跳出本次循环
+							LOG.info("<{}> dir is empty", dir.getPath());
+							continue;
+						}
+						for (File f : dir.listFiles()) {
+							String filePath = f.getPath();
+							// 过滤匹配这则表达式的文件
+							if(filePath.matches(regex)) {
+								LOG.info("<{}> is filtered", filePath);
+								continue;
+							}
+							if(!f.isFile()) {
+								// 添加文件夹
+								dirs.add(f);
+								continue;
+							}
+							String md5 = DigesterCoder.getFileDigest(f, "MD5");
+							if (md5Map.containsKey(md5)) {
+								// 记录MD5值相同的文件
+								fw.write(md5Map.get(md5) + " === " + filePath
+										+ "，md5 = " + md5);
+								if(isCut) {
+									// 剪切重复文件到磁盘根目录的temp临时文件夹
+									int index = filePath.indexOf(File.separator);
+									File root = new File(index == -1 ? filePath : 
+											filePath.substring(0, index));
+									File temp = new File(root, "temp");
+									cut(f, temp);
 								}
-								if (f.isFile()) {
-									String md5 = DigesterCoder.getFileDigest(f, "MD5");
-									if (md5Map.containsKey(md5)) {
-										// 记录MD5值相同的文件
-										fw.write(md5Map.get(md5) + " === " + filePath
-												+ "，md5 = " + md5);
-										if(isCut) {
-											// 剪切重复文件到磁盘根目录的temp临时文件夹
-											int index = filePath.indexOf(File.separator);
-											File root = new File(index == -1 ? filePath : 
-													filePath.substring(0, index));
-											File temp = new File(root, "temp");
-											cut(f, temp);
-										}
-									} else {
-										md5Map.put(md5, f.getPath());
-									}
-								} else {
-									dirs.add(f);
-								}
+							} else {
+								md5Map.put(md5, f.getPath());
 							}
 						}
-						dirs.remove(0);
+						LOG.info("<{}> dir process end", dir.getPath());
 					}
 				}
 			}

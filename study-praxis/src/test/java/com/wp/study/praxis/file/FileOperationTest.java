@@ -49,14 +49,12 @@ public class FileOperationTest {
 			/*File file = new File("F:/ftp/karen nishino");
 			File info = new File("F:/1.txt");
 			FileOperation.checkExist(file, info);*/
-			String path = "H:/Album/Beauty/Yuuka Himekawa";
+			String path = "F:/Downloads/aa";
 			FileOperation.rename(new File(path));
-			/*
-			 * File f1 = new File("I:/Album/Beauty/Asami Kondou"); File f2 = new
-			 * File("F:/444"); File[] files = {f1, f2};
-			 * FileOperation.getMD5("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov)$",
-			 * false, files);
-			 */
+//			File f1 = new File("H:/Album/Beauty/Koharu Nishino"); 
+//			File f2 = new File("F:/Downloads/aa");
+//			File[] files = {f1, f2};
+//			FileOperation.getMD5("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov|m4v)$", false, files);
 			/*File winrar = new File("C:/Program Files/WinRAR/WinRAR.exe");
 			File dir = new File("F:/temp");
 			FileOperation.compress(winrar, dir, "90890219", 1);*/

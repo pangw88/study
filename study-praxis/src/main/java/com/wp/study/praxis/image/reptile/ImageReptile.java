@@ -195,7 +195,7 @@ public class ImageReptile {
 						String log = null;
 						try {
 							long startTime = System.currentTimeMillis();
-							File output = new File(dic, index + 100 + ".jpg");
+							File output = new File(dic, index + 101 + ".jpg");
 							int status = HttpUtil.doDownload(downloadUrls.get(index), 30000, 300000, output);
 							System.out.println(output.getPath());
 							log = downloadUrls.get(index) + " status=" + status + " waste=" + (System.currentTimeMillis() - startTime);
