@@ -49,7 +49,7 @@ public class FileOperationTest {
 			/*File file = new File("F:/ftp/karen nishino");
 			File info = new File("F:/1.txt");
 			FileOperation.checkExist(file, info);*/
-			String path = "F:/Downloads/aa";
+			String path = "F:/photo";
 			FileOperation.rename(new File(path));
 //			File f1 = new File("H:/Album/Beauty/Koharu Nishino"); 
 //			File f2 = new File("F:/Downloads/aa");
