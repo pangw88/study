@@ -49,8 +49,8 @@ public class FileOperationTest {
 			/*File file = new File("F:/ftp/karen nishino");
 			File info = new File("F:/1.txt");
 			FileOperation.checkExist(file, info);*/
-			String path = "F:/photo";
-			FileOperation.rename(new File(path));
+//			String path = "F:/photo";
+//			FileOperation.rename(new File(path));
 //			File f1 = new File("H:/Album/Beauty/Koharu Nishino"); 
 //			File f2 = new File("F:/Downloads/aa");
 //			File[] files = {f1, f2};
@@ -60,16 +60,11 @@ public class FileOperationTest {
 			FileOperation.compress(winrar, dir, "90890219", 1);*/
 			/*File f = new File("K:/Album/Beauty/Mayumi Yamanaka");
 			FileOperation.getMD5("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov)$", true, f);*/
-			/*File f1 = new File("E:/IMBD-048.mkv.001");
-			File f2 = new File("E:/IMBD-048.mkv.002");
-			File f3 = new File("E:/IMBD-048.mkv.003");
-			File f4 = new File("E:/IMBD-048.mkv.004");
-			File f5 = new File("E:/IMBD-048.mkv.005");
-			File f6 = new File("E:/IMBD-048.mkv.006");
-			File f7 = new File("E:/IMBD-048.mkv.007");
-			File f8 = new File("E:/IMBD-048.mkv.008");
-			File f9 = new File("E:/IMBD-048.mkv.009");
-			FileOperation.merge(new File("E:/1/test.mkv"), f1, f2, f3, f4, f5, f6, f7, f8, f9);*/
+			File f1 = new File("C:/Users/wp/Downloads/200GANA-953.7z.001");
+			File f2 = new File("C:/Users/wp/Downloads/200GANA-953.7z.002");
+			File f3 = new File("C:/Users/wp/Downloads/200GANA-953.7z.003");
+			File f4 = new File("C:/Users/wp/Downloads/200GANA-953.7z.004");
+			FileOperation.merge(new File("F:/Downloads/abs/200GANA-953.7z"), f1, f2, f3, f4);
 			// 任务结束
 			LOG.info("Task end!");
 		} catch(Exception e) {
