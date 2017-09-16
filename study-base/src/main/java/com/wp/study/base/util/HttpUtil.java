@@ -1,8 +1,8 @@
 package com.wp.study.base.util;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -31,51 +31,50 @@ public class HttpUtil {
 	private static final Logger LOG = LoggerFactory.getLogger(HttpUtil.class);
 	
 	private static final String DEFAULT_CHARSET = "UTF-8";
-	private static final int DEFAULT_CONNECT_TIMEOUT = 3000;
-	private static final int DEFAULT_SOCKET_TIMEOUT = 20000;
-	
-	public static void main(String[] args) {
-		String url = "http://chronos.to/t/032/03878/xg6d7qf76g1z";
-		RequestConfig reqConfig = RequestConfig.custom().setConnectTimeout(
-				30000).setSocketTimeout(200000).build();
-		doDownload(url, reqConfig, new File("F:/photo/abc.jpg"));
-	}
+	private static final int DEFAULT_CONNECT_TIMEOUT = 5000;
+	private static final int DEFAULT_SOCKET_TIMEOUT = 100000;
 	
 	public static void doGet(String url) {
 		doGet(url, Void.class);
 	}
 	
 	public static <T> T doGet(String url, Class<T> requiredType) {
-		return doGet(url, null, requiredType);
-	}
-	
-	public static <T> T doGet(String url, String charset, Class<T> requiredType) {
-		return doGet(url, null, charset, requiredType);
-	}
-	
-	public static void doGet(String url, int connectTimeout, int socketTimeout) {
-		doGet(url, connectTimeout, socketTimeout, Void.class);
+		return doGet(url, DEFAULT_CONNECT_TIMEOUT, DEFAULT_SOCKET_TIMEOUT, requiredType);
 	}
 	
 	public static <T> T doGet(String url, int connectTimeout, int socketTimeout, Class<T> requiredType) {
-		return doGet(url, connectTimeout, socketTimeout, null, requiredType);
-	}
-	
-	public static <T> T doGet(String url, int connectTimeout, int socketTimeout, String charset, Class<T> requiredType) {
 		RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(
 				connectTimeout).setSocketTimeout(socketTimeout).build();
-		return doGet(url, requestConfig, charset, requiredType);
+		return doGet(url, requestConfig, DEFAULT_CHARSET, requiredType);
 	}
 	
-	public static int doDownload(String url, int connectTimeout, int socketTimeout, File output) {
+	public static <T> T doPost(String url, Map<String, Object> params, int connectTimeout, int socketTimeout, Class<T> requiredType) {
 		RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(
 				connectTimeout).setSocketTimeout(socketTimeout).build();
-		return doDownload(url, requestConfig, output);
+		return doPost(url, requestConfig, DEFAULT_CHARSET, params, requiredType);
+	}
+	
+	public static int doGetDownload(String url, File output) {
+		RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(
+				DEFAULT_CONNECT_TIMEOUT).setSocketTimeout(DEFAULT_SOCKET_TIMEOUT).build();
+		return doGetDownload(url, requestConfig, output);
+	}
+	
+	public static int doPostDownload(String url, Map<String, Object> params, File output) {
+		RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(
+				DEFAULT_CONNECT_TIMEOUT).setSocketTimeout(DEFAULT_SOCKET_TIMEOUT).build();
+		return doPostDownload(url, requestConfig, params, output);
 	}
 	
 	public static <T> T doGet(String url, RequestConfig requestConfig, String charset, Class<T> requiredType) {
 		T t = null;
-		if(StringUtils.isNotEmpty(url)) {
+		if(StringUtils.isEmpty(url)) {
+			LOG.warn("url is empty!");
+			return t;
+		}
+		int status = HttpStatus.SC_BAD_REQUEST;
+		int index = 0;
+		while(index++ < 3 && status != HttpStatus.SC_OK) {
 			// DefaultHttpClient is deprecated, use CloseableHttpClient
 			CloseableHttpClient httpClient = null;
 			HttpGet httpGet = null;
@@ -95,29 +94,28 @@ public class HttpUtil {
 					charset = DEFAULT_CHARSET;
 				}
 			    response = httpClient.execute(httpGet);
+			    status = response.getStatusLine().getStatusCode();
 			    t = getResponse(response, charset, requiredType);
-			    // 建立的http连接，仍被response保持着，为了释放资源，手动取消连接
-		        response.close();
 			} catch (Exception e) {
-				LOG.error(e.getMessage());
+				LOG.error("doGet fail, url={}, error:", url, e);
 			} finally {
-				try {
-					if (response != null) {
-						response.close();
-					}
-				} catch(IOException ioe) {
-					LOG.error(ioe.getMessage());
-				}
+				// 建立的http连接，仍被response保持着，为了释放资源，手动取消连接
+				closeQuietly(response);
+				closeQuietly(httpClient);
 		    }
-		} else {
-			LOG.warn("url is empty!");
 		}
 		return t;
 	}
 	
 	public static <T> T doPost(String url, RequestConfig requestConfig, String charset, Map<String, Object> params, Class<T> requiredType) {
 		T t = null;
-		if(StringUtils.isNotEmpty(url)) {
+		if(StringUtils.isEmpty(url)) {
+			LOG.warn("url is empty!");
+			return t;
+		}
+		int status = HttpStatus.SC_BAD_REQUEST;
+		int index = 0;
+		while(index++ < 3 && status != HttpStatus.SC_OK) {
 			// DefaultHttpClient is deprecated, use CloseableHttpClient
 			CloseableHttpClient httpClient = null;
 			HttpPost httpPost = null;
@@ -148,29 +146,27 @@ public class HttpUtil {
 				    httpPost.setEntity(new UrlEncodedFormEntity(nvps, charset));
 				}
 			    response = httpClient.execute(httpPost);
+			    status = response.getStatusLine().getStatusCode();
 			    t = getResponse(response, charset, requiredType);
-			    // 建立的http连接，仍被response保持着，为了释放资源，手动取消连接
-		        response.close();
 			} catch (Exception e) {
-				LOG.error(e.getMessage());
+				LOG.error("doPost fail, url={}, error:", url, e);
 			} finally {
-				try {
-					if (response != null) {
-						response.close();
-					}
-				} catch(IOException ioe) {
-					LOG.error(ioe.getMessage());
-				}
+				// 建立的http连接，仍被response保持着，为了释放资源，手动取消连接
+				closeQuietly(response);
+				closeQuietly(httpClient);
 		    }
-		} else {
-			LOG.warn("url is empty!");
 		}
 		return t;
 	}
 	
-	public static int doDownload(String url, RequestConfig requestConfig, File output) {
-		int status = HttpStatus.SC_OK;
-		if(StringUtils.isNotEmpty(url)) {
+	public static int doGetDownload(String url, RequestConfig requestConfig, File output) {
+		int status = HttpStatus.SC_BAD_REQUEST;
+		if(StringUtils.isEmpty(url)) {
+			LOG.warn("url is empty!");
+			return status;
+		}
+		int index = 0;
+		while(index++ < 3 && status != HttpStatus.SC_OK) {
 			// DefaultHttpClient is deprecated, use CloseableHttpClient
 			CloseableHttpClient httpClient = null;
 			HttpGet httpGet = null;
@@ -202,57 +198,119 @@ public class HttpUtil {
 				    	}
 				    	os.flush();
 				    } finally {
-				    	if(null != os) {
-				    		os.close();
-				    	}
-				    	if(null != is) {
-				    		is.close();
-				    	}
+				    	closeQuietly(os);
+				    	closeQuietly(is);
 				    }
 			    }
-			    // 建立的http连接，仍被response保持着，为了释放资源，手动取消连接
-		        response.close();
 			} catch (Exception e) {
-				status = -1;
-				LOG.error(e.getMessage());
+				LOG.error("doGetDownload fail, url={}, error:", url, e);
 			} finally {
-				try {
-					if (response != null) {
-						response.close();
-					}
-				} catch(IOException ioe) {
-					LOG.error(ioe.getMessage());
-				}
+				// 建立的http连接，仍被response保持着，为了释放资源，手动取消连接
+				closeQuietly(response);
+				closeQuietly(httpClient);
 		    }
-		} else {
-			LOG.warn("url is empty!");
 		}
 		return status;
 	}
 	
+	public static int doPostDownload(String url, RequestConfig requestConfig, Map<String, Object> params, File output) {
+		int status = HttpStatus.SC_BAD_REQUEST;
+		if(StringUtils.isEmpty(url)) {
+			LOG.warn("url is empty!");
+			return status;
+		}
+		int index = 0;
+		while(index++ < 3 && status != HttpStatus.SC_OK) {
+			// DefaultHttpClient is deprecated, use CloseableHttpClient
+			CloseableHttpClient httpClient = null;
+			HttpPost httpPost = null;
+			CloseableHttpResponse response = null;
+			try {
+				if(url.startsWith("https")) {
+					httpClient = SeeSSLCloseableHttpClient.getCloseableHttpClient();
+				} else {
+					httpClient = HttpClients.createDefault();
+				}
+			    httpPost = new HttpPost(url);
+				// set request config
+			    if(requestConfig == null) {
+					// default connect and socket timeout is -1, so need set default value!
+					requestConfig = RequestConfig.custom().setConnectTimeout(
+							DEFAULT_CONNECT_TIMEOUT).setSocketTimeout(DEFAULT_SOCKET_TIMEOUT).build();
+				}
+			    httpPost.setConfig(requestConfig);
+			    // set paramters
+				if(params != null && params.size() > 0) {
+					List <NameValuePair> nvps = new ArrayList <NameValuePair>();
+					Object value = null;
+					for(Map.Entry<String, Object> entry : params.entrySet()) {
+						value = entry.getValue();
+						nvps.add(new BasicNameValuePair(entry.getKey(), 
+								value == null ? "" : value.toString()));
+					}
+				    httpPost.setEntity(new UrlEncodedFormEntity(nvps, "UTF-8"));
+				}
+			    response = httpClient.execute(httpPost);
+			    status = response.getStatusLine().getStatusCode();
+			    if (status == HttpStatus.SC_OK) {
+			    	InputStream is = response.getEntity().getContent();
+				    OutputStream os = new FileOutputStream(output);
+				    try {
+				    	int bytesRead = 0;
+				    	byte[] buffer = new byte[8192];
+				    	while ((bytesRead = is.read(buffer, 0, 8192)) != -1) {
+				    		os.write(buffer, 0, bytesRead);
+				    	}
+				    	os.flush();
+				    } finally {
+				    	closeQuietly(os);
+				    	closeQuietly(is);
+				    }
+			    }
+			} catch (Exception e) {
+				LOG.error("doPostDownload fail, url={}, error:", url, e);
+			} finally {
+				// 建立的http连接，仍被response保持着，为了释放资源，手动取消连接
+				closeQuietly(response);
+				closeQuietly(httpClient);
+		    }
+		}
+		return status;
+	}
 	
 	private static <T> T getResponse(HttpResponse response, String charset, Class<T> requiredType) throws Exception {
 		T t = null;
 		int statusCode = response.getStatusLine().getStatusCode();
-	    if (statusCode == HttpStatus.SC_OK) {
-	    	HttpEntity httpEntity = response.getEntity();
-	    	String res = EntityUtils.toString(httpEntity, charset);
-	    	if(StringUtils.isNotEmpty(res)) {
-	    		// if need not void result
-	    		if(String.class.isAssignableFrom(requiredType)) {
-	    			t = (T) res;
-	    		} else if(!Void.class.isAssignableFrom(requiredType)) {
-	    			t = JsonUtil.convertJsonToBean(res, requiredType);
-	    		}
-	    	} else {
-	    		LOG.warn("http response is empty!");
-	    	}
-	    	// after process response, ensure it is fully consumed
-	    	EntityUtils.consume(httpEntity);
-		} else {
-			LOG.warn("request failed, status code = {}", statusCode);
+	    if (statusCode != HttpStatus.SC_OK) {
+	    	LOG.warn("request failed, status code = {}", statusCode);
+	    	return t;
 		}
+	    HttpEntity httpEntity = response.getEntity();
+    	String res = EntityUtils.toString(httpEntity, charset);
+    	if(StringUtils.isEmpty(res)) {
+    		LOG.warn("http response is empty!");
+    		return t;
+    	}
+    	// if need not void result
+		if(String.class.isAssignableFrom(requiredType)) {
+			t = requiredType.cast(res);
+		} else if(!Void.class.isAssignableFrom(requiredType)) {
+			t = JsonUtil.convertJsonToBean(res, requiredType);
+		}
+    	// after process response, ensure it is fully consumed
+    	EntityUtils.consume(httpEntity);
 		return t;
+	}
+	
+	private static void closeQuietly(Closeable object) {
+		if(null == object) {
+			return;
+		}
+		try {
+			object.close();
+		} catch(Exception e) {
+			LOG.error("closeQuietly fail, error:", e);
+		}
 	}
 	
 }

@@ -1,51 +1,81 @@
 package com.wp.study.praxis.image.reptile;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import javax.imageio.ImageIO;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.wp.study.base.util.HttpUtil;
+import com.wp.study.base.util.JsonUtil;
+import com.wp.study.praxis.image.reptile.adapter.WebsiteAdapterUtils;
 import com.wp.study.praxis.image.reptile.filter.XmlFilter;
+import com.wp.study.praxis.image.reptile.model.DownloadDO;
 
 public class ImageReptile {
+	
+	private static String urlFilePath = "F:/photo/page_url.txt";
+	private static String downloadedFileName = "downloaded_info";
+	private static String downloadedFilePath = "F:/photo/downloaded_info.txt";
+	
+	private static ExecutorService downloadPool = new ThreadPoolExecutor(10, 10, 5, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(1000));
+	private static Map<String, FileWriter> fwMap = new ConcurrentHashMap<String, FileWriter>() {
+		private static final long serialVersionUID = -3442731360328676574L;
+		{
+			try {
+				put(downloadedFileName, new FileWriter(new File(downloadedFilePath)));
+			} catch(Exception e) {
+			}
+		}
+		
+	};
+	private static Map<String, DownloadDO> downloadedMap = new ConcurrentHashMap<String, DownloadDO>();
+	private static Lock lock = new ReentrantLock();
+	
 
 	/**
-	 * 加载要爬取的页面url
+	 * 加载文件信息
 	 * 
-	 * @param urlFilePath
+	 * @param filePath
 	 * @return
 	 */
-	public static Set<String> loadPageUrl(String urlFilePath) {
-		Set<String> pageUrls = new HashSet<String>();
-		if (StringUtils.isBlank(urlFilePath)) {
+	public static Set<String> loadFileInfo(String filePath) {
+		Set<String> fileInfoSet = new HashSet<String>();
+		if (StringUtils.isBlank(filePath)) {
 			throw new RuntimeException("invalid file path");
 		}
-		File pageFile = new File(urlFilePath);
-		if (!pageFile.exists() || !pageFile.isFile()) {
-			throw new RuntimeException("file not exists");
+		File file = new File(filePath);
+		if (!file.exists() || !file.isFile()) {
+			throw new RuntimeException("file not exists, filePath=" + filePath);
 		}
 		BufferedReader br = null;
 		try {
-			br = new BufferedReader(new FileReader(pageFile));
+			br = new BufferedReader(new FileReader(file));
 			String line = null;
 			while (null != (line = br.readLine())) {
 				if (StringUtils.isNotBlank(line)) {
-					pageUrls.add(line.trim());
+					fileInfoSet.add(line.trim());
 				}
 			}
 		} catch (Exception e) {
@@ -58,154 +88,69 @@ public class ImageReptile {
 				}
 			}
 		}
-		return pageUrls;
+		return fileInfoSet;
 	}
 
-	/**
-	 * 生成图集名称
-	 * 
-	 * @param input
-	 * @return
-	 */
-	public static String getAlbumName(String input) {
-		String albumName = null;
-		try {
-			if (StringUtils.isBlank(input)) {
-				throw new RuntimeException("input is blank");
-			}
-			int offset = 0;
-			int begin = 0;
-			int end = 0;
-			for (int i = 0; i < input.length(); i++) {
-				if (input.startsWith("Reload this Page", i)) {
-					offset = i;
-					break;
-				}
-			}
-			for(int i = offset; i >= 0; i--) {
-				if (input.startsWith("<a", i)) {
-					begin = i;
-					break;
-				}
-			}
-			for(int i = offset; ; i++) {
-				if (input.startsWith(">", i)) {
-					end = i;
-					break;
-				}
-			}
-			String title = input.substring(begin, end + 1);
-			for(int i = 0; i < title.length(); i++) {
-				if (title.startsWith("href", i)) {
-					int nameBegin = 0;
-					int nameEnd = 0;
-					loop: for(int j = i + 1; j < title.length(); j++) {
-						if(title.startsWith("threads/", j)) {
-							j = j + 8;
-							nameBegin = j;
-							for(int k = j + 1; k < title.length(); k++) {
-								if(title.startsWith("?s=", k)) {
-									nameEnd = k;
-									break loop;
-								}
-							}
-						}
-					}
-					albumName = title.substring(nameBegin, nameEnd);
-					break;
-				}
-			}
-			System.out.println(albumName);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return albumName;
-	}
-	
-	/**
-	 * 生成下载链接
-	 * 
-	 * @param aUrl
-	 * @param imgUrl
-	 * @return
-	 */
-	public static String getDownloadLink(String aUrl, String imgUrl) {
-		String downloadLink = null;
-		try {
-			if (StringUtils.isBlank(imgUrl)) {
-				throw new RuntimeException("input parameter is blank, imgUrl=" + imgUrl);
-			}
-			if (!imgUrl.startsWith("http")) {
-				throw new RuntimeException("not support protocol, imgUrl=" + imgUrl);
-			}
-			if (imgUrl.length() <= 10) {
-				throw new RuntimeException("invalid url length, imgUrl=" + imgUrl);
-			}
-			if (imgUrl.endsWith(".gif") || imgUrl.endsWith(".png")) {
-				throw new RuntimeException("not support image format, imgUrl=" + imgUrl);
-			}
-			if (imgUrl.startsWith("https://img.yt") || imgUrl.startsWith("http://img.yt")
-					|| imgUrl.startsWith("http://imgcandy.net")) {
-				downloadLink = imgUrl.replace("small", "big");
-			} else if (imgUrl.startsWith("http://chronos.to")) {
-				downloadLink = imgUrl.replace("/t/", "/i/");
-			} else if (imgUrl.startsWith("http://pic-maniac.com")) {
-				downloadLink = imgUrl.substring(0, imgUrl.lastIndexOf("/") + 1);
-				downloadLink += aUrl.substring(aUrl.lastIndexOf("/") + 1);
-				downloadLink += imgUrl.substring(imgUrl.lastIndexOf("."));
-			} else if (aUrl.contains("imagetwist.com")) {
-				downloadLink = imgUrl.replace("/th/", "/i/") + "/photo_001.jpg";
-			} else if (aUrl.startsWith("http://imgcandy.net")) {
-				
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return downloadLink;
-	}
-	
-	private static ExecutorService threadPool = new ThreadPoolExecutor(3, 3, 200, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(100));
-	
 	/**
 	 * 下载图片
 	 * 
 	 * @param albumName
 	 * @param downloadUrls
 	 */
-	public static void downloadPic(String albumName, final List<String> downloadUrls) {
+	public static void downloadPic(List<DownloadDO> downloads) {
 		FileWriter fw = null;
+		if(null == downloads || downloads.isEmpty()) {
+			return;
+		}
 		try {
-			if(StringUtils.isBlank(albumName) || null == downloadUrls
-					|| downloadUrls.size() == 0) {
-				throw new RuntimeException("input parameter is blank");
-			}
-			final File dic = new File("F:/photo/" + albumName);
-			if(!dic.exists()) {
-				dic.mkdirs();
-			}
 			// 下载
-			final CountDownLatch latch = new CountDownLatch(downloadUrls.size());
-			List<Future<String>> futures = new ArrayList<Future<String>>(downloadUrls.size());
-			StringBuilder sb = new StringBuilder();
-			for(int i = 0; i < downloadUrls.size(); i++) {
-				final int index = i;
-				futures.add(threadPool.submit(new Callable<String>() {
+			final CountDownLatch latch = new CountDownLatch(downloads.size());
+			List<Future<?>> futures = new ArrayList<Future<?>>(downloads.size());
+			String format = "picName=%s downUrl=%s aUrl=%s status=%s waste=%s";
+			for(DownloadDO download : downloads) {
+				futures.add(downloadPool.submit(new Runnable() {
 					@Override
-					public String call() {
-						String log = null;
+					public void run() {
+						long startTime = System.currentTimeMillis();
+						int status = 1;
+						File output = null;
 						try {
-							long startTime = System.currentTimeMillis();
-							File output = new File(dic, index + 101 + ".jpg");
-							int status = HttpUtil.doDownload(downloadUrls.get(index), 30000, 300000, output);
-							System.out.println(output.getPath());
-							log = downloadUrls.get(index) + " status=" + status + " waste=" + (System.currentTimeMillis() - startTime);
-							System.out.println(log);
+							File dic = new File("F:/photo/" + download.getAlbumName());
+							if(!dic.exists()) {
+								dic.mkdirs();
+							}
+							output = new File(dic, download.getPicName());
+							if(!output.exists()) {
+								status = HttpUtil.doGetDownload(download.getDownUrl(), output);
+								if(output.exists()) {
+									BufferedImage bi = ImageIO.read(output);
+									if(bi.getHeight() < 500 || bi.getWidth() < 500) {
+										output.delete();
+									} else {
+										download.setHasDown(true);
+									}
+									bi.flush();
+								}
+							} else {
+								download.setHasDown(true);
+								System.out.println("has download, aUrl=" + download.getaUrl());
+							}
+							downloadedMap.put(download.getaUrl(), download);
 						} catch(Throwable t) {
 							t.printStackTrace();
 						} finally {
 							latch.countDown();
+							if(null == output || !output.exists()) {
+								try {
+									// 通过浏览器打开无法识别的页面
+									Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + download.getDownUrl());
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+							}
+							System.out.println(String.format(format, download.getPicName(), download.getDownUrl(), 
+									download.getaUrl(), status, System.currentTimeMillis() - startTime));
 						}
-						return log;
 					}
 				}));
 			}
@@ -214,14 +159,6 @@ public class ImageReptile {
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
-			for(Future<String> f : futures) {
-				sb.append(f.get()).append("\n");
-			}
-			sb.setLength(sb.length() - 2);
-			// 输出
-			fw = new FileWriter(new File(dic.getParentFile(), albumName + ".output"));
-			fw.write(sb.toString());
-			fw.flush();
 		} catch(Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -236,24 +173,110 @@ public class ImageReptile {
 	}
 	
 	/**
+	 * 生成下载链接
+	 * 
+	 * @param aUrl
+	 * @param imgUrl
+	 * @return
+	 */
+	public static List<DownloadDO> getDownloadInfo(Map<String, DownloadDO> urlMap) {
+		long startTime = System.currentTimeMillis();
+		List<DownloadDO> downloads = new ArrayList<DownloadDO>();
+		if(null == urlMap || urlMap.isEmpty()) {
+			return downloads;
+		}
+		try {
+			final CountDownLatch latch = new CountDownLatch(urlMap.size());
+			List<Future<DownloadDO>> futures = new ArrayList<Future<DownloadDO>>(urlMap.size());
+			for(Map.Entry<String, DownloadDO> entry : urlMap.entrySet()) {
+				futures.add(downloadPool.submit(new Callable<DownloadDO>() {
+					@Override
+					public DownloadDO call() {
+						DownloadDO download = null;
+						try {
+							String aUrl = entry.getKey();
+							if(null != entry.getValue()) {
+								download = entry.getValue();
+							} else {
+								download = WebsiteAdapterUtils.getPicUrl(aUrl);
+							}
+							
+							/*if (imgUrl.startsWith("https://img.yt") || imgUrl.startsWith("http://img.yt")
+									|| imgUrl.startsWith("http://imgcandy.net")) {
+								downLink = imgUrl.replace("small", "big");
+								if(imgUrl.contains("img.yt/upload")) {
+									downLink = downLink.replace("img.yt/upload", "x001.img.yt");
+								}
+							} else if (imgUrl.startsWith("http://chronos.to")) {
+								downLink = imgUrl.replace("/t/", "/i/");
+							} else if (imgUrl.startsWith("http://pic-maniac.com")) {
+								downLink = imgUrl.substring(0, imgUrl.lastIndexOf("/") + 1);
+								downLink += aUrl.substring(aUrl.lastIndexOf("/") + 1);
+								downLink += imgUrl.substring(imgUrl.lastIndexOf("."));
+							} else if (aUrl.contains("imagetwist.com")) {
+								downLink = imgUrl.replace("/th/", "/i/") + "/photo_001.jpg";
+							}*/
+						} catch (Exception e) {
+							e.printStackTrace();
+						} finally {
+							latch.countDown();
+						}
+						return download;
+					}
+				}));
+			}
+			try {
+				latch.await();
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+			for(Future<DownloadDO> f : futures) {
+				if (null != f.get()) {
+					downloads.add(f.get());
+				}
+			}
+		} catch(Throwable t) {
+			t.printStackTrace();
+		} finally {
+			System.out.println("getDownloadInfo wasteTime=" + (System.currentTimeMillis() - startTime));
+		}
+		return downloads;
+	}
+	
+	/**
 	 * 
 	 * @param urlFilePath
 	 */
-	public static void batchReptile(String urlFilePath) {
-		// 加载要下载的页面地址
-		Set<String> pageUrls = loadPageUrl(urlFilePath);
+	public static void batchReptile(String urlFilePath, String downloadedPath, boolean cleanHistory) {
+		// 加载要下载的主页面地址
+		Set<String> pageUrls = loadFileInfo(urlFilePath);
 		if (null == pageUrls || pageUrls.size() == 0) {
 			return;
 		}
+		
+		// 加载已经下载的资源信息
+		if(!cleanHistory) {
+			Set<String> records = loadFileInfo(downloadedPath);
+			for(String record : records) {
+				if(StringUtils.isBlank(record)) {
+					continue;
+				}
+				DownloadDO download = JsonUtil.convertJsonToBean(record, DownloadDO.class);
+				if(null != download) {
+					downloadedMap.put(download.getaUrl(), download);
+				}
+			}
+		}
+		
+		// 加载实际图片存储的页面地址
+		Map<String, DownloadDO> urlMap = new HashMap<String, DownloadDO>();
 		for (String pageUrl : pageUrls) {
 			try {
-				String pageContent = HttpUtil.doGet(pageUrl, 30000, 200000, String.class);
+				String pageContent = HttpUtil.doGet(pageUrl, String.class);
 				if (StringUtils.isBlank(pageContent)) {
-					throw new RuntimeException("page content is blank");
+					System.out.println("page content is blank, pageUrl=" + pageUrl);
+					continue;
 				}
-				// 获取文件名
-				String albumName =  getAlbumName(pageContent);
-				List<String> downloadUrls = new ArrayList<String>();
 				
 				// 生成下载链接
 				List<String> eles = XmlFilter.getElements(pageContent, "a");
@@ -272,28 +295,96 @@ public class ImageReptile {
 					if (null == srcValues || srcValues.size() == 0) {
 						continue;
 					}
+					
 					String aUrl = hrefValues.get(0);
 					String imgUrl = srcValues.get(0);
-					String downloadLink = getDownloadLink(aUrl, imgUrl);
-					if (StringUtils.isNotBlank(downloadLink)) {
-						downloadUrls.add(downloadLink);
+					if (StringUtils.isBlank(imgUrl)) {
+						System.out.println("input parameter is blank, imgUrl=" + imgUrl);
+						continue;
 					}
+					if (!imgUrl.startsWith("http")) {
+						System.out.println("not support protocol, imgUrl=" + imgUrl);
+						continue;
+					}
+					if (imgUrl.endsWith(".gif") || imgUrl.endsWith(".png")) {
+						System.out.println("not support image format, imgUrl=" + imgUrl);
+						continue;
+					}
+					urlMap.put(aUrl, downloadedMap.get(aUrl));
 				}
-				
-				// 下载
-				downloadPic(albumName, downloadUrls);
 			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		// 获取实际图片下载对象
+		List<DownloadDO> downloads = getDownloadInfo(urlMap);
+		if(null == downloads || downloads.isEmpty()) {
+			return;
+		}
+		// 下载图片
+		downloadPic(downloads);
+		
+		// 打印已经下载完成的资源
+		for(Map.Entry<String, DownloadDO> entry : downloadedMap.entrySet()) {
+			write(downloadedFileName, JsonUtil.convertBeanToJson(entry.getValue()));
+		}
+		
+		// 关闭各种资源池
+		closeSource();
+	}
+	
+	private static void write(String fwName, String log) {
+		// 加载writer
+		FileWriter fw = null;
+		if(null == fwName) {
+			return;
+		}
+		fw = fwMap.get(fwName);
+		if(null == fw) {
+			try {
+				lock.lock();
+				fw = new FileWriter("F:/photo/" + fwName + "/" + fwName);
+				fwMap.put(fwName, fw);
+			} catch (Throwable e) {
+				e.printStackTrace();
+			} finally {
+				lock.unlock();
+			}
+		}
+
+		if(null != fw) {
+			try {
+				fw.write(log);
+				fw.write("\n");
+				fw.flush();
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private static void closeSource() {
+		// 关闭线程池
+		try {
+			downloadPool.shutdown();
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+		// 关闭filewriter
+		for(Map.Entry<String, FileWriter> entry : fwMap.entrySet()) {
+			try {
+				entry.getValue().close();
+			} catch (Throwable e) {
 				e.printStackTrace();
 			}
 		}
 	}
 	
 	public static void main(String[] args) {
-		System.out.println("start time:" + new Date());
-		String urlFilePath = "F:/page_url.txt";
-		batchReptile(urlFilePath);
-		threadPool.shutdown();
-		System.out.println("end time:" + new Date());
+		long startTime = System.currentTimeMillis();
+		batchReptile(urlFilePath, downloadedFilePath, false);
+		System.out.println("wasteTime=" + (System.currentTimeMillis() - startTime));
 	}
 
 }
