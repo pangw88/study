@@ -582,8 +582,6 @@ public class FileOperation {
 			}
 		} catch(Exception e) {
 			LOG.error("checkValidAndCut fail, origin={}, error:", origin, e);
-		} finally {
-			System.out.println("checkValidAndCut origin=" + origin + ", valid=" + valid);
 		}
 		return valid;
 	}
@@ -621,16 +619,16 @@ public class FileOperation {
 				}
 				try {
 					// 控制任务提交速度
-					Thread.sleep(20);
+					Thread.sleep(10);
 				} catch(Throwable e) {
 				}
-				int size = checkSize.incrementAndGet();
-				System.out.println("checkSubValidAndCut has process: " + (int)(size * 100 / subFiles.size()) + "%s");
 			}
 			
 			// 获取结果
 			for(int i = 0; i < subFiles.size(); i++) {
 				ecs.take().get();
+				int size = checkSize.incrementAndGet();
+				System.out.println("checkSubValidAndCut has process: " + (int)(size * 100 / subFiles.size()) + "%s");
 			}
 		} catch(Exception e) {
 			LOG.error("checkSubValidAndCut fail, error:", e);

@@ -23,7 +23,7 @@ public class FileOperationTest {
 			FileOperation.checkExist(file, info);*/
 			/*String path = "F:/photo/invalid";
 			FileOperation.rename(new File(path));*/
-			File path = new File("G:/Album/Beauty/Asami Kondou");
+			File path = new File("G:/Album/Beauty/Koharu Nishino");
 			FileOperation.checkSubValidAndCut(path);
             /*File f1 = new File("H:/Album/Beauty/Koharu Nishino"); 
 			File f2 = new File("F:/Downloads/aa");

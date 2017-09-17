@@ -13,7 +13,7 @@ public class WebsiteAdapterUtils {
 			} else if(aUrl.contains("imgcandy.net")) {
 				ImageReptile.writeNoSupport("not support download url, url=" + aUrl);
 			} else if(aUrl.contains("chronos.to")) {
-				ImageReptile.writeNoSupport("not support download url, url=" + aUrl);
+				download = ChronosAdapter.getImageUrl(albumName, aUrl);
 			} else if(aUrl.contains("pic-maniac.com")) {
 				ImageReptile.writeNoSupport("not support download url, url=" + aUrl);
 			} else if(aUrl.contains("imagetwist.com")) {

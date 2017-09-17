@@ -55,4 +55,17 @@ public class ImageUtil {
 		return isGrey;
 	}
 	
+	public static String getShortUrl(String imageUrl) {
+		String shortUrl = null;
+		if(null == imageUrl) {
+			return shortUrl;
+		}
+		try {
+			shortUrl = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		return shortUrl;
+	}
+	
 }

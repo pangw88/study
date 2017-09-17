@@ -6,8 +6,12 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 public class XmlFilter {
-
+	
 	public static List<String> getElements(String input, String tagName) {
+		return getElements(input, tagName, false);
+	}
+
+	public static List<String> getElements(String input, String tagName, boolean weakRule) {
 		List<String> result = new ArrayList<String>();
 		if (StringUtils.isBlank(input) || StringUtils.isBlank(tagName)) {
 			throw new RuntimeException("the input or key is blank!");
@@ -21,24 +25,35 @@ public class XmlFilter {
 					int endP = 0;
 					// 坐标位移
 					int offset = i + startStr.length();
-					// 以'/>'结尾标签
-					while (offset < input.length()) {
-						if (input.charAt(offset) == '>') {
-							if (input.charAt(offset - 1) == '/') {
-								endP = offset + 1;
-							}
-							break;
-						}
-						offset++;
-					}
-					// 以'</key>'结尾
-					if (endP == 0) {
+					
+					if(weakRule) { // 弱校验，以'>'结尾标签
 						while (offset < input.length()) {
-							if (input.startsWith(endStr, offset)) {
-								endP = offset + endStr.length();
+							if (input.charAt(offset) == '>') {
+								endP = offset + 1;
 								break;
 							}
 							offset++;
+						}
+					} else {
+						// 以'/>'结尾标签
+						while (offset < input.length()) {
+							if (input.charAt(offset) == '>') {
+								if (input.charAt(offset - 1) == '/') {
+									endP = offset + 1;
+								}
+								break;
+							}
+							offset++;
+						}
+						// 以'</key>'结尾
+						if (endP == 0) {
+							while (offset < input.length()) {
+								if (input.startsWith(endStr, offset)) {
+									endP = offset + endStr.length();
+									break;
+								}
+								offset++;
+							}
 						}
 					}
 					if (endP != 0) {

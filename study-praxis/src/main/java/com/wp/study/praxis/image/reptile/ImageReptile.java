@@ -14,8 +14,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -178,9 +178,9 @@ public class ImageReptile {
 		}
 		try {
 			final CountDownLatch latch = new CountDownLatch(urlMap.size());
-			ExecutorCompletionService<DownloadDO> ecs = new ExecutorCompletionService<DownloadDO>(downloadPool);
+			List<Future<DownloadDO>> futures = new ArrayList<Future<DownloadDO>>();
 			for(Map.Entry<String, DownloadDO> entry : urlMap.entrySet()) {
-				ecs.submit(new Callable<DownloadDO>() {
+				futures.add(downloadPool.submit(new Callable<DownloadDO>() {
 					@Override
 					public DownloadDO call() {
 						DownloadDO download = null;
@@ -211,15 +211,15 @@ public class ImageReptile {
 						}
 						return download;
 					}
-				});
+				}));
 			}
 			try {
 				latch.await();
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
-			for(int i = 0; i < urlMap.size(); i++) {
-				DownloadDO download = ecs.take().get();
+			for(Future<DownloadDO> future : futures) {
+				DownloadDO download = future.get();
 				if (null != download) {
 					downloads.add(download);
 				}
