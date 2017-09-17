@@ -10,6 +10,12 @@
 	<artifactId>study-algorithm</artifactId>
 
 	<dependencies>
+	    <!-- 自定义base组件 -->
+		<dependency>
+			<groupId>com.wp.study</groupId>
+			<artifactId>study-base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<!-- apache通用编解码算法组件 -->
 		<dependency>
 			<groupId>commons-codec</groupId>

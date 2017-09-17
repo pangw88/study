@@ -10,21 +10,21 @@ import com.wp.study.base.util.HttpUtil;
 import com.wp.study.praxis.image.reptile.filter.XmlFilter;
 import com.wp.study.praxis.image.reptile.model.DownloadDO;
 
-public class ImgYtAdapter {
-	
+public class ImagetwistAdapter {
+
 	/**
 	 * 获取下载对象
 	 * 
 	 * @param aUrl
 	 * @return
 	 */
-	public static DownloadDO getPicUrl(String albumName, String aUrl) {
+	public static DownloadDO getPicUrl(String albumName,String aUrl) {
 		// 加载要下载的页面地址
 		DownloadDO download = null;
 		try {
-			Map<String, Object> params = new HashMap<String, Object>();
-			params.put("imgContinue", "Continue to image ... ");
-			String pageContent = HttpUtil.doPost(aUrl, params, String.class);
+			Map<String, String> headers = new HashMap<String, String>();
+			headers.put("overlay", "true");
+			String pageContent = HttpUtil.doGet(aUrl, headers, String.class);
 			if (StringUtils.isBlank(pageContent)) {
 				System.out.println("page content is blank aUrl=" + aUrl);
 				return download;
@@ -39,7 +39,7 @@ public class ImgYtAdapter {
 						continue;
 					}
 					for(String str : classValues) {
-						if("centred".equals(str)) {
+						if("pic img img-responsive".equals(str)) {
 							List<String> altValues = XmlFilter.getAttributeValues(img, "alt");
 							String picName = altValues.get(0);
 							if(!picName.toLowerCase().endsWith(".jpg")) {

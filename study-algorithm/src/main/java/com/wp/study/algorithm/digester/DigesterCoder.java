@@ -8,6 +8,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.wp.study.base.util.IoUtil;
+
 public class DigesterCoder {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DigesterCoder.class);
@@ -66,17 +68,11 @@ public class DigesterCoder {
 						digest.update(buffer, 0, len);
 					}
 					fileDigest = bytesToHexString(digest.digest());
-					in.close();
 				} catch (Exception e) {
 					LOG.error(e.getMessage());
 				} finally {
-					try {
-						if (in != null) {
-							in.close();
-						}
-					} catch (Exception e) {
-						LOG.error(e.getMessage());
-					}
+					// 关闭输入输出流
+					IoUtil.closeQuietly(in);
 				}
 			} else {
 				LOG.warn("file is directory!");

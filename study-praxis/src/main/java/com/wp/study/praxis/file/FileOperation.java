@@ -16,7 +16,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.filechooser.FileSystemView;
 
@@ -26,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import com.wp.study.algorithm.digester.DigesterCoder;
 import com.wp.study.base.util.CacheUtil;
+import com.wp.study.base.util.IoUtil;
 
 public class FileOperation {
 	
@@ -43,30 +46,70 @@ public class FileOperation {
 			LOG.error("<{}> not exist", file);
 			return bytes;
 		}
-		if (file.isFile()) {
+		if (file.isFile()) { // 若为文件
 			bytes += file.length();
-		} else {
-			List<File> dirs = new ArrayList<File>();
-			dirs.add(file);
-			// 遍历文件夹下子文件
-			File[] list = null;
-			while (dirs.size() > 0) {
-				list = dirs.get(0).listFiles();
-				if (list != null && list.length > 0) {
-					for (File f : list) {
-						if (f.isFile()) {
-							bytes += f.length();
-						} else {
-							dirs.add(f);
-						}
-					}
+		} else { // 若为文件夹
+			// 获取所有子文件
+			List<File> subFiles = loadFiles(file);
+			if(null != subFiles) {
+				for(File subFile : subFiles) {
+					bytes += subFile.length();
 				}
-				dirs.remove(0);
 			}
 		}
 		return bytes;
 	}
-
+	
+	/**
+	 * 加载当前文件（夹）下所有文件
+	 * 
+	 * @param files
+	 * @return
+	 */
+	public static List<File> loadFiles(File... files) {
+		List<File> fileList = new ArrayList<File>();
+		if(null == files || files.length == 0) {
+			return fileList;
+		}
+		Stack<File> dirs = new Stack<File>();
+		try {
+			// 先处理提交的文件or文件夹
+			for(File file : files) {
+				if(null == file || !file.exists()) {
+					continue;
+				}
+				if(file.isFile()) {
+					fileList.add(file);
+				} else {
+					dirs.push(file);
+				}
+			}
+			
+			// 处理文件夹内容
+			File dir = null;
+			while(!dirs.isEmpty()) {
+				dir = dirs.pop();
+				File[] subFiles = dir.listFiles();
+				if(null == subFiles || subFiles.length == 0) {
+					continue;
+				}
+				for(File subFile : subFiles) {
+					if(null == subFile || !subFile.exists()) {
+						continue;
+					}
+					if(subFile.isFile()) {
+						fileList.add(subFile);
+					} else {
+						dirs.push(subFile);
+					}
+				}
+			}
+		} catch(Exception e) {
+			LOG.error("loadFiles fail, files={}, error:", files, e);
+		}
+		return fileList;
+	}
+	
 	/**
 	 * 以父文件夹名称为基准重命名文件
 	 * 文件夹名：xxx
@@ -79,123 +122,100 @@ public class FileOperation {
 			LOG.error("can not find directory <{}>", parent);
 			return;
 		}
-		List<File> dirs = new ArrayList<File>();
-		dirs.add(parent);
 		FileWriter fw = null;
 		try {
+			// 获取所有子文件
+			List<File> subFiles = loadFiles(parent);
+			if(null == subFiles || subFiles.isEmpty()) {
+				return;
+			}
+			
 			// 重命名详情输出
-			fw = new FileWriter(new File("E:/rename.txt")) {
+			fw = new FileWriter(new File("F:/photo/rename.txt")) {
 				@Override
 				public void write(String str) throws IOException {
-					super.write(str);
-					// 换行
-					super.write("\r\n");
+					super.write(str + "\r\n"); // 换行
 				}
 			};
-			while (dirs.size() > 0) {
-				List<File> files = new ArrayList<File>();
-				/* 每次循环取dirs的第一个文件夹，在获取该文件夹下文件列表和文件夹列表后，
-				 * 将该文件夹从dirs移除*/
-				File dir = dirs.get(0);
-				File[] list = dir.listFiles();
-				if (list != null && list.length > 0) {
-					for (File f : list) {
-						if (f.isFile()) {
-							String path = f.getPath();
-							if (path.matches("^[\\s\\S]*\\.ini$")) {
-								LOG.info("exist .ini file <{}>", path);
-								f.delete();
-							} else if (path.matches("^[\\s\\S]*\\.db$")) { // \s匹配任意的空白符，\S则是匹配任意非空白符的字符
-								// 过滤数据库缓存文件
-								LOG.info("exist .db file <{}>", path);
-							} else if(path.toLowerCase().
-									matches("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov|m4v)$")) {
-								String name = f.getName();
-								// .*匹配除换行符外任意长度字符串
-								if(name.matches("^.*(_mov|_mk).*$")) {
-									String rename = name.replaceAll("_mov", "").
-											replaceAll("_mk", "");
-									f.renameTo(new File(dir, rename));
-									fw.write(name + " rename to " + rename);
-								} else {
-									// 过滤视频文件
-									LOG.info("ignore video file <{}>", path);
-								}
-							} else { // 非数据库、视频文件处理
-								files.add(new File(path) {
-									// 重写File类的compareTo方法
-									private static final long serialVersionUID = 122810055536327561L;
-									@Override
-									public int compareTo(File pathname) {
-										String name1 = this.getName();
-										String name2 = pathname.getName();
-										String pattern = "^.*\\(\\d{1,}\\).*$";
-										if (name1.matches(pattern)
-												&& name2.matches(pattern)) {
-											int i1 = Integer.valueOf(name1
-													.split("\\(")[1].split("\\)")[0]);
-											int i2 = Integer.valueOf(name2
-													.split("\\(")[1].split("\\)")[0]);
-											return i1 - i2;
-										}
-										return super.compareTo(pathname);
-									}
-								});
-							}
-						} else {
-							// 如果文件是文件夹类型，添加到dirs
-							dirs.add(f);
-						}
+			
+			// 过滤有效文件
+			List<File> files = new ArrayList<File>();
+			for (File subFile : subFiles) {
+				String path = subFile.getPath();
+				if (path.matches("^[\\s\\S]*\\.ini$")) {
+					LOG.info("exist .ini file <{}>", path);
+					subFile.delete();
+				} else if (path.matches("^[\\s\\S]*\\.db$")) { // \s匹配任意的空白符，\S则是匹配任意非空白符的字符
+					// 过滤数据库缓存文件
+					LOG.info("exist .db file <{}>", path);
+				} else if(path.toLowerCase().
+						matches("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov|m4v|zip|rar)$")) {
+					String name = subFile.getName();
+					// .*匹配除换行符外任意长度字符串
+					if(name.matches("^.*(_mov|_mk).*$")) {
+						String rename = name.replaceAll("_mov", "").
+								replaceAll("_mk", "");
+						subFile.renameTo(new File(subFile.getParentFile(), rename));
+						fw.write(name + " rename to " + rename);
+					} else {
+						// 过滤视频文件
+						LOG.info("ignore video file <{}>", path);
 					}
-					// 文件按名称进行排序
-					Collections.sort(files);
-					String dirName = dir.getName();
-					fw.write(dir.getPath() + " rename：");
-					int renameCount = 0;
-					// 文件以文件夹为基础进行重命名
-					for (int i = 0; i < files.size(); i++) {
-						File f = files.get(i);
-						String name = f.getName();
-						// 文件后缀，形如：'.jpg'、'.zip'
-						String suffix = name.lastIndexOf('.') >= 0 ? name
-								.substring(name.lastIndexOf('.')) : null;
-						// 当前文件的重命名序号
-						String num = String.valueOf(i + 1);
-						StringBuffer sb = new StringBuffer(dirName + "_");
-						// 图片数量不超过1000，故最多补2个"0"
-						for (int j = 0; j < 3 - num.length(); j++) {
-							sb.append("0");
-						}
-						String rename = sb.append(num).toString();
-						if (suffix != null) {
-							suffix = suffix.toLowerCase();
-							if(suffix.equals(".jpeg")) {
-								suffix = ".jpg";
+				} else { // 非数据库、视频文件处理
+					files.add(new File(path) {
+						// 重写File类的compareTo方法
+						private static final long serialVersionUID = 122810055536327561L;
+						@Override
+						public int compareTo(File pathname) {
+							String name1 = this.getName();
+							String name2 = pathname.getName();
+							String pattern = "^.*\\(\\d{1,}\\).*$";
+							if (name1.matches(pattern)
+									&& name2.matches(pattern)) {
+								int i1 = Integer.valueOf(name1
+										.split("\\(")[1].split("\\)")[0]);
+								int i2 = Integer.valueOf(name2
+										.split("\\(")[1].split("\\)")[0]);
+								return i1 - i2;
 							}
-							rename += suffix;
+							return super.compareTo(pathname);
 						}
-						if (!rename.equals(name)) {
-							f.renameTo(new File(dir, rename));
-							renameCount++;
-							fw.write(name + " rename to " + rename);
-						}
-					}
-					fw.write("total count：" + renameCount);
+					});
 				}
-				dirs.remove(0);
+			}
+			
+			// 文件按名称进行排序
+			Collections.sort(files);
+			Map<String, AtomicInteger> indexMap = new HashMap<String, AtomicInteger>();
+			// 文件以文件夹为基础进行重命名
+			for (File file : files) {
+				AtomicInteger ai = indexMap.get(file.getParentFile().getName());
+				if(null == ai) {
+					ai = new AtomicInteger(1);
+					indexMap.put(file.getParentFile().getName(), ai);
+				}
+				String name = file.getName();
+				// 文件后缀，形如：'.jpg'
+				String suffix = name.lastIndexOf('.') >= 0 ? name
+						.substring(name.lastIndexOf('.')).toLowerCase().replace("jpeg", "jpg") : "";
+				// 当前文件的重命名序号
+				String num = String.valueOf(ai.getAndIncrement());
+				StringBuffer sb = new StringBuffer(file.getParentFile().getName() + "_");
+				// 图片数量不超过1000，故最多补2个"0"
+				for (int j = 0; j < 3 - num.length(); j++) {
+					sb.append("0");
+				}
+				String rename = sb.append(num).append(suffix).toString();
+				if (!rename.equals(name)) {
+					file.renameTo(new File(file.getParentFile(), rename));
+					fw.write(name + " rename to " + rename);
+				}
 			}
 			fw.flush();
-			fw.close();
 		} catch(Exception e) {
 			LOG.error(e.getMessage());
 		} finally {
-			try {
-				if(fw != null) {
-					fw.close();
-				}
-			} catch(IOException ioe) {
-				LOG.error(ioe.getMessage());
-			}
+			IoUtil.closeQuietly(fw);
 		}
 	}
 
@@ -218,102 +238,48 @@ public class FileOperation {
 		Map<String, String> md5Map = new HashMap<String, String>();
 		FileWriter fw = null;
 		try {
+			// 获取所有子文件
+			List<File> subFiles = loadFiles(files);
+			if(null == subFiles || subFiles.isEmpty()) {
+				return;
+			}
+			
 			// md5相同文件列表输出
-			fw = new FileWriter(new File("E:/md5.txt")) {
+			fw = new FileWriter(new File("F:/photo/md5.txt")) {
 				public void write(String str) throws IOException {
-					super.write(str);
-					// 换行
-					super.write("\r\n");
+					super.write(str + "\r\n"); // 换行
 				}
 			};
 			
-			List<File> dirs = null;
-			for (File file : files) {
-				if(!file.exists()) {
-					LOG.error("<{}> not exist!", file);
+			for(File subFile : subFiles) {
+				String filePath = subFile.getPath();
+				// 过滤匹配这则表达式的文件
+				if(filePath.matches(regex)) {
+					LOG.info("<{}> is filtered", filePath);
 					continue;
 				}
-				if (file.isFile()) {
-					String filePath = file.getPath();
-					// 过滤匹配这则表达式的文件
-					if(filePath.matches(regex)) {
-						LOG.info("<{}> is filtered", filePath);
-						continue;
-					}
-					String md5 = DigesterCoder.getFileDigest(file, "MD5");
-					if (md5Map.containsKey(md5)) {
-						// 记录MD5值相同的文件
-						fw.write(md5Map.get(md5) + " === " + filePath
-								+ "，md5 = " + md5);
-						if(isCut) {
-							// 剪切重复文件到磁盘根目录的temp临时文件夹
-							int index = filePath.indexOf(File.separator);
-							File root = new File(index == -1 ? filePath : 
-									filePath.substring(0, index));
-							File temp = new File(root, "temp");
-							cut(file, temp);
-						}
-					} else {
-						md5Map.put(md5, file.getPath());
+				String md5 = DigesterCoder.getFileDigest(subFile, "MD5");
+				if (md5Map.containsKey(md5)) {
+					// 记录MD5值相同的文件
+					fw.write(md5Map.get(md5) + " === " + filePath
+							+ "，md5 = " + md5);
+					if(isCut) {
+						// 剪切重复文件到磁盘根目录的temp临时文件夹
+						int index = filePath.indexOf(File.separator);
+						File root = new File(index == -1 ? filePath : 
+								filePath.substring(0, index));
+						File temp = new File(root, "temp");
+						cut(subFile, temp);
 					}
 				} else {
-					// 遍历文件夹下文件计算md5值
-					dirs = new ArrayList<File>();
-					dirs.add(file);
-					while (dirs.size() > 0) {
-						File dir = dirs.get(0);
-						// 取出文件夹后从堆栈移除
-						dirs.remove(0);
-						if (null == dir.listFiles() || dir.listFiles().length == 0) {
-							// 文件夹为空，跳出本次循环
-							LOG.info("<{}> dir is empty", dir.getPath());
-							continue;
-						}
-						for (File f : dir.listFiles()) {
-							String filePath = f.getPath();
-							// 过滤匹配这则表达式的文件
-							if(filePath.matches(regex)) {
-								LOG.info("<{}> is filtered", filePath);
-								continue;
-							}
-							if(!f.isFile()) {
-								// 添加文件夹
-								dirs.add(f);
-								continue;
-							}
-							String md5 = DigesterCoder.getFileDigest(f, "MD5");
-							if (md5Map.containsKey(md5)) {
-								// 记录MD5值相同的文件
-								fw.write(md5Map.get(md5) + " === " + filePath
-										+ "，md5 = " + md5);
-								if(isCut) {
-									// 剪切重复文件到磁盘根目录的temp临时文件夹
-									int index = filePath.indexOf(File.separator);
-									File root = new File(index == -1 ? filePath : 
-											filePath.substring(0, index));
-									File temp = new File(root, "temp");
-									cut(f, temp);
-								}
-							} else {
-								md5Map.put(md5, f.getPath());
-							}
-						}
-						LOG.info("<{}> dir process end", dir.getPath());
-					}
+					md5Map.put(md5, subFile.getPath());
 				}
+			
 			}
-			fw.close();
-			fw.close();
 		} catch(Exception e) {
 			LOG.error(e.getMessage());
 		} finally {
-			try {
-				if(fw != null) {
-					fw.close();
-				}
-			} catch(IOException ioe) {
-				LOG.error(ioe.getMessage());
-			}
+			IoUtil.closeQuietly(fw);
 		}
 	}
 	
@@ -334,6 +300,13 @@ public class FileOperation {
 			LOG.error("can not find info file <{}>", info);
 			return;
 		}
+		
+		// 获取所有子文件
+		List<File> subFiles = loadFiles(dir);
+		if(null == subFiles || subFiles.isEmpty()) {
+			return;
+		}
+		
 		// 从info文件中读取文件列表详情
 		BufferedReader br = null;
 		// 预读的文件详情，在sortMap中以文件名排序
@@ -343,6 +316,7 @@ public class FileOperation {
 				return o1.compareTo(o2);
 			}
 		});
+		
 		// 保存检查结果
 		File check = new File(info.getParentFile(), "check.txt");
 		FileWriter fw = null;
@@ -355,23 +329,19 @@ public class FileOperation {
 				int start = -1;
 				int end = -1;
 				String type = "";
-				if(line.indexOf(".zip") > 0) {
-					end = line.indexOf(".zip");
+				if((end = line.indexOf(".zip")) > 0) {
 					type = ".zip";
-				} else if(line.indexOf(".mp4") > 0) {
-					end = line.indexOf(".mp4");
+				} else if((end = line.indexOf(".mp4")) > 0) {
 					type = ".mp4";
-				} else if(line.indexOf(".wmv") > 0) {
-					end = line.indexOf(".wmv");
+				} else if((end = line.indexOf(".wmv")) > 0) {
 					type = ".wmv";
 				} else {
 					continue;
 				}
 				for(int i = end - 1; 0 <= i; i --) {
 					char ch = line.charAt(i);
-					if((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') 
-							|| (ch >= '0' && ch <= '9') || ch == '_' || ch == '-') {
-					} else {
+					if(!((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') 
+							|| (ch >= '0' && ch <= '9') || ch == '_' || ch == '-')) {
 						start = i;
 						break;
 					}
@@ -380,18 +350,16 @@ public class FileOperation {
 				String name = line.substring(start + 1, end);
 				String filename = name + type;
 				if(!type.equals(".zip")) {
-					int index = 0;
+					int index = -1;
 					char ch;
-					if(filename.indexOf("_mov") > 0) {
-						index = filename.indexOf("_mov");
+					if((index = filename.indexOf("_mov")) > 0) {
 						ch = filename.charAt(index - 1);
 						if(ch >= '0' && ch <= '9') {
 							name = filename.replaceFirst("mov", "");
 						} else {
 							name = filename.replaceFirst("_mov", "");
 						}
-					} else if(filename.indexOf("_mk") > 0) {
-						index = filename.indexOf("_mk");
+					} else if((index = filename.indexOf("_mk")) > 0) {
 						ch = filename.charAt(index - 1);
 						if(ch >= '0' && ch <= '9') {
 							name = filename.replaceFirst("mk", "");
@@ -429,47 +397,30 @@ public class FileOperation {
 				}
 				sortMap.put(name, uri);
 			}
-			br.close();
+			
 			// 移除本地已经存在的文件
-			String[] files = dir.list();
-			if(files !=null && files.length > 0) {
-				System.out.println("local file size=" + files.length);
-				System.out.println("internet file size=" + sortMap.size());
-				for(String file : files) {
-					if(sortMap.containsKey(file)) {
-						sortMap.remove(file);
-					}
+			for(File subFile : subFiles) {
+				if(sortMap.containsKey(subFile.getName())) {
+					sortMap.remove(subFile.getName());
 				}
-			} else {
-				LOG.error("<{}> sub file list is null", dir);
 			}
+				
 			// 打印本地不存在的文件信息
 			fw = new FileWriter(check) {
 				@Override
 				public void write(String str) throws IOException {
-					super.write(str);
 					// 换行
-					super.write("\r\n");
+					super.write(str + "\r\n");
 				}
 			};
 			for(Map.Entry<String, String> entry : sortMap.entrySet()) {
 				fw.write(entry.getKey() + " --> " + entry.getValue());
 			}
 			fw.flush();
-			fw.close();
 		} catch(Exception e) {
 			LOG.error(e.getMessage());
 		} finally {
-			try {
-				if(br != null) {
-					br.close();
-				}
-				if(fw != null) {
-					fw.close();
-				}
-			} catch(Exception e) {
-				LOG.error(e.getMessage());
-			}
+			IoUtil.closeQuietly(br, fw);
 		}
 	}
 	
@@ -507,25 +458,15 @@ public class FileOperation {
 			while((len = bis.read(buf)) != -1) {
 				bos.write(buf, 0, len);
 			}
-			// 关闭输入输出流
-			bis.close();
+			
 			// 关闭输出流前先刷新
 			bos.flush();
-			bos.close();
 			result = true;
 		} catch(Exception e) {
 			LOG.error(e.getMessage());
 		} finally {
-			try {
-				if(bis != null) {
-					bis.close();
-				}
-				if(bos != null) {
-					bos.close();
-				}
-			} catch(IOException ioe) {
-				LOG.error(ioe.getMessage());
-			}
+			// 关闭输入输出流
+			IoUtil.closeQuietly(bis, bos);
 		}
 		if(!result) {
 			LOG.error("<{}> copy to directory <{}> failed", origin, path);
@@ -567,32 +508,14 @@ public class FileOperation {
 			out = fos.getChannel();
 			// 连接两个通道，从in通道读取，然后写入out通道
 			in.transferTo(0, in.size(), out);
-			// 关闭输入输出流
-			fis.close();
-			in.close();
+			// 刷新输入输出流
 			fos.flush();
-			fos.close();
-			out.close();
 			result = true;
 		} catch(Exception e) {
 			LOG.error(e.getMessage());
 		} finally {
-			try {
-				if(fis != null) {
-					fis.close();
-				}
-				if(in != null) {
-					in.close();
-				}
-				if(fos != null) {
-					fos.close();
-				}
-				if(out != null) {
-					out.close();
-				}
-			} catch(IOException ioe) {
-				LOG.error(ioe.getMessage());
-			}
+			// 关闭输入输出流
+			IoUtil.closeQuietly(fis, in, fos, out);
 		}
 		if(!result) {
 			LOG.error("<{}> copy to directory <{}> failed", origin, path);
@@ -639,38 +562,37 @@ public class FileOperation {
 		if(roots != null && roots.length > 0) {
 			FileSystemView fsv = FileSystemView.getFileSystemView();
 			for(File root : roots) {
-				if(fsv.isFileSystemRoot(root) && root.isDirectory()) {
-					List<File> tempDirs = new ArrayList<File>();
-					tempDirs.add(root);
-					while(tempDirs.size() > 0) {
-						// 检验当前文件夹是否匹配
-						File curDir = tempDirs.get(0);
-						if(curDir.getName().matches(regex) && !ignoreDir) {
-							matches.add(curDir);
+				if(!fsv.isFileSystemRoot(root) || root.isFile()) {
+					continue;
+				}
+
+				List<File> tempDirs = new ArrayList<File>();
+				tempDirs.add(root);
+				while(tempDirs.size() > 0) {
+					// 检验当前文件夹是否匹配
+					File curDir = tempDirs.get(0);
+					tempDirs.remove(0);
+					if(curDir.getName().matches(regex) && !ignoreDir) {
+						matches.add(curDir);
+					}
+					// 检验
+					File[] files = curDir.listFiles();
+					if(null == files || files.length == 0) {
+						continue;
+					}
+					for(File file : files) {
+						if(file.isDirectory()) {
+							tempDirs.add(file);
+							continue;
 						}
-						// 检验
-						File[] files = curDir.listFiles();
-						if(files != null && files.length > 0) {
-							for(File file : files) {
-								if(file.isFile()) {
-									if(file.getName().matches(regex)) {
-										matches.add(file);
-									}
-								} else {
-									tempDirs.add(file);
-								}
-							}
+						if(file.getName().matches(regex)) {
+							matches.add(file);
 						}
-						tempDirs.remove(0);
 					}
 				}
 			}
         }
 		return matches;
-	}
-	
-	public static void compress(File dir, String password, int layer) {
-		
 	}
 	
 	/**
@@ -680,6 +602,7 @@ public class FileOperation {
 	 * @param dir
 	 * @param password
 	 * @param layer
+	 *     压缩文件夹在当前目录层级数
 	 */
 	public static void compress(File winrar, File dir, String password, int layer) {
 		if(null == dir || !dir.exists() || !dir.isDirectory()) {
@@ -691,18 +614,20 @@ public class FileOperation {
 		parents.add(dir);
 		for(int i = 0; i < layer; i ++) {
 			childs = new ArrayList<File>();
-			if(parents != null && parents.size() > 0) {
-				for(File parent : parents) {
-					if(parent.isDirectory()) {
-						FileSystemView fsv = FileSystemView.getFileSystemView();
-						// 系统顶级目录C:\，D:\...是隐藏属性
-						if(fsv.isFileSystemRoot(parent) || !parent.isHidden()) {
-							File[] files = parent.listFiles();
-							if(files != null && files.length != 0) {
-								for(File file : files) {
-									childs.add(file);
-								}
-							}
+			if(null == parents || parents.isEmpty()) {
+				continue;
+			}
+			for(File parent : parents) {
+				if(!parent.isDirectory()) {
+					continue;
+				}
+				FileSystemView fsv = FileSystemView.getFileSystemView();
+				// 系统顶级目录C:\，D:\...是隐藏属性
+				if(fsv.isFileSystemRoot(parent) || !parent.isHidden()) {
+					File[] files = parent.listFiles();
+					if(files != null && files.length != 0) {
+						for(File file : files) {
+							childs.add(file);
 						}
 					}
 				}
@@ -710,7 +635,7 @@ public class FileOperation {
 			parents = childs;
 		}
 		
-		if(childs != null && childs.size() > 0) {
+		if(childs != null && !childs.isEmpty()) {
 			for(File comp : childs) {
 				compress(winrar, comp, password);
 			}
@@ -736,6 +661,27 @@ public class FileOperation {
 		boolean result = false;
 		if(origin.getName().matches("^[\\s\\S]*\\.(rar|zip|7z)$")) {
 			LOG.error("<{}> has been compress file", origin);
+			return result;
+		}
+		
+		// 获取压缩文件路径（与源文件同级目录）
+		String oriFileName = origin.getName();
+		String compFileName = null;
+		if(origin.isDirectory()) {
+			compFileName = oriFileName + ".zip";
+		} else {
+			int separator = oriFileName.lastIndexOf(".");
+			if(separator != -1) {
+				compFileName = oriFileName.substring(0, separator) + ".rar";
+			} else {
+				compFileName = oriFileName + ".rar";
+			}
+		}
+		File compFile = new File(origin.getParentFile(), compFileName);
+		
+		// 压缩文件已存在，退出程序
+		if(compFile.exists()) {
+			LOG.error("<{}> has existed", compFile);
 			return result;
 		}
 		
@@ -773,27 +719,6 @@ public class FileOperation {
 		// hp开关加密文件数据、文件名、大小、属性、注释等所有可感知压缩文件区域
 		if(StringUtils.isNotBlank(password)) {
 			cmd.append(" -hp").append(password);
-		}
-		
-		// 获取压缩文件路径（与源文件同级目录）
-		String oriFileName = origin.getName();
-		String compFileName = null;
-		if(origin.isDirectory()) {
-			compFileName = oriFileName + ".zip";
-		} else {
-			int separator = oriFileName.lastIndexOf(".");
-			if(separator != -1) {
-				compFileName = oriFileName.substring(0, separator) + ".rar";
-			} else {
-				compFileName = oriFileName + ".rar";
-			}
-		}
-		File compFile = new File(origin.getParentFile(), compFileName);
-		
-		// 压缩文件已存在，退出程序
-		if(compFile.exists()) {
-			LOG.error("<{}> has existed", compFile);
-			return result;
 		}
 		
 		try {
@@ -920,38 +845,21 @@ public class FileOperation {
 						in = fis.getChannel();
 						// 连接两个通道，从in通道读取，然后写入out通道
 						in.transferTo(0, in.size(), out);
-						// 关闭输入流
-						fis.close();
-						in.close();
 					} catch(Exception e) {
-						if(fis != null) {
-							fis.close();
-						}
-						if(in != null) {
-							in.close();
-						}
+					} finally {
+						// 关闭输入输出流
+						IoUtil.closeQuietly(fis, in);
 					}
-					
 				}
 			}
-			// 关闭输出流
+			// 刷新输出流
 			fos.flush();
-			fos.close();
-			out.close();
 			result = true;
 		} catch(Exception e) {
 			LOG.error("merge file fail, e:", e);
 		} finally {
-			try {
-				if(fos != null) {
-					fos.close();
-				}
-				if(out != null) {
-					out.close();
-				}
-			} catch(IOException ioe) {
-				LOG.error(ioe.getMessage());
-			}
+			// 关闭输入输出流
+			IoUtil.closeQuietly(fos, out);
 		}
 		return result;
 	}

@@ -1,6 +1,5 @@
 package com.wp.study.base.util;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
@@ -27,17 +26,10 @@ public class PropertyUtil {
 					is = PropertyUtil.class.getClassLoader()
 							.getResourceAsStream("resource/account.txt");
 					props.load(is);
-					is.close();
 				} catch(Exception e) {
 					LOG.error(e.getMessage());
 				} finally {
-					try {
-						if(is != null) {
-							is.close();
-						}
-					} catch(IOException ioe) {
-						LOG.error(ioe.getMessage());
-					}
+					IoUtil.closeQuietly(is);
 				}
 			} else {
 				LOG.warn("props is null, need init.");

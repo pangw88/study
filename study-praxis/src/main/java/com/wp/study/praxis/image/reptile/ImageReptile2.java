@@ -24,6 +24,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.lang3.StringUtils;
 
 import com.wp.study.base.util.HttpUtil;
+import com.wp.study.base.util.IoUtil;
 import com.wp.study.praxis.image.reptile.filter.XmlFilter;
 
 public class ImageReptile2 {
@@ -69,12 +70,7 @@ public class ImageReptile2 {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			if (null != null) {
-				try {
-					br.close();
-				} catch (Exception e2) {
-				}
-			}
+			IoUtil.closeQuietly(br);
 		}
 		return pageUrls;
 	}
@@ -232,13 +228,7 @@ public class ImageReptile2 {
 		} catch(Exception e) {
 			e.printStackTrace();
 		} finally {
-			if(null != fw) {
-				try {
-					fw.close();
-				} catch(Exception e) {
-					e.printStackTrace();
-				}
-			}
+			IoUtil.closeQuietly(fw);
 		}
 	}
 	

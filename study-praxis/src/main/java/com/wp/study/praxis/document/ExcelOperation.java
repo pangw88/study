@@ -17,6 +17,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
+import com.wp.study.base.util.IoUtil;
+
 public class ExcelOperation {
 	
 	public static void main(String[] args) {
@@ -63,25 +65,10 @@ public class ExcelOperation {
 					}
 				}
 			}
-			fis.close();
-			wb.close();
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
 		} finally {
-			if(fis != null) {
-				try {
-					fis.close();
-				} catch(IOException ioe) {
-					ioe.printStackTrace();
-				}
-			}
-			if(wb != null) {
-				try {
-					wb.close();
-				} catch(IOException ioe) {
-					ioe.printStackTrace();
-				}
-			}
+			IoUtil.closeQuietly(fis, wb);
 		}
 	}
 
@@ -133,25 +120,10 @@ public class ExcelOperation {
 		        row.createCell(1).setCellValue("value1");
 	        }
 	        wb.write(fos);
-			fos.close();
-			wb.close();
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
 		} finally {
-			if(fos != null) {
-				try {
-					fos.close();
-				} catch(IOException ioe) {
-					ioe.printStackTrace();
-				}
-			}
-			if(wb != null) {
-				try {
-					wb.close();
-				} catch(IOException ioe) {
-					ioe.printStackTrace();
-				}
-			}
+			IoUtil.closeQuietly(fos, wb);
 		}
 	}
 	

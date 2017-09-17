@@ -30,6 +30,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
 import com.wp.study.algorithm.similar.StringSimilarty;
+import com.wp.study.base.util.IoUtil;
 
 public class AddressSimilar {
 	
@@ -198,7 +199,7 @@ public class AddressSimilar {
 					}
 					addresses.put(arr[0], arr[1]);
 				}
-				br.close();
+				IoUtil.closeQuietly(br);
 			}
 		}
 	}
@@ -293,8 +294,7 @@ public class AddressSimilar {
 				}
 				// 添加每个文件要匹配地址
 				needCalculateAddresses.put(f, fileNeedCalculateAddresses);
-				bis.close();
-				wb.close();
+				IoUtil.closeQuietly(bis, wb);
 			}
 		}
 	}
@@ -334,9 +334,7 @@ public class AddressSimilar {
 		// 输出不可以定义在前面，会出现异常
 		FileOutputStream fos = new FileOutputStream(file);
 		wb.write(fos);
-		bis.close();
-		fos.close();
-		wb.close();
+		IoUtil.closeQuietly(bis, fos, wb);
 	}
 	
 	private static void fileRename(File file) {

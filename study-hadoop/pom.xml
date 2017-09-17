@@ -10,6 +10,12 @@
 	<artifactId>study-hadoop</artifactId>
 
 	<dependencies>
+	    <!-- 自定义base组件 -->
+		<dependency>
+			<groupId>com.wp.study</groupId>
+			<artifactId>study-base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-mapreduce-client-core</artifactId>

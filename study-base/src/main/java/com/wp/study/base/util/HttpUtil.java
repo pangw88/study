@@ -1,6 +1,5 @@
 package com.wp.study.base.util;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -34,39 +33,17 @@ public class HttpUtil {
 	private static final int DEFAULT_CONNECT_TIMEOUT = 5000;
 	private static final int DEFAULT_SOCKET_TIMEOUT = 100000;
 	
-	public static void doGet(String url) {
-		doGet(url, Void.class);
-	}
-	
 	public static <T> T doGet(String url, Class<T> requiredType) {
-		return doGet(url, DEFAULT_CONNECT_TIMEOUT, DEFAULT_SOCKET_TIMEOUT, requiredType);
+		return doGet(url, null, requiredType);
 	}
 	
-	public static <T> T doGet(String url, int connectTimeout, int socketTimeout, Class<T> requiredType) {
-		RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(
-				connectTimeout).setSocketTimeout(socketTimeout).build();
-		return doGet(url, requestConfig, DEFAULT_CHARSET, requiredType);
-	}
-	
-	public static <T> T doPost(String url, Map<String, Object> params, int connectTimeout, int socketTimeout, Class<T> requiredType) {
-		RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(
-				connectTimeout).setSocketTimeout(socketTimeout).build();
-		return doPost(url, requestConfig, DEFAULT_CHARSET, params, requiredType);
-	}
-	
-	public static int doGetDownload(String url, File output) {
+	public static <T> T doGet(String url, Map<String, String> headers, Class<T> requiredType) {
 		RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(
 				DEFAULT_CONNECT_TIMEOUT).setSocketTimeout(DEFAULT_SOCKET_TIMEOUT).build();
-		return doGetDownload(url, requestConfig, output);
+		return doGet(url, requestConfig, headers, DEFAULT_CHARSET, requiredType);
 	}
 	
-	public static int doPostDownload(String url, Map<String, Object> params, File output) {
-		RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(
-				DEFAULT_CONNECT_TIMEOUT).setSocketTimeout(DEFAULT_SOCKET_TIMEOUT).build();
-		return doPostDownload(url, requestConfig, params, output);
-	}
-	
-	public static <T> T doGet(String url, RequestConfig requestConfig, String charset, Class<T> requiredType) {
+	public static <T> T doGet(String url, RequestConfig requestConfig, Map<String, String> headers, String charset, Class<T> requiredType) {
 		T t = null;
 		if(StringUtils.isEmpty(url)) {
 			LOG.warn("url is empty!");
@@ -89,6 +66,14 @@ public class HttpUtil {
 							DEFAULT_CONNECT_TIMEOUT).setSocketTimeout(DEFAULT_SOCKET_TIMEOUT).build();
 				}
 				httpGet.setConfig(requestConfig);
+				
+				// set headers
+				if(null != headers && !headers.isEmpty()) {
+					for(Map.Entry<String, String> entry : headers.entrySet()) {
+						httpGet.addHeader(entry.getKey(), entry.getValue());
+					}
+				}
+				
 				// set charset
 				if(charset == null) {
 					charset = DEFAULT_CHARSET;
@@ -100,14 +85,23 @@ public class HttpUtil {
 				LOG.error("doGet fail, url={}, error:", url, e);
 			} finally {
 				// 建立的http连接，仍被response保持着，为了释放资源，手动取消连接
-				closeQuietly(response);
-				closeQuietly(httpClient);
+				IoUtil.closeQuietly(response, httpClient);
 		    }
 		}
 		return t;
 	}
 	
-	public static <T> T doPost(String url, RequestConfig requestConfig, String charset, Map<String, Object> params, Class<T> requiredType) {
+	public static <T> T doPost(String url, Map<String, Object> params, Class<T> requiredType) {
+		return doPost(url, params, null, requiredType);
+	}
+	
+	public static <T> T doPost(String url, Map<String, Object> params, Map<String, String> headers, Class<T> requiredType) {
+		RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(
+				DEFAULT_CONNECT_TIMEOUT).setSocketTimeout(DEFAULT_SOCKET_TIMEOUT).build();
+		return doPost(url, params, requestConfig, headers, DEFAULT_CHARSET, requiredType);
+	}
+	
+	public static <T> T doPost(String url, Map<String, Object> params, RequestConfig requestConfig, Map<String, String> headers, String charset, Class<T> requiredType) {
 		T t = null;
 		if(StringUtils.isEmpty(url)) {
 			LOG.warn("url is empty!");
@@ -130,6 +124,14 @@ public class HttpUtil {
 							DEFAULT_CONNECT_TIMEOUT).setSocketTimeout(DEFAULT_SOCKET_TIMEOUT).build();
 				}
 				httpPost.setConfig(requestConfig);
+				
+				// set headers
+				if(null != headers && !headers.isEmpty()) {
+					for(Map.Entry<String, String> entry : headers.entrySet()) {
+						httpPost.addHeader(entry.getKey(), entry.getValue());
+					}
+				}
+				
 				// set charset
 				if(charset == null) {
 					charset = DEFAULT_CHARSET;
@@ -152,14 +154,23 @@ public class HttpUtil {
 				LOG.error("doPost fail, url={}, error:", url, e);
 			} finally {
 				// 建立的http连接，仍被response保持着，为了释放资源，手动取消连接
-				closeQuietly(response);
-				closeQuietly(httpClient);
+				IoUtil.closeQuietly(response, httpClient);
 		    }
 		}
 		return t;
 	}
 	
-	public static int doGetDownload(String url, RequestConfig requestConfig, File output) {
+	public static int doGetDownload(String url, File output) {
+		return doGetDownload(url, null, output);
+	}
+	
+	public static int doGetDownload(String url, Map<String, String> headers, File output) {
+		RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(
+				DEFAULT_CONNECT_TIMEOUT).setSocketTimeout(DEFAULT_SOCKET_TIMEOUT).build();
+		return doGetDownload(url, requestConfig, headers, output);
+	}
+	
+	public static int doGetDownload(String url, RequestConfig requestConfig, Map<String, String> headers, File output) {
 		int status = HttpStatus.SC_BAD_REQUEST;
 		if(StringUtils.isEmpty(url)) {
 			LOG.warn("url is empty!");
@@ -184,6 +195,14 @@ public class HttpUtil {
 					requestConfig = RequestConfig.custom().setConnectTimeout(
 							DEFAULT_CONNECT_TIMEOUT).setSocketTimeout(DEFAULT_SOCKET_TIMEOUT).build();
 				}
+			    
+				// set headers
+				if(null != headers && !headers.isEmpty()) {
+					for(Map.Entry<String, String> entry : headers.entrySet()) {
+						httpGet.addHeader(entry.getKey(), entry.getValue());
+					}
+				}
+			    
 				httpGet.setConfig(requestConfig);
 			    response = httpClient.execute(httpGet);
 			    status = response.getStatusLine().getStatusCode();
@@ -198,22 +217,30 @@ public class HttpUtil {
 				    	}
 				    	os.flush();
 				    } finally {
-				    	closeQuietly(os);
-				    	closeQuietly(is);
+				    	IoUtil.closeQuietly(os, is);
 				    }
 			    }
 			} catch (Exception e) {
 				LOG.error("doGetDownload fail, url={}, error:", url, e);
 			} finally {
 				// 建立的http连接，仍被response保持着，为了释放资源，手动取消连接
-				closeQuietly(response);
-				closeQuietly(httpClient);
+				IoUtil.closeQuietly(response, httpClient);
 		    }
 		}
 		return status;
 	}
 	
-	public static int doPostDownload(String url, RequestConfig requestConfig, Map<String, Object> params, File output) {
+	public static int doPostDownload(String url, File output) {
+		return doPostDownload(url, null, null, output);
+	}
+	
+	public static int doPostDownload(String url, Map<String, Object> params, Map<String, String> headers, File output) {
+		RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(
+				DEFAULT_CONNECT_TIMEOUT).setSocketTimeout(DEFAULT_SOCKET_TIMEOUT).build();
+		return doPostDownload(url, params, requestConfig, headers, output);
+	}
+	
+	public static int doPostDownload(String url, Map<String, Object> params, RequestConfig requestConfig, Map<String, String> headers, File output) {
 		int status = HttpStatus.SC_BAD_REQUEST;
 		if(StringUtils.isEmpty(url)) {
 			LOG.warn("url is empty!");
@@ -239,6 +266,14 @@ public class HttpUtil {
 							DEFAULT_CONNECT_TIMEOUT).setSocketTimeout(DEFAULT_SOCKET_TIMEOUT).build();
 				}
 			    httpPost.setConfig(requestConfig);
+			    
+			    // set headers
+				if(null != headers && !headers.isEmpty()) {
+					for(Map.Entry<String, String> entry : headers.entrySet()) {
+						httpPost.addHeader(entry.getKey(), entry.getValue());
+					}
+				}
+			    
 			    // set paramters
 				if(params != null && params.size() > 0) {
 					List <NameValuePair> nvps = new ArrayList <NameValuePair>();
@@ -263,16 +298,14 @@ public class HttpUtil {
 				    	}
 				    	os.flush();
 				    } finally {
-				    	closeQuietly(os);
-				    	closeQuietly(is);
+				    	IoUtil.closeQuietly(os, is);
 				    }
 			    }
 			} catch (Exception e) {
 				LOG.error("doPostDownload fail, url={}, error:", url, e);
 			} finally {
 				// 建立的http连接，仍被response保持着，为了释放资源，手动取消连接
-				closeQuietly(response);
-				closeQuietly(httpClient);
+				IoUtil.closeQuietly(response, httpClient);
 		    }
 		}
 		return status;
@@ -300,17 +333,6 @@ public class HttpUtil {
     	// after process response, ensure it is fully consumed
     	EntityUtils.consume(httpEntity);
 		return t;
-	}
-	
-	private static void closeQuietly(Closeable object) {
-		if(null == object) {
-			return;
-		}
-		try {
-			object.close();
-		} catch(Exception e) {
-			LOG.error("closeQuietly fail, error:", e);
-		}
 	}
 	
 }

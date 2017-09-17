@@ -19,6 +19,8 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
+import com.wp.study.base.util.IoUtil;
+
 public class AddressSimilarity2 {
 	
 	public static class AddressSimilarityMap extends Mapper<LongWritable, Text, Text, FloatWritable> {
@@ -74,20 +76,13 @@ public class AddressSimilarity2 {
 							oldAddrs.add(line);
 						} 
 					}
-					br.close();
 				}
 			} catch(IOException ioe) {
 				throw new RuntimeException(ioe);
 			} catch (NumberFormatException nfe) {
 				throw new RuntimeException(nfe);
 			} finally {
-				if(br != null) {
-					try {
-						br.close();
-					} catch(IOException ioe) {
-						throw new RuntimeException(ioe);
-					}
-				}
+				IoUtil.closeQuietly(br);
 			}
 		}
 		

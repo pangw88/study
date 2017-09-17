@@ -59,9 +59,10 @@ public class JsonUtil {
         		jsonGenerator = jsonFactory.createJsonGenerator(stringWriter);
         		objectMapper.writeValue(jsonGenerator, bean);
                 json = stringWriter.toString();
-                jsonGenerator.close();
             } catch (IOException e) {
                 LOG.error(e.getMessage());
+            } finally {
+            	IoUtil.closeQuietly(jsonGenerator);
             }
 		} else {
 			LOG.warn("bean is null!");

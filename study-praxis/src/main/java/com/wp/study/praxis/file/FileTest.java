@@ -11,6 +11,8 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.wp.study.base.util.IoUtil;
+
 public class FileTest {
 	
 	private static List<File> picList = new ArrayList<File>();
@@ -82,12 +84,7 @@ public class FileTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			if(null != br) {
-				try {
-					br.close();
-				} catch(Exception e) {
-				}
-			}
+			IoUtil.closeQuietly(br);
 		}
 		if(sb.length() > 0) {
 			FileWriter fw = null;
@@ -98,12 +95,7 @@ public class FileTest {
 			} catch(Exception e) {
 				e.printStackTrace();
 			} finally {
-				if(null != fw) {
-					try {
-						fw.close();
-					} catch(Exception e) {
-					}
-				}
+				IoUtil.closeQuietly(fw);
 			}
 		}
 		if(sb.length() == 0) {

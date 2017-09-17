@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.wp.study.algorithm.encryption.ClassicalCoder;
 import com.wp.study.algorithm.encryption.IDEACoder;
 import com.wp.study.base.pojo.Entity;
+import com.wp.study.base.util.IoUtil;
 import com.wp.study.jdbc.derby.dao.EntityMapper;
 import com.wp.study.swing.util.CommonUtil;
 
@@ -55,9 +56,7 @@ public class EntityService {
 			// add entity fail
 			LOG.error(e.getMessage());
         } finally {
-        	if(sqlSession != null) {
-        		sqlSession.close();
-        	}
+        	IoUtil.closeQuietly(sqlSession);
         }
 		return result;
 	}
@@ -85,9 +84,7 @@ public class EntityService {
 			// edit entity fail
 			LOG.error(e.getMessage());
         } finally {
-        	if(sqlSession != null) {
-        		sqlSession.close();
-        	}
+        	IoUtil.closeQuietly(sqlSession);
         }
 		return result;
 	}
@@ -120,9 +117,7 @@ public class EntityService {
 		} catch (Exception e) {
 			LOG.error(e.getMessage());
         } finally {
-        	if(sqlSession != null) {
-        		sqlSession.close();
-        	}
+        	IoUtil.closeQuietly(sqlSession);
         }
 		return entityList;
 	}
@@ -144,9 +139,7 @@ public class EntityService {
 			// delete entity fail
 			LOG.error(e.getMessage());
         } finally {
-        	if(sqlSession != null) {
-        		sqlSession.close();
-        	}
+        	IoUtil.closeQuietly(sqlSession);
         }
 		return result;
 	}

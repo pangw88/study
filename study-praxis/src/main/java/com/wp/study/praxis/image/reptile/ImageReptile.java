@@ -1,11 +1,9 @@
 package com.wp.study.praxis.image.reptile;
 
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,12 +21,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.imageio.ImageIO;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.wp.study.base.util.HttpUtil;
+import com.wp.study.base.util.ImageUtil;
+import com.wp.study.base.util.IoUtil;
 import com.wp.study.base.util.JsonUtil;
+import com.wp.study.praxis.file.FileOperation;
 import com.wp.study.praxis.image.reptile.adapter.WebsiteAdapterUtils;
 import com.wp.study.praxis.image.reptile.filter.XmlFilter;
 import com.wp.study.praxis.image.reptile.model.DownloadDO;
@@ -36,15 +35,16 @@ import com.wp.study.praxis.image.reptile.model.DownloadDO;
 public class ImageReptile {
 	
 	private static String urlFilePath = "F:/photo/page_url.txt";
-	private static String downloadedFileName = "downloaded_info";
 	private static String downloadedFilePath = "F:/photo/downloaded_info.txt";
+	private static String notSupportFilePath = "F:/photo/notsupport_info.txt";
 	
-	private static ExecutorService downloadPool = new ThreadPoolExecutor(10, 10, 5, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(1000));
+	private static ExecutorService downloadPool = new ThreadPoolExecutor(15, 15, 5, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(2000));
 	private static Map<String, FileWriter> fwMap = new ConcurrentHashMap<String, FileWriter>() {
 		private static final long serialVersionUID = -3442731360328676574L;
 		{
 			try {
-				put(downloadedFileName, new FileWriter(new File(downloadedFilePath)));
+				put(downloadedFilePath, new FileWriter(downloadedFilePath, true));
+				put(notSupportFilePath, new FileWriter(notSupportFilePath, true));
 			} catch(Exception e) {
 			}
 		}
@@ -52,6 +52,7 @@ public class ImageReptile {
 	};
 	private static Map<String, DownloadDO> downloadedMap = new ConcurrentHashMap<String, DownloadDO>();
 	private static Lock lock = new ReentrantLock();
+	private static File invalidPath = new File("F:/photo/invalid");
 	
 
 	/**
@@ -81,12 +82,8 @@ public class ImageReptile {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			if (null != null) {
-				try {
-					br.close();
-				} catch (Exception e2) {
-				}
-			}
+			// 关闭输入输出流
+			IoUtil.closeQuietly(br);
 		}
 		return fileInfoSet;
 	}
@@ -122,31 +119,32 @@ public class ImageReptile {
 							output = new File(dic, download.getPicName());
 							if(!output.exists()) {
 								status = HttpUtil.doGetDownload(download.getDownUrl(), output);
-								if(output.exists()) {
-									BufferedImage bi = ImageIO.read(output);
-									if(bi.getHeight() < 500 || bi.getWidth() < 500) {
-										output.delete();
-									} else {
-										download.setHasDown(true);
-									}
-									bi.flush();
-								}
 							} else {
 								download.setHasDown(true);
 								System.out.println("has download, aUrl=" + download.getaUrl());
 							}
-							downloadedMap.put(download.getaUrl(), download);
+							// 校验图片有效性
+							if(output.exists()) {
+								boolean valid = ImageUtil.isValidImage(output.toURI().toURL(), 500);
+								if(valid) {
+									download.setHasDown(true);
+								} else {
+									FileOperation.cut(output, invalidPath);
+								}
+							}
+							// 打印已经下载完成的资源
+							writeDownloaded(JsonUtil.convertBeanToJson(download));
 						} catch(Throwable t) {
 							t.printStackTrace();
 						} finally {
 							latch.countDown();
 							if(null == output || !output.exists()) {
-								try {
-									// 通过浏览器打开无法识别的页面
+								// 通过浏览器打开无法识别的页面
+								/*try {
 									Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + download.getDownUrl());
-								} catch (IOException e) {
+								} catch (Exception e) {
 									e.printStackTrace();
-								}
+								}*/
 							}
 							System.out.println(String.format(format, download.getPicName(), download.getDownUrl(), 
 									download.getaUrl(), status, System.currentTimeMillis() - startTime));
@@ -162,13 +160,8 @@ public class ImageReptile {
 		} catch(Exception e) {
 			e.printStackTrace();
 		} finally {
-			if(null != fw) {
-				try {
-					fw.close();
-				} catch(Exception e) {
-					e.printStackTrace();
-				}
-			}
+			// 关闭输入输出流
+			IoUtil.closeQuietly(fw);
 		}
 	}
 	
@@ -195,14 +188,11 @@ public class ImageReptile {
 						DownloadDO download = null;
 						try {
 							String aUrl = entry.getKey();
-							if(null != entry.getValue()) {
-								download = entry.getValue();
-							} else {
-								download = WebsiteAdapterUtils.getPicUrl(aUrl);
+							download = entry.getValue();
+							if(null != download && StringUtils.isBlank(download.getDownUrl())) {
+								download = WebsiteAdapterUtils.getPicUrl(aUrl, download.getAlbumName());
 							}
-							
-							/*if (imgUrl.startsWith("https://img.yt") || imgUrl.startsWith("http://img.yt")
-									|| imgUrl.startsWith("http://imgcandy.net")) {
+							/*if (imgUrl.startsWith("http://imgcandy.net")) {
 								downLink = imgUrl.replace("small", "big");
 								if(imgUrl.contains("img.yt/upload")) {
 									downLink = downLink.replace("img.yt/upload", "x001.img.yt");
@@ -213,8 +203,6 @@ public class ImageReptile {
 								downLink = imgUrl.substring(0, imgUrl.lastIndexOf("/") + 1);
 								downLink += aUrl.substring(aUrl.lastIndexOf("/") + 1);
 								downLink += imgUrl.substring(imgUrl.lastIndexOf("."));
-							} else if (aUrl.contains("imagetwist.com")) {
-								downLink = imgUrl.replace("/th/", "/i/") + "/photo_001.jpg";
 							}*/
 						} catch (Exception e) {
 							e.printStackTrace();
@@ -243,9 +231,26 @@ public class ImageReptile {
 		return downloads;
 	}
 	
+	public static String getAlbum(String pageUrl) {
+		String albumName = null;
+		if(null == pageUrl) {
+			return albumName;
+		}
+		int index = pageUrl.indexOf("&album=");
+		if(index > -1) { // 强制设置，直接返回
+			return pageUrl.substring(pageUrl.indexOf("&album=") + 7, pageUrl.length());
+		}
+		if(pageUrl.contains("vipergirls.to")) {
+			albumName = pageUrl.substring(pageUrl.lastIndexOf("-") + 1, pageUrl.indexOf("?"));
+		}
+		return albumName;
+	}
+	
 	/**
 	 * 
 	 * @param urlFilePath
+	 * @param downloadedPath
+	 * @param cleanHistory
 	 */
 	public static void batchReptile(String urlFilePath, String downloadedPath, boolean cleanHistory) {
 		// 加载要下载的主页面地址
@@ -277,6 +282,8 @@ public class ImageReptile {
 					System.out.println("page content is blank, pageUrl=" + pageUrl);
 					continue;
 				}
+				
+				String albumName = getAlbum(pageUrl);
 				
 				// 生成下载链接
 				List<String> eles = XmlFilter.getElements(pageContent, "a");
@@ -310,7 +317,12 @@ public class ImageReptile {
 						System.out.println("not support image format, imgUrl=" + imgUrl);
 						continue;
 					}
-					urlMap.put(aUrl, downloadedMap.get(aUrl));
+					DownloadDO download = downloadedMap.get(aUrl);
+					if(null == download) {
+						download = new DownloadDO();
+						download.setAlbumName(albumName);
+					}
+					urlMap.put(aUrl, download);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -325,13 +337,16 @@ public class ImageReptile {
 		// 下载图片
 		downloadPic(downloads);
 		
-		// 打印已经下载完成的资源
-		for(Map.Entry<String, DownloadDO> entry : downloadedMap.entrySet()) {
-			write(downloadedFileName, JsonUtil.convertBeanToJson(entry.getValue()));
-		}
-		
 		// 关闭各种资源池
 		closeSource();
+	}
+	
+	public static void writeDownloaded(String log) {
+		write(downloadedFilePath, log);
+	}
+	
+	public static void writeNoSupport(String log) {
+		write(notSupportFilePath, log);
 	}
 	
 	private static void write(String fwName, String log) {
@@ -355,8 +370,7 @@ public class ImageReptile {
 
 		if(null != fw) {
 			try {
-				fw.write(log);
-				fw.write("\n");
+				fw.write(log + "\n");
 				fw.flush();
 			} catch (Throwable e) {
 				e.printStackTrace();
@@ -373,11 +387,8 @@ public class ImageReptile {
 		}
 		// 关闭filewriter
 		for(Map.Entry<String, FileWriter> entry : fwMap.entrySet()) {
-			try {
-				entry.getValue().close();
-			} catch (Throwable e) {
-				e.printStackTrace();
-			}
+			// 关闭输入输出流
+			IoUtil.closeQuietly(entry.getValue());
 		}
 	}
 	

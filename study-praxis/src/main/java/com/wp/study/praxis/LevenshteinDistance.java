@@ -31,6 +31,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
+import com.wp.study.base.util.IoUtil;
+
 public class LevenshteinDistance {
 
 	private static Map<String, String> tradeInfoMap = new HashMap<String, String>();
@@ -121,19 +123,12 @@ public class LevenshteinDistance {
 				tradeInfoMap.put(newTid, newValue);
 			}
 			wb.write(fos);
-			fos.close();
 			
 			removeRow(input);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			if (fos != null) {
-				try {
-					fos.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+			IoUtil.closeQuietly(fos);
 		}
 	}
 	
@@ -161,8 +156,7 @@ public class LevenshteinDistance {
 		}
 		FileOutputStream os = new FileOutputStream(excel);
 		wb.write(os);
-		in.close();
-		os.close();
+		IoUtil.closeQuietly(in, os);
 	}
 
 	private static void loadOldTrade(String oldFilePath) throws FileNotFoundException {
@@ -189,18 +183,10 @@ public class LevenshteinDistance {
 				}
 				tradeInfoMap.put(arr[0], arr[1]);
 			}
-			
-			br.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
-			if (br != null) {
-				try {
-					br.close();
-				} catch (IOException ioe) {
-					ioe.printStackTrace();
-				}
-			}
+			IoUtil.closeQuietly(br);
 		}
 	}
 
@@ -256,7 +242,7 @@ public class LevenshteinDistance {
 				newTradeIds.add(tid);
 			}
 		}
-		in.close();
+		IoUtil.closeQuietly(in);
 	}
 
 	private static String getColumn(HSSFCell cell) {

@@ -12,6 +12,8 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.wp.study.base.util.IoUtil;
+
 @SuppressWarnings("unused")
 public class Test {
 	
@@ -41,19 +43,7 @@ public class Test {
 		} catch(SQLException se) {
 			LOG.error(se.getMessage());
 		} finally {
-			try {
-				if(rs != null) {
-					rs.close();
-				}
-				if(rs != null) {
-					statement.close();
-				}
-				if(rs != null) {
-					conn.close();
-				}
-			} catch(SQLException se) {
-				LOG.error(se.getMessage());
-			}
+			IoUtil.closeQuietly(rs, statement, conn);
 		}
 	}
 	

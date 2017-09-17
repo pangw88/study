@@ -25,27 +25,12 @@ public class SerialUtil {
 				oos.writeObject(obj);
 				oos.flush();
 				fos.flush();
-				fos.close();
-				oos.close();
 			} catch(FileNotFoundException fnfe) {
 				LOG.error(fnfe.getMessage());
 			} catch(IOException ioe) {
 				LOG.error(ioe.getMessage());
 			} finally {
-				if(null != fos) {
-					try {
-						fos.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-				if(null != oos) {
-					try {
-						oos.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
+				IoUtil.closeQuietly(fos, oos);
 			}
 		} else {
 			LOG.warn("obj is null!");
@@ -60,8 +45,6 @@ public class SerialUtil {
 			fis = new FileInputStream("e:/serial.txt");
 			ois = new ObjectInputStream(fis);
 			Object obj = ois.readObject();
-			fis.close();
-			ois.close();
 			t = objType.cast(obj);
 		} catch(FileNotFoundException fnfe) {
 			LOG.error(fnfe.getMessage());
@@ -72,20 +55,7 @@ public class SerialUtil {
 		} catch(ClassCastException cce) {
 			LOG.error(cce.getMessage());
 		} finally {
-			if(null != fis) {
-				try {
-					fis.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			if(null != ois) {
-				try {
-					ois.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
+			IoUtil.closeQuietly(fis, ois);
 		}
 		return t;
 	}

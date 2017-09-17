@@ -30,8 +30,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
@@ -46,10 +46,12 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
+
+import com.wp.study.base.util.IoUtil;
+
 import sun.font.CompositeFontDescriptor;
-import sun.font.SunFontManager;
-import sun.font.FontManagerFactory;
 import sun.font.FontUtilities;
+import sun.font.SunFontManager;
 import sun.util.logging.PlatformLogger;
 
 /**
@@ -206,7 +208,7 @@ public abstract class FontConfiguration {
                 } else {
                     loadBinary(in);
                 }
-                in.close();
+                IoUtil.closeQuietly(in);
                 if (FontUtilities.debugFonts()) {
                     logger.config("Read logical font configuration from " + f);
                 }
@@ -371,7 +373,7 @@ public abstract class FontConfiguration {
         writeShortTable(dataOut, table_stringIDs);
         //stringTable
         dataOut.writeChars(new String(table_stringTable));
-        out.close();
+        IoUtil.closeQuietly(out);
         if (verbose) {
             dump();
         }
