@@ -18,7 +18,7 @@ public class ImagetwistAdapter {
 	 * @param aUrl
 	 * @return
 	 */
-	public static DownloadDO getPicUrl(String albumName,String aUrl) {
+	public static DownloadDO getImageUrl(String albumName,String aUrl) {
 		// 加载要下载的页面地址
 		DownloadDO download = null;
 		try {

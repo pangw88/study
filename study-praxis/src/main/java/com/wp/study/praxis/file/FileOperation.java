@@ -18,6 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.filechooser.FileSystemView;
@@ -28,38 +32,16 @@ import org.slf4j.LoggerFactory;
 
 import com.wp.study.algorithm.digester.DigesterCoder;
 import com.wp.study.base.util.CacheUtil;
+import com.wp.study.base.util.ImageUtil;
 import com.wp.study.base.util.IoUtil;
 
 public class FileOperation {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(FileOperation.class);
-
-	/**
-	 * 计算文件（夹）大小
-	 * 
-	 * @param file
-	 * @return
-	 */
-	public static long getSize(File file) {
-		long bytes = 0L;
-		if(file == null || !file.exists()) {
-			LOG.error("<{}> not exist", file);
-			return bytes;
-		}
-		if (file.isFile()) { // 若为文件
-			bytes += file.length();
-		} else { // 若为文件夹
-			// 获取所有子文件
-			List<File> subFiles = loadFiles(file);
-			if(null != subFiles) {
-				for(File subFile : subFiles) {
-					bytes += subFile.length();
-				}
-			}
-		}
-		return bytes;
-	}
 	
+	public static File invalidPath = new File("F:/photo/invalid");
+	private static AtomicInteger checkSize = new AtomicInteger(0);
+
 	/**
 	 * 加载当前文件（夹）下所有文件
 	 * 
@@ -108,6 +90,32 @@ public class FileOperation {
 			LOG.error("loadFiles fail, files={}, error:", files, e);
 		}
 		return fileList;
+	}
+	
+	/**
+	 * 计算文件（夹）大小
+	 * 
+	 * @param file
+	 * @return
+	 */
+	public static long getSize(File file) {
+		long bytes = 0L;
+		if(file == null || !file.exists()) {
+			LOG.error("<{}> not exist", file);
+			return bytes;
+		}
+		if (file.isFile()) { // 若为文件
+			bytes += file.length();
+		} else { // 若为文件夹
+			// 获取所有子文件
+			List<File> subFiles = loadFiles(file);
+			if(null != subFiles) {
+				for(File subFile : subFiles) {
+					bytes += subFile.length();
+				}
+			}
+		}
+		return bytes;
 	}
 	
 	/**
@@ -213,7 +221,7 @@ public class FileOperation {
 			}
 			fw.flush();
 		} catch(Exception e) {
-			LOG.error(e.getMessage());
+			LOG.error("rename fail, parent={}, error:", parent, e);
 		} finally {
 			IoUtil.closeQuietly(fw);
 		}
@@ -277,7 +285,7 @@ public class FileOperation {
 			
 			}
 		} catch(Exception e) {
-			LOG.error(e.getMessage());
+			LOG.error("getMD5 fail, regex={}, isCut={}, error:", regex, isCut, e);
 		} finally {
 			IoUtil.closeQuietly(fw);
 		}
@@ -418,7 +426,7 @@ public class FileOperation {
 			}
 			fw.flush();
 		} catch(Exception e) {
-			LOG.error(e.getMessage());
+			LOG.error("checkExist fail, dir={}, info={}, error:", dir, info, e);
 		} finally {
 			IoUtil.closeQuietly(br, fw);
 		}
@@ -469,7 +477,7 @@ public class FileOperation {
 			IoUtil.closeQuietly(bis, bos);
 		}
 		if(!result) {
-			LOG.error("<{}> copy to directory <{}> failed", origin, path);
+			LOG.error("copy0 fail, dir={}, info={}", origin, path);
 		}
 		return result;
 	}
@@ -518,7 +526,7 @@ public class FileOperation {
 			IoUtil.closeQuietly(fis, in, fos, out);
 		}
 		if(!result) {
-			LOG.error("<{}> copy to directory <{}> failed", origin, path);
+			LOG.error("copy0 fail, origin={}, path={}", origin, path);
 		}
 		return result;
 	}
@@ -540,10 +548,100 @@ public class FileOperation {
 			if(origin.delete()) {
 				result = true;
 			} else {
-				LOG.error("<{}> delete failed", origin);
+				LOG.error("delete fail, origin={}, path={}", origin, path);
 			}
 		}
 		return result;
+	}
+	
+	/**
+	 * 将校验源文件并剪切无效文件到指定文件夹
+	 * 
+	 * @param origin
+	 * 		源文件
+	 * @param path
+	 * 		指定文件夹
+	 */
+	public static boolean checkValidAndCut(File origin) {
+		boolean valid = false;
+		if(null == origin || !origin.exists()) {
+			return valid;
+		}
+		try {
+			if(!invalidPath.exists()) {
+				invalidPath.mkdirs();
+			}
+			if(!origin.getPath().matches("^[\\s\\S]*\\.jpg$")) {
+				return valid;
+			}
+			
+			valid = ImageUtil.isValidImage(origin.toURI().toURL(), 500);
+			if(!valid) {
+				// 文件复制
+				valid = cut(origin, invalidPath);
+			}
+		} catch(Exception e) {
+			LOG.error("checkValidAndCut fail, origin={}, error:", origin, e);
+		} finally {
+			System.out.println("checkValidAndCut origin=" + origin + ", valid=" + valid);
+		}
+		return valid;
+	}
+	
+	/**
+	 * 将校验源文件并剪切无效文件到指定文件夹
+	 * 
+	 * @param files
+	 * 		源文件夹
+	 */
+	public static void checkSubValidAndCut(File... files) {
+		if(null == files || files.length == 0) {
+			return;
+		}
+		ExecutorService checkPool = null;
+		try {
+			// 获取所有子文件
+			final List<File> subFiles = loadFiles(files);
+			if(null == subFiles || subFiles.isEmpty()) {
+				return;
+			}
+			
+			checkPool = Executors.newFixedThreadPool(15);
+			ExecutorCompletionService<Boolean> ecs = new ExecutorCompletionService<Boolean>(checkPool);
+			for(final File subFile : subFiles) {
+				try {
+					ecs.submit(new Callable<Boolean>() {
+						@Override
+						public Boolean call() throws Exception {
+							return checkValidAndCut(subFile);
+						}
+					});
+				} catch(Throwable e) {
+					LOG.error("submitTask fail, subFile={}, error:", subFile, e);
+				}
+				try {
+					// 控制任务提交速度
+					Thread.sleep(20);
+				} catch(Throwable e) {
+				}
+				int size = checkSize.incrementAndGet();
+				System.out.println("checkSubValidAndCut has process: " + (int)(size * 100 / subFiles.size()) + "%s");
+			}
+			
+			// 获取结果
+			for(int i = 0; i < subFiles.size(); i++) {
+				ecs.take().get();
+			}
+		} catch(Exception e) {
+			LOG.error("checkSubValidAndCut fail, error:", e);
+		} finally {
+			if(null != checkPool) {
+				try {
+					checkPool.shutdownNow();
+				} catch(Throwable e) {
+				}
+			}
+		}
 	}
 	
 	/**
@@ -559,39 +657,41 @@ public class FileOperation {
 		List<File> matches = new ArrayList<File>();
         // 获取系统盘符
 		File[] roots = File.listRoots();
-		if(roots != null && roots.length > 0) {
-			FileSystemView fsv = FileSystemView.getFileSystemView();
-			for(File root : roots) {
-				if(!fsv.isFileSystemRoot(root) || root.isFile()) {
+		if(null == roots || roots.length == 0) {
+			return matches;
+		}
+
+		FileSystemView fsv = FileSystemView.getFileSystemView();
+		for(File root : roots) {
+			if(!fsv.isFileSystemRoot(root) || root.isFile()) {
+				continue;
+			}
+
+			List<File> tempDirs = new ArrayList<File>();
+			tempDirs.add(root);
+			while(tempDirs.size() > 0) {
+				// 检验当前文件夹是否匹配
+				File curDir = tempDirs.get(0);
+				tempDirs.remove(0);
+				if(curDir.getName().matches(regex) && !ignoreDir) {
+					matches.add(curDir);
+				}
+				// 检验
+				File[] files = curDir.listFiles();
+				if(null == files || files.length == 0) {
 					continue;
 				}
-
-				List<File> tempDirs = new ArrayList<File>();
-				tempDirs.add(root);
-				while(tempDirs.size() > 0) {
-					// 检验当前文件夹是否匹配
-					File curDir = tempDirs.get(0);
-					tempDirs.remove(0);
-					if(curDir.getName().matches(regex) && !ignoreDir) {
-						matches.add(curDir);
-					}
-					// 检验
-					File[] files = curDir.listFiles();
-					if(null == files || files.length == 0) {
+				for(File file : files) {
+					if(file.isDirectory()) {
+						tempDirs.add(file);
 						continue;
 					}
-					for(File file : files) {
-						if(file.isDirectory()) {
-							tempDirs.add(file);
-							continue;
-						}
-						if(file.getName().matches(regex)) {
-							matches.add(file);
-						}
+					if(file.getName().matches(regex)) {
+						matches.add(file);
 					}
 				}
 			}
-        }
+		}
 		return matches;
 	}
 	
@@ -734,7 +834,7 @@ public class FileOperation {
             	}
             }
 		} catch (Exception e) {
-			LOG.error("<{}> compress failed, error <{}>", origin, e.getMessage());
+			LOG.error("compress fail, origin={}, error:", origin, e);
 		}
 		return result;
 	}
@@ -801,7 +901,7 @@ public class FileOperation {
             	}
             }
 		} catch (Exception e) {
-			LOG.error("<{}> uncompress failed, error <{}>", origin, e.getMessage());
+			LOG.error("uncompress fail, origin={}, error:", origin, e);
 		}
 		return result;
 	}
@@ -856,7 +956,7 @@ public class FileOperation {
 			fos.flush();
 			result = true;
 		} catch(Exception e) {
-			LOG.error("merge file fail, e:", e);
+			LOG.error("merge fail, mergedFile={}, files={}, error:", mergedFile, files, e);
 		} finally {
 			// 关闭输入输出流
 			IoUtil.closeQuietly(fos, out);

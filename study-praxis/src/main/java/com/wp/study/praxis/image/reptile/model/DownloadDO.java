@@ -3,7 +3,7 @@ package com.wp.study.praxis.image.reptile.model;
 public class DownloadDO {
 	
 	private String albumName;
-	private String picName;
+	private String imageName;
 	private String aUrl;
 	private String downUrl;
 	private boolean hasDown = false;
@@ -16,9 +16,9 @@ public class DownloadDO {
 		this.downUrl = downUrl;
 	}
 	
-	public DownloadDO(String albumName, String picName, String aUrl, String downUrl) {
+	public DownloadDO(String albumName, String imageName, String aUrl, String downUrl) {
 		this.albumName = albumName;
-		this.picName = picName;
+		this.imageName = imageName;
 		this.aUrl = aUrl;
 		this.downUrl = downUrl;
 	}
@@ -31,12 +31,12 @@ public class DownloadDO {
 		this.albumName = albumName;
 	}
 
-	public String getPicName() {
-		return picName;
+	public String getImageName() {
+		return imageName;
 	}
 
-	public void setPicName(String picName) {
-		this.picName = picName;
+	public void setImageName(String imageName) {
+		this.imageName = imageName;
 	}
 
 	public String getaUrl() {

@@ -14,17 +14,17 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.wp.study.base.util.HttpUtil;
-import com.wp.study.base.util.ImageUtil;
 import com.wp.study.base.util.IoUtil;
 import com.wp.study.base.util.JsonUtil;
 import com.wp.study.praxis.file.FileOperation;
@@ -38,7 +38,7 @@ public class ImageReptile {
 	private static String downloadedFilePath = "F:/photo/downloaded_info.txt";
 	private static String notSupportFilePath = "F:/photo/notsupport_info.txt";
 	
-	private static ExecutorService downloadPool = new ThreadPoolExecutor(15, 15, 5, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(2000));
+	private static ExecutorService downloadPool = new ThreadPoolExecutor(15, 15, 5, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(3000));
 	private static Map<String, FileWriter> fwMap = new ConcurrentHashMap<String, FileWriter>() {
 		private static final long serialVersionUID = -3442731360328676574L;
 		{
@@ -52,8 +52,8 @@ public class ImageReptile {
 	};
 	private static Map<String, DownloadDO> downloadedMap = new ConcurrentHashMap<String, DownloadDO>();
 	private static Lock lock = new ReentrantLock();
-	private static File invalidPath = new File("F:/photo/invalid");
-	
+	private static AtomicInteger generateImageUrlSize = new AtomicInteger(0);
+	private static AtomicInteger downloadImageUrlSize = new AtomicInteger(0);
 
 	/**
 	 * 加载文件信息
@@ -94,7 +94,7 @@ public class ImageReptile {
 	 * @param albumName
 	 * @param downloadUrls
 	 */
-	public static void downloadPic(List<DownloadDO> downloads) {
+	public static void downloadImage(final List<DownloadDO> downloads) {
 		FileWriter fw = null;
 		if(null == downloads || downloads.isEmpty()) {
 			return;
@@ -102,10 +102,9 @@ public class ImageReptile {
 		try {
 			// 下载
 			final CountDownLatch latch = new CountDownLatch(downloads.size());
-			List<Future<?>> futures = new ArrayList<Future<?>>(downloads.size());
 			String format = "picName=%s downUrl=%s aUrl=%s status=%s waste=%s";
 			for(DownloadDO download : downloads) {
-				futures.add(downloadPool.submit(new Runnable() {
+				downloadPool.submit(new Runnable() {
 					@Override
 					public void run() {
 						long startTime = System.currentTimeMillis();
@@ -116,7 +115,7 @@ public class ImageReptile {
 							if(!dic.exists()) {
 								dic.mkdirs();
 							}
-							output = new File(dic, download.getPicName());
+							output = new File(dic, download.getImageName());
 							if(!output.exists()) {
 								status = HttpUtil.doGetDownload(download.getDownUrl(), output);
 							} else {
@@ -125,11 +124,9 @@ public class ImageReptile {
 							}
 							// 校验图片有效性
 							if(output.exists()) {
-								boolean valid = ImageUtil.isValidImage(output.toURI().toURL(), 500);
+								boolean valid = FileOperation.checkValidAndCut(output);
 								if(valid) {
 									download.setHasDown(true);
-								} else {
-									FileOperation.cut(output, invalidPath);
 								}
 							}
 							// 打印已经下载完成的资源
@@ -146,11 +143,13 @@ public class ImageReptile {
 									e.printStackTrace();
 								}*/
 							}
-							System.out.println(String.format(format, download.getPicName(), download.getDownUrl(), 
+							int size = downloadImageUrlSize.incrementAndGet();
+							System.out.println("downloadImage has process: " + (int)(size * 100 / downloads.size()) + "%s");
+							System.out.println(String.format(format, download.getImageName(), download.getDownUrl(), 
 									download.getaUrl(), status, System.currentTimeMillis() - startTime));
 						}
 					}
-				}));
+				});
 			}
 			try {
 				latch.await();
@@ -172,17 +171,16 @@ public class ImageReptile {
 	 * @param imgUrl
 	 * @return
 	 */
-	public static List<DownloadDO> getDownloadInfo(Map<String, DownloadDO> urlMap) {
-		long startTime = System.currentTimeMillis();
+	public static List<DownloadDO> getDownloads(final Map<String, DownloadDO> urlMap) {
 		List<DownloadDO> downloads = new ArrayList<DownloadDO>();
 		if(null == urlMap || urlMap.isEmpty()) {
 			return downloads;
 		}
 		try {
 			final CountDownLatch latch = new CountDownLatch(urlMap.size());
-			List<Future<DownloadDO>> futures = new ArrayList<Future<DownloadDO>>(urlMap.size());
+			ExecutorCompletionService<DownloadDO> ecs = new ExecutorCompletionService<DownloadDO>(downloadPool);
 			for(Map.Entry<String, DownloadDO> entry : urlMap.entrySet()) {
-				futures.add(downloadPool.submit(new Callable<DownloadDO>() {
+				ecs.submit(new Callable<DownloadDO>() {
 					@Override
 					public DownloadDO call() {
 						DownloadDO download = null;
@@ -190,7 +188,7 @@ public class ImageReptile {
 							String aUrl = entry.getKey();
 							download = entry.getValue();
 							if(null != download && StringUtils.isBlank(download.getDownUrl())) {
-								download = WebsiteAdapterUtils.getPicUrl(aUrl, download.getAlbumName());
+								download = WebsiteAdapterUtils.getImageUrl(aUrl, download.getAlbumName());
 							}
 							/*if (imgUrl.startsWith("http://imgcandy.net")) {
 								downLink = imgUrl.replace("small", "big");
@@ -208,25 +206,26 @@ public class ImageReptile {
 							e.printStackTrace();
 						} finally {
 							latch.countDown();
+							int size = generateImageUrlSize.incrementAndGet();
+							System.out.println("getDownloads has process: " + (int)(size * 100 / urlMap.size()) + "%s");
 						}
 						return download;
 					}
-				}));
+				});
 			}
 			try {
 				latch.await();
 			} catch(Exception e) {
 				e.printStackTrace();
 			}
-			for(Future<DownloadDO> f : futures) {
-				if (null != f.get()) {
-					downloads.add(f.get());
+			for(int i = 0; i < urlMap.size(); i++) {
+				DownloadDO download = ecs.take().get();
+				if (null != download) {
+					downloads.add(download);
 				}
 			}
 		} catch(Throwable t) {
 			t.printStackTrace();
-		} finally {
-			System.out.println("getDownloadInfo wasteTime=" + (System.currentTimeMillis() - startTime));
 		}
 		return downloads;
 	}
@@ -330,12 +329,12 @@ public class ImageReptile {
 		}
 		
 		// 获取实际图片下载对象
-		List<DownloadDO> downloads = getDownloadInfo(urlMap);
+		List<DownloadDO> downloads = getDownloads(urlMap);
 		if(null == downloads || downloads.isEmpty()) {
 			return;
 		}
 		// 下载图片
-		downloadPic(downloads);
+		downloadImage(downloads);
 		
 		// 关闭各种资源池
 		closeSource();
