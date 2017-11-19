@@ -6,7 +6,10 @@ public class DownloadDO {
 	private String imageName;
 	private String aUrl;
 	private String downUrl;
+	private Integer status;
+	private Long wasteTime;
 	private boolean hasDown = false;
+	private int tryTimes = 0;
 	
 	public DownloadDO() {
 	}
@@ -55,12 +58,40 @@ public class DownloadDO {
 		this.downUrl = downUrl;
 	}
 
+	public Integer getStatus() {
+		return status;
+	}
+
+	public void setStatus(Integer status) {
+		this.status = status;
+	}
+
+	public Long getWasteTime() {
+		return wasteTime;
+	}
+
+	public void setWasteTime(Long wasteTime) {
+		this.wasteTime = wasteTime;
+	}
+
 	public boolean isHasDown() {
 		return hasDown;
 	}
 
 	public void setHasDown(boolean hasDown) {
 		this.hasDown = hasDown;
+	}
+
+	public int getTryTimes() {
+		return tryTimes;
+	}
+
+	public void setTryTimes(int tryTimes) {
+		this.tryTimes = tryTimes;
+	}
+	
+	public int addTryTimes() {
+		return ++tryTimes;
 	}
 	
 }

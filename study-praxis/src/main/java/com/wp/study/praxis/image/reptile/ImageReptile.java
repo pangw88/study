@@ -36,15 +36,13 @@ public class ImageReptile {
 	
 	private static String urlFilePath = "F:/photo/page_url.txt";
 	private static String downloadedFilePath = "F:/photo/downloaded_info.txt";
-	private static String notSupportFilePath = "F:/photo/notsupport_info.txt";
 	
-	private static ExecutorService downloadPool = new ThreadPoolExecutor(15, 15, 5, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(3000));
+	private static ExecutorService downloadPool = new ThreadPoolExecutor(15, 15, 5, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(5000));
 	private static Map<String, FileWriter> fwMap = new ConcurrentHashMap<String, FileWriter>() {
 		private static final long serialVersionUID = -3442731360328676574L;
 		{
 			try {
 				put(downloadedFilePath, new FileWriter(downloadedFilePath, true));
-				put(notSupportFilePath, new FileWriter(notSupportFilePath, true));
 			} catch(Exception e) {
 			}
 		}
@@ -62,7 +60,6 @@ public class ImageReptile {
 	 * @return
 	 */
 	public static Set<String> loadFileInfo(String filePath) {
-		Set<String> fileInfoSet = new HashSet<String>();
 		if (StringUtils.isBlank(filePath)) {
 			throw new RuntimeException("invalid file path");
 		}
@@ -70,6 +67,7 @@ public class ImageReptile {
 		if (!file.exists() || !file.isFile()) {
 			throw new RuntimeException("file not exists, filePath=" + filePath);
 		}
+		Set<String> fileInfoSet = new HashSet<String>();
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new FileReader(file));
@@ -94,48 +92,46 @@ public class ImageReptile {
 	 * @param albumName
 	 * @param downloadUrls
 	 */
-	public static void downloadImage(final List<DownloadDO> downloads) {
-		FileWriter fw = null;
+	public static void downloadImage(List<DownloadDO> downloads) {
 		if(null == downloads || downloads.isEmpty()) {
 			return;
 		}
+		FileWriter fw = null;
+		List<DownloadDO> nextDownloads = new ArrayList<DownloadDO>();
 		try {
 			// 下载
 			final CountDownLatch latch = new CountDownLatch(downloads.size());
-			String format = "picName=%s downUrl=%s aUrl=%s status=%s waste=%s";
 			for(DownloadDO download : downloads) {
 				downloadPool.submit(new Runnable() {
 					@Override
 					public void run() {
 						long startTime = System.currentTimeMillis();
 						int status = 1;
-						File output = null;
 						try {
+							if(download.addTryTimes() > 5) {
+								System.out.println("download fail over 5 times, download=" + JsonUtil.convertBeanToJson(download));
+								download.setHasDown(true);
+								return;
+							}
 							File dic = new File("F:/photo/" + download.getAlbumName());
 							if(!dic.exists()) {
 								dic.mkdirs();
 							}
-							output = new File(dic, download.getImageName());
+							File output = new File(dic, download.getImageName());
 							if(!output.exists()) {
 								status = HttpUtil.doGetDownload(download.getDownUrl(), output);
-							} else {
-								download.setHasDown(true);
-								System.out.println("has download, aUrl=" + download.getaUrl());
+								download.setStatus(status);
 							}
 							// 校验图片有效性
 							if(output.exists()) {
-								boolean valid = FileOperation.checkValidAndCut(output);
-								if(valid) {
-									download.setHasDown(true);
-								}
+								download.setHasDown(FileOperation.checkValidAndCut(output));
 							}
-							// 打印已经下载完成的资源
-							writeDownloaded(JsonUtil.convertBeanToJson(download));
 						} catch(Throwable t) {
-							t.printStackTrace();
+							// t.printStackTrace();
 						} finally {
 							latch.countDown();
-							if(null == output || !output.exists()) {
+							if(!download.isHasDown()) {
+								nextDownloads.add(download);
 								// 通过浏览器打开无法识别的页面
 								/*try {
 									Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + download.getDownUrl());
@@ -144,24 +140,27 @@ public class ImageReptile {
 								}*/
 							}
 							int size = downloadImageUrlSize.incrementAndGet();
-							System.out.println("downloadImage has process: " + (int)(size * 100 / downloads.size()) + "%s");
-							System.out.println(String.format(format, download.getImageName(), download.getDownUrl(), 
-									download.getaUrl(), status, System.currentTimeMillis() - startTime));
+							download.setWasteTime(System.currentTimeMillis() - startTime);
+							presentRateProgress("downloadImage has process: ", downloads.size(), size);
+							// 打印已经下载完成的资源
+							writeDownloaded(download);
 						}
 					}
 				});
 			}
 			try {
 				latch.await();
-			} catch(Exception e) {
+			} catch(Throwable e) {
 				e.printStackTrace();
 			}
-		} catch(Exception e) {
+		} catch(Throwable e) {
 			e.printStackTrace();
 		} finally {
 			// 关闭输入输出流
 			IoUtil.closeQuietly(fw);
 		}
+		// 遍历下载图片
+		downloadImage(nextDownloads);
 	}
 	
 	/**
@@ -172,10 +171,10 @@ public class ImageReptile {
 	 * @return
 	 */
 	public static List<DownloadDO> getDownloads(final Map<String, DownloadDO> urlMap) {
-		List<DownloadDO> downloads = new ArrayList<DownloadDO>();
 		if(null == urlMap || urlMap.isEmpty()) {
-			return downloads;
+			return new ArrayList<DownloadDO>();
 		}
+		List<DownloadDO> downloads = new ArrayList<DownloadDO>();
 		try {
 			final CountDownLatch latch = new CountDownLatch(urlMap.size());
 			List<Future<DownloadDO>> futures = new ArrayList<Future<DownloadDO>>();
@@ -190,24 +189,12 @@ public class ImageReptile {
 							if(null != download && StringUtils.isBlank(download.getDownUrl())) {
 								download = WebsiteAdapterUtils.getImageUrl(aUrl, download.getAlbumName());
 							}
-							/*if (imgUrl.startsWith("http://imgcandy.net")) {
-								downLink = imgUrl.replace("small", "big");
-								if(imgUrl.contains("img.yt/upload")) {
-									downLink = downLink.replace("img.yt/upload", "x001.img.yt");
-								}
-							} else if (imgUrl.startsWith("http://chronos.to")) {
-								downLink = imgUrl.replace("/t/", "/i/");
-							} else if (imgUrl.startsWith("http://pic-maniac.com")) {
-								downLink = imgUrl.substring(0, imgUrl.lastIndexOf("/") + 1);
-								downLink += aUrl.substring(aUrl.lastIndexOf("/") + 1);
-								downLink += imgUrl.substring(imgUrl.lastIndexOf("."));
-							}*/
 						} catch (Exception e) {
 							e.printStackTrace();
 						} finally {
 							latch.countDown();
 							int size = generateImageUrlSize.incrementAndGet();
-							System.out.println("getDownloads has process: " + (int)(size * 100 / urlMap.size()) + "%s");
+							presentRateProgress("getDownloads has process: ", urlMap.size(), size);
 						}
 						return download;
 					}
@@ -231,16 +218,16 @@ public class ImageReptile {
 	}
 	
 	public static String getAlbum(String pageUrl) {
-		String albumName = null;
 		if(null == pageUrl) {
-			return albumName;
+			return null;
 		}
+		String albumName = null;
 		int index = pageUrl.indexOf("&album=");
 		if(index > -1) { // 强制设置，直接返回
 			return pageUrl.substring(pageUrl.indexOf("&album=") + 7, pageUrl.length());
 		}
 		if(pageUrl.contains("vipergirls.to")) {
-			albumName = pageUrl.substring(pageUrl.lastIndexOf("-") + 1, pageUrl.indexOf("?"));
+			albumName = pageUrl.substring(pageUrl.indexOf("-") + 1, pageUrl.indexOf("?"));
 		}
 		return albumName;
 	}
@@ -305,15 +292,15 @@ public class ImageReptile {
 					String aUrl = hrefValues.get(0);
 					String imgUrl = srcValues.get(0);
 					if (StringUtils.isBlank(imgUrl)) {
-						System.out.println("input parameter is blank, imgUrl=" + imgUrl);
+						// System.out.println("input parameter is blank, imgUrl=" + imgUrl);
 						continue;
 					}
 					if (!imgUrl.startsWith("http")) {
-						System.out.println("not support protocol, imgUrl=" + imgUrl);
+						// System.out.println("not support protocol, imgUrl=" + imgUrl);
 						continue;
 					}
 					if (imgUrl.endsWith(".gif") || imgUrl.endsWith(".png")) {
-						System.out.println("not support image format, imgUrl=" + imgUrl);
+						// System.out.println("not support image format, imgUrl=" + imgUrl);
 						continue;
 					}
 					DownloadDO download = downloadedMap.get(aUrl);
@@ -340,28 +327,25 @@ public class ImageReptile {
 		closeSource();
 	}
 	
-	public static void writeDownloaded(String log) {
-		write(downloadedFilePath, log);
-	}
-	
-	public static void writeNoSupport(String log) {
-		write(notSupportFilePath, log);
+	public static void writeDownloaded(DownloadDO download) {
+		if(null != download && !download.isHasDown()) {
+			write(downloadedFilePath, JsonUtil.convertBeanToJson(download));
+		}
 	}
 	
 	private static void write(String fwName, String log) {
-		// 加载writer
-		FileWriter fw = null;
 		if(null == fwName) {
 			return;
 		}
-		fw = fwMap.get(fwName);
+		// 加载writer
+		FileWriter fw = fwMap.get(fwName);
 		if(null == fw) {
 			try {
 				lock.lock();
-				fw = new FileWriter("F:/photo/" + fwName + "/" + fwName);
+				fw = new FileWriter(fwName);
 				fwMap.put(fwName, fw);
 			} catch (Throwable e) {
-				e.printStackTrace();
+				// e.printStackTrace();
 			} finally {
 				lock.unlock();
 			}
@@ -376,6 +360,15 @@ public class ImageReptile {
 			}
 		}
 	}
+	
+	private static void presentRateProgress(String prefix, int totalSize, int currentIndex) {
+		double percentD = currentIndex * 100D / totalSize;
+		int percentI = (int)percentD;
+		if(percentD - percentI < 0.2) {
+			System.out.println(prefix + percentI + "%s");
+		}
+	}
+	
 	
 	private static void closeSource() {
 		// 关闭线程池
