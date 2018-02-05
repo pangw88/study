@@ -838,6 +838,87 @@ public class FileOperation {
 	}
 	
 	/**
+	 * 压缩文件（夹）到同级目录，文件以rar标准格式压缩，文件夹以zip标准格式压缩
+	 * rar <命令> -<参数 1> -<参数 N> <压缩文件> <文件...> <@列表文件...> <解压路径\>
+	 * <命令>
+  	 * 		a：添加文件到压缩文件
+  	 * <参数>
+  	 * 		hp[password]：加密文件数据和文件头
+  	 * 		m<0..5>：设置压缩级别(0-存储...3-默认...5-最大)
+  	 * 
+	 * @param origin
+	 * 		需压缩文件
+	 * @param password
+	 * 		压缩密码，为空时无密码压缩
+	 * @return
+	 */
+	public static boolean compress(String compressName, String compressModel, String password, File... origins) {
+		boolean result = false;
+		if(StringUtils.isBlank(compressName) || null == origins || origins.length == 0 || StringUtils.isBlank(compressModel)) {
+			LOG.error("invalid compress parameters");
+			return result;
+		}
+		// 生成压缩文件真实名称
+		String realCompressName = compressName + "." + compressModel;
+		File originDirectory = origins[0].getParentFile();
+		File compFile = new File(originDirectory, realCompressName);
+		
+		// 压缩文件已存在，退出程序
+		if(compFile.exists()) {
+			LOG.error("<{}> has existed", compFile);
+			return result;
+		}
+		
+		// 获取WinRAR压缩程序
+		File winrar = new File("C:/Program Files/WinRAR/WinRAR.exe");
+		
+		// -m3采用标准方式压缩文件
+		StringBuffer cmd = new StringBuffer(winrar.getPath());
+		cmd.append(" a -m3");
+		
+		/* 压缩时不保留父级目录结构
+		 * ep：完全排除目录路径
+		 * ep1：排除父级及以上目录路径
+		 * ep2：保留完整目录路径
+		 * ep3：保留包含盘符完整目录路径
+		 */
+		cmd.append(" -ep1 ");
+		/**
+		 * -o+：覆盖同名压缩文件
+		 * -o-：不覆盖
+		 */
+		cmd.append(" -o+ ");
+		// 在后台运行
+		cmd.append(" -ibck ");
+		
+		// hp开关加密文件数据、文件名、大小、属性、注释等所有可感知压缩文件区域
+		if(StringUtils.isNotBlank(password)) {
+			cmd.append(" -hp").append(password);
+		}
+		
+		try {
+			// 添加压缩文件和源文件路径
+			cmd.append(" \"").append(compFile.getPath()).append("\"");
+			for(File origin : origins) {
+				if(!origin.getName().matches("^[\\s\\S]*\\.(rar|zip|7z)$")) {
+					cmd.append(" \"").append(origin.getPath()).append("\"");
+				}
+			}
+			// 调用winrar程序进行文件压缩
+            Process proc = Runtime.getRuntime().exec(cmd.toString());
+            if (proc.waitFor() == 0) { // 进程正常结束标志
+            	if (proc.exitValue() == 0) { // 子进程正常结束标志
+            		LOG.info("succeed in executing command <{}>", cmd);
+            		result = true;
+            	}
+            }
+		} catch (Exception e) {
+			LOG.error("compress fail, compressName={}, compressModel={}, origins={}, error:", compressName, compressModel, origins, e);
+		}
+		return result;
+	}
+	
+	/**
 	 * 解压文件（夹）到同级目录
 	 * rar <命令> -<参数 1> -<参数 N> <压缩文件> <文件...> <@列表文件...> <解压路径\>
 	 * <命令>
