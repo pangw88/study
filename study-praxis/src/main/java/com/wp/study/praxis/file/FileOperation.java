@@ -228,6 +228,85 @@ public class FileOperation {
 	}
 
 	/**
+	 * 以父文件夹名称为基准重命名文件
+	 * 文件夹名：xxx
+	 * 重命名文件：xxx_001.jpg、xxx_002.jpg 
+	 * 
+	 * @param parent
+	 */
+	public static void replaceName(File baseDir, File targetDir) {
+		if(null == baseDir || null == targetDir || !baseDir.exists() || !targetDir.exists()) {
+			LOG.error("can not find baseDir <{}>, targetDir <{}>", baseDir, targetDir);
+			return;
+		}
+		if(!baseDir.isDirectory() || !targetDir.isDirectory() || baseDir.list().length != targetDir.list().length) {
+			LOG.error("can not find baseDir length <{}>, targetDir length <{}>", baseDir.list().length, targetDir.list().length);
+			return;
+		}
+		try {
+			// 过滤有效文件
+			List<File> originFiles = new ArrayList<File>();
+			// 获取所有子文件
+			for(File file : baseDir.listFiles()) {
+				originFiles.add(new File(file.getAbsolutePath()) {
+					// 重写File类的compareTo方法
+					private static final long serialVersionUID = 122810055536327561L;
+					@Override
+					public int compareTo(File pathname) {
+						String name1 = this.getName().substring(0, this.getName().indexOf("."));
+						String name2 = pathname.getName().substring(0, pathname.getName().indexOf("."));
+						int len = name1.length() > name2.length() ? name2.length() : name1.length();
+						int compare = name1.substring(0, len).compareTo(name2.substring(0, len));
+						if(compare == 0 && name1.length() != name2.length()) {
+							compare = name1.length() > name2.length() ? 1 : -1;
+						}
+						return compare;
+					}
+				});
+			}
+			// 文件按名称进行排序
+		    Collections.sort(originFiles);
+			// 过滤有效文件
+			List<File> targetFiles = new ArrayList<File>();
+			// 获取所有子文件
+			for(File file : targetDir.listFiles()) {
+				targetFiles.add(new File(file.getAbsolutePath()) {
+					private static final long serialVersionUID = 1L;
+					// 重写File类的compareTo方法
+					@Override
+					public int compareTo(File pathname) {
+						String name1 = this.getName();
+						String name2 = pathname.getName();
+						String pattern = "^.*\\(\\d{1,}\\).*$";
+						if (name1.matches(pattern)
+								&& name2.matches(pattern)) {
+							int i1 = Integer.valueOf(name1
+									.split("\\(")[1].split("\\)")[0]);
+							int i2 = Integer.valueOf(name2
+									.split("\\(")[1].split("\\)")[0]);
+							return i1 - i2;
+						}
+						return super.compareTo(pathname);
+					}
+				});
+			}
+			// 文件按名称进行排序
+		    Collections.sort(targetFiles);
+		    
+			// 文件以文件夹为基础进行重命名
+			for (int i = 0; i < targetFiles.size(); i++) {
+				File ori = originFiles.get(i);
+				File tar = targetFiles.get(i);
+				System.out.println(ori.getName() + "==" + tar.getName());
+				tar.renameTo(new File(tar.getParentFile(), ori.getName()));
+			}
+		} catch(Exception e) {
+			LOG.error("rename fail, originDir={}, targetDir={}, error:", baseDir, targetDir, e);
+		}
+	}
+
+	
+	/**
 	 * 获取文件（夹）及其子文件的md5值
 	 * 
 	 * @param files

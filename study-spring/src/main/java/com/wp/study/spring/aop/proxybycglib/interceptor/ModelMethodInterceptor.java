@@ -20,14 +20,13 @@ public class ModelMethodInterceptor implements MethodInterceptor {
 	 * 
 	 */
 	@Override
-	public Object intercept(Object obj, Method method, Object[] args,
-			MethodProxy proxy) throws Throwable {
+	public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
 		// 可以在方法调用之前和之后动态添加其它业务逻辑
-		System.out.println("do some thing before method invoke");
-		// 使用方法代理来调用被代理对象的方法
-		proxy.invokeSuper(obj, args);
-		System.out.println("do some thing after method invoke");
-		return null;
+				System.out.println("do some thing before method invoke");
+				// 使用方法代理来调用被代理对象的方法
+				proxy.invokeSuper(obj, args);
+				System.out.println("do some thing after method invoke");
+				return null;
 	}
 
 }

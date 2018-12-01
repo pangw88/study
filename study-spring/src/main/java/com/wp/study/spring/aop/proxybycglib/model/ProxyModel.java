@@ -9,8 +9,8 @@ public class ProxyModel {
 	}*/
 	
 	public void print(String str) {
-		// TODO Auto-generated method stub
+		// TODO
 		System.out.println("cglib:" + str);
 	}
-
+	
 }
