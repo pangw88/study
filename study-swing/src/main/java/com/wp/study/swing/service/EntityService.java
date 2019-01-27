@@ -167,6 +167,59 @@ public class EntityService {
 	 * @param entity
 	 * @param key
 	 * @param key1
+	 * @param algo
+	 * @return
+	 */
+	private static int entityEncrypt(Entity entity, String key, String key1, String algo) {
+		int result = 0;
+		List<String> basicCols = Entity.getBasicColumns();
+		List<String> usedCols = Entity.getDetailColumns();
+		try {
+			Integer prior = CommonUtil.calLevel(entity.getPriority());
+			for (String column : basicCols) {
+				String value = (String) CommonUtil.getField(entity, column);
+				if (StringUtils.isNotEmpty(value)) {
+					value = ClassicalCoder.substitutionEncrypt(
+							Base64.encodeBase64String(value.getBytes()), key1);
+					CommonUtil.setField(entity, column, value);
+				}
+			}
+			for (String column : usedCols) {
+				String value = (String) CommonUtil.getField(entity, column);
+				if (StringUtils.isNotEmpty(value)) {
+					if (prior == 0) {
+						value = ClassicalCoder.transpositionEncrypt(value);
+					} else {
+						switch (algo) {
+						case "IDEA":
+							
+							break;
+
+						default:
+							break;
+						}
+						
+						value = ClassicalCoder.substitutionEncrypt(Base64
+								.encodeBase64String(IDEACoder.encrypt(
+										value.getBytes(),
+										Base64.decodeBase64(key))), key1);
+					}
+					CommonUtil.setField(entity, column, value);
+				}
+			}
+			result = 1;
+		} catch (Exception e) {
+			LOG.error(e.getMessage());
+		}
+		return result;
+	}
+	
+	/**
+	 * 对entity进行加密
+	 * 
+	 * @param entity
+	 * @param key
+	 * @param key1
 	 * @return
 	 */
 	private static int entityEncrypt(Entity entity, String key, String key1) {
