@@ -31,9 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.wp.study.algorithm.digester.DigesterCoder;
-import com.wp.study.base.util.CacheUtil;
-import com.wp.study.base.util.ImageUtil;
-import com.wp.study.base.util.IoUtil;
+import com.wp.study.base.util.CacheUtils;
+import com.wp.study.base.util.ImageUtils;
+import com.wp.study.base.util.IoUtils;
 
 public class FileOperation {
 	
@@ -223,7 +223,7 @@ public class FileOperation {
 		} catch(Exception e) {
 			LOG.error("rename fail, parent={}, error:", parent, e);
 		} finally {
-			IoUtil.closeQuietly(fw);
+			IoUtils.closeQuietly(fw);
 		}
 	}
 
@@ -366,7 +366,7 @@ public class FileOperation {
 		} catch(Exception e) {
 			LOG.error("getMD5 fail, regex={}, isCut={}, error:", regex, isCut, e);
 		} finally {
-			IoUtil.closeQuietly(fw);
+			IoUtils.closeQuietly(fw);
 		}
 	}
 	
@@ -507,7 +507,7 @@ public class FileOperation {
 		} catch(Exception e) {
 			LOG.error("checkExist fail, dir={}, info={}, error:", dir, info, e);
 		} finally {
-			IoUtil.closeQuietly(br, fw);
+			IoUtils.closeQuietly(br, fw);
 		}
 	}
 	
@@ -553,7 +553,7 @@ public class FileOperation {
 			LOG.error(e.getMessage());
 		} finally {
 			// 关闭输入输出流
-			IoUtil.closeQuietly(bis, bos);
+			IoUtils.closeQuietly(bis, bos);
 		}
 		if(!result) {
 			LOG.error("copy0 fail, dir={}, info={}", origin, path);
@@ -602,7 +602,7 @@ public class FileOperation {
 			LOG.error(e.getMessage());
 		} finally {
 			// 关闭输入输出流
-			IoUtil.closeQuietly(fis, in, fos, out);
+			IoUtils.closeQuietly(fis, in, fos, out);
 		}
 		if(!result) {
 			LOG.error("copy0 fail, origin={}, path={}", origin, path);
@@ -654,7 +654,7 @@ public class FileOperation {
 				return valid;
 			}
 			
-			valid = ImageUtil.isValidImage(origin.toURI().toURL(), 500);
+			valid = ImageUtils.isValidImage(origin.toURI().toURL(), 500);
 			if(!valid) {
 				// 文件复制
 				valid = cut(origin, invalidPath);
@@ -864,8 +864,8 @@ public class FileOperation {
 		
 		// 获取WinRAR压缩程序
 		if(null == winrar || !winrar.exists()) {
-			if(CacheUtil.exists("winrar")) {
-				winrar = CacheUtil.getCache("winrar", File.class);
+			if(CacheUtils.exists("winrar")) {
+				winrar = CacheUtils.getCache("winrar", File.class);
 			} else {
 				String winrarName = "WinRAR\\.exe";
 				List<File> programs = search(winrarName, true);
@@ -874,11 +874,11 @@ public class FileOperation {
 					return result;
 				}
 				winrar = programs.get(0);
-				CacheUtil.setCache("winrar", programs.get(0));
+				CacheUtils.setCache("winrar", programs.get(0));
 			}
 		} else {
 			// 缓存WinRAR
-			CacheUtil.setCache("winrar", winrar);
+			CacheUtils.setCache("winrar", winrar);
 		}
 		
 		// -m3采用标准方式压缩文件
@@ -1023,8 +1023,8 @@ public class FileOperation {
 		
 		// 获取解压文件程序
 		File winrar = null;
-		if(CacheUtil.exists("winrar")) {
-			winrar = CacheUtil.getCache("winrar", File.class);
+		if(CacheUtils.exists("winrar")) {
+			winrar = CacheUtils.getCache("winrar", File.class);
 		} else {
 			String winrarName = "WinRAR\\.exe";
 			List<File> programs = search(winrarName, true);
@@ -1033,7 +1033,7 @@ public class FileOperation {
 				return result;
 			}
 			winrar = programs.get(0);
-			CacheUtil.setCache("winrar", programs.get(0));
+			CacheUtils.setCache("winrar", programs.get(0));
 		}
 		
 		// x提取压缩文件中完整路径，-m3标准方式解压
@@ -1106,7 +1106,7 @@ public class FileOperation {
 					} catch(Exception e) {
 					} finally {
 						// 关闭输入输出流
-						IoUtil.closeQuietly(fis, in);
+						IoUtils.closeQuietly(fis, in);
 					}
 				}
 			}
@@ -1117,7 +1117,7 @@ public class FileOperation {
 			LOG.error("merge fail, mergedFile={}, files={}, error:", mergedFile, files, e);
 		} finally {
 			// 关闭输入输出流
-			IoUtil.closeQuietly(fos, out);
+			IoUtils.closeQuietly(fos, out);
 		}
 		return result;
 	}

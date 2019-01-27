@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.wp.study.base.util.HttpUtil;
+import com.wp.study.base.util.HttpUtils;
 import com.wp.study.praxis.image.reptile.filter.XmlFilter;
 import com.wp.study.praxis.image.reptile.model.DownloadDO;
 
@@ -24,7 +24,7 @@ public class ImagetwistAdapter {
 		try {
 			Map<String, String> headers = new HashMap<String, String>();
 			headers.put("overlay", "true");
-			String pageContent = HttpUtil.doGet(aUrl, headers, String.class);
+			String pageContent = HttpUtils.doGet(aUrl, headers, String.class);
 			if (StringUtils.isBlank(pageContent)) {
 				System.out.println("page content is blank aUrl=" + aUrl);
 				return download;

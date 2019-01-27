@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.wp.study.base.pojo.Config;
-import com.wp.study.base.util.IoUtil;
+import com.wp.study.base.util.IoUtils;
 import com.wp.study.jdbc.derby.dao.ConfigMapper;
 
 public class DBConfigService {
@@ -40,7 +40,7 @@ public class DBConfigService {
 	        } catch (Exception e) {  
 	        	LOG.error(e.getMessage());
 	        } finally {
-	        	IoUtil.closeQuietly(sqlSession);
+	        	IoUtils.closeQuietly(sqlSession);
 	        }
 		}
 	}

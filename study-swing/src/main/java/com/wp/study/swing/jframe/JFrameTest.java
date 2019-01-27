@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 import com.wp.study.algorithm.digester.DigesterCoder;
 import com.wp.study.algorithm.encryption.ClassicalCoder;
 import com.wp.study.base.pojo.Entity;
-import com.wp.study.base.util.CacheUtil;
+import com.wp.study.base.util.CacheUtils;
 import com.wp.study.swing.gbcs.GBCsUtil;
 import com.wp.study.swing.jdialog.JDialogTest;
 import com.wp.study.swing.jtable.JTableTest;
@@ -52,9 +52,9 @@ import com.wp.study.swing.util.CommonUtil;
 public class JFrameTest extends JFrame {
 
 	private static final Logger LOG = LoggerFactory.getLogger(JFrameTest.class);
-	
+
 	private static final long serialVersionUID = -2513141144769610707L;
-	
+
 	public JFrameTest() {
 		// init
 		cp = getContentPane();
@@ -69,7 +69,7 @@ public class JFrameTest extends JFrame {
 		mouseListener = false;
 		setTitle("JFrameTest");
 		setLayout(layout);
-		
+
 		// get screen dimensions
 		Toolkit kit = Toolkit.getDefaultToolkit();
 		Dimension screenSize = kit.getScreenSize();
@@ -77,9 +77,9 @@ public class JFrameTest extends JFrame {
 		int screenWidth = screenSize.width;
 		int height = 800;
 		int width = 650;
-		setBounds((screenWidth-width)/2, (screenHeight-height)/5, width, height);
+		setBounds((screenWidth - width) / 2, (screenHeight - height) / 5, width, height);
 		setResizable(false);
-		
+
 		// create menus
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -105,69 +105,69 @@ public class JFrameTest extends JFrame {
 		deleteMenu.addActionListener(new DeleteListener());
 		menu.add(deleteMenu);
 	}
-	
+
 	private void setQueryOptions(boolean complex) {
-		if(complex) {
+		if (complex) {
 			JPanel complexJP = new JPanel();
 			levl = new JLabel("level:");
 			levl.setForeground(Color.red);
 			levl.setFont(new Font("Dialog", 1, 16));
 			complexJP.add(levl);
 			levt = new JTextField(17);
-	        complexJP.add(levt);
-	        keyl = new JLabel("key1:");
-	        keyl.setForeground(Color.red);
-	        keyl.setFont(new Font("Dialog", 1, 16));
-	        complexJP.add(keyl);
-	        keyt = new JPasswordField(17);
-	        complexJP.add(keyt);
-	        cp.add(complexJP);
-	        layout.setConstraints(complexJP, GBCsUtil.gbcsSet(gbcs, 0, 1, 0));
+			complexJP.add(levt);
+			keyl = new JLabel("key1:");
+			keyl.setForeground(Color.red);
+			keyl.setFont(new Font("Dialog", 1, 16));
+			complexJP.add(keyl);
+			keyt = new JPasswordField(17);
+			complexJP.add(keyt);
+			cp.add(complexJP);
+			layout.setConstraints(complexJP, GBCsUtil.gbcsSet(gbcs, 0, 1, 0));
 		}
 		JPanel query = new JPanel();
 		qls = new JLabel("qrys:");
 		qls.setForeground(Color.red);
 		qls.setFont(new Font("Dialog", 1, 16));
-        query.add(qls);
-        qts = new JTextField(17);
-        query.add(qts);
-        qln = new JLabel("qryn:");
-        qln.setForeground(Color.red);
-        qln.setFont(new Font("Dialog", 1, 16));
-        query.add(qln);
-        qtn = new JTextField(17);
-        query.add(qtn);
-        cp.add(query);
-        layout.setConstraints(query, GBCsUtil.gbcsSet(gbcs, 0, 1, 0));
+		query.add(qls);
+		qts = new JTextField(17);
+		query.add(qts);
+		qln = new JLabel("qryn:");
+		qln.setForeground(Color.red);
+		qln.setFont(new Font("Dialog", 1, 16));
+		query.add(qln);
+		qtn = new JTextField(17);
+		query.add(qtn);
+		cp.add(query);
+		layout.setConstraints(query, GBCsUtil.gbcsSet(gbcs, 0, 1, 0));
 	}
-	
+
 	private void setResultOptions() {
-		for(int i=0; i<dataColumns.size(); i++) {
-        	// label
-        	JLabel jl = new JLabel(dataColumns.get(i)+": ", JLabel.TRAILING);
-        	jl.setFont(new Font("Dialog", 1, 16));
-        	cp.add(jl);
-            layout.setConstraints(jl, GBCsUtil.gbcsSet(gbcs, 1, 0, 0));
-            // textField
-            JTextField jt = new JTextField();
-            if(i == 0) {
-            	jt.setEditable(false);
-            }
-            cp.add(jt);
-            layout.setConstraints(jt, GBCsUtil.gbcsSet(gbcs, 0, 1, 0));
-            // space panel
-            JPanel sp = new JPanel();
-            cp.add(sp);
-            layout.setConstraints(sp, GBCsUtil.gbcsSet(gbcs, 0, 0, 1));
-        }
+		for (int i = 0; i < dataColumns.size(); i++) {
+			// label
+			JLabel jl = new JLabel(dataColumns.get(i) + ": ", JLabel.TRAILING);
+			jl.setFont(new Font("Dialog", 1, 16));
+			cp.add(jl);
+			layout.setConstraints(jl, GBCsUtil.gbcsSet(gbcs, 1, 0, 0));
+			// textField
+			JTextField jt = new JTextField();
+			if (i == 0) {
+				jt.setEditable(false);
+			}
+			cp.add(jt);
+			layout.setConstraints(jt, GBCsUtil.gbcsSet(gbcs, 0, 1, 0));
+			// space panel
+			JPanel sp = new JPanel();
+			cp.add(sp);
+			layout.setConstraints(sp, GBCsUtil.gbcsSet(gbcs, 0, 0, 1));
+		}
 	}
-	
+
 	private static JFrame frame;
 	private static Container cp;
 	private Entity entity;
 	private List<Entity> list;
 	private List<String> dataColumns;
-	private JTableTest table; 
+	private JTableTest table;
 	private JScrollPane scrollPane;
 	private static String key;
 	private static String key1;
@@ -186,36 +186,36 @@ public class JFrameTest extends JFrame {
 	private JLabel keyl;
 	private JPasswordField keyt;
 	private boolean mouseListener;
-	
+
 	class AddListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			cp.removeAll();
 			setResultOptions();
-	        // add button
-	        final JButton jb = new JButton("Add");
-	        jb.setFont(new Font("Dialog", 1, 20));
-	        jb.addActionListener(new ActionListener() {
+			// add button
+			final JButton jb = new JButton("Add");
+			jb.setFont(new Font("Dialog", 1, 20));
+			jb.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					entity = new Entity();
 					try {
 						// add entity
-						for(int i=0; i<dataColumns.size(); i++) {
-							String value = ((JTextField)cp.getComponent(i*3+1)).getText();
-							if(StringUtils.isNotEmpty(value)) {
+						for (int i = 0; i < dataColumns.size(); i++) {
+							String value = ((JTextField) cp.getComponent(i * 3 + 1)).getText();
+							if (StringUtils.isNotEmpty(value)) {
 								CommonUtil.setField(entity, dataColumns.get(i), value);
 							}
 						}
-						if(StringUtils.isEmpty(entity.getSite())) {
+						if (StringUtils.isEmpty(entity.getSite())) {
 							return;
 						}
 						int result = es.addEntity(entity, key, key1);
-						if(result == 1) {
+						if (result == 1) {
 							JOptionPane.showMessageDialog(cp, "Add success!");
-						} else if(result == 0) {
+						} else if (result == 0) {
 							JOptionPane.showMessageDialog(cp, "Add failed!");
-						} else if(result == -1) {
+						} else if (result == -1) {
 							JOptionPane.showMessageDialog(cp, "Add existed!");
 						}
 					} catch (Exception ex) {
@@ -223,43 +223,43 @@ public class JFrameTest extends JFrame {
 					}
 				}
 			});
-	        cp.add(jb);
-            layout.setConstraints(jb, GBCsUtil.gbcsSet(gbcs, 0, 1, 0));
-            cp.validate();
-            cp.repaint();
+			cp.add(jb);
+			layout.setConstraints(jb, GBCsUtil.gbcsSet(gbcs, 0, 1, 0));
+			cp.validate();
+			cp.repaint();
 		}
 	}
-	
+
 	class EditListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			cp.removeAll();
 			setQueryOptions(false);
 			setResultOptions();
-	        // edit button
-	        JPanel edit = new JPanel();
-	        final JButton queryB = new JButton("Query");
-	        queryB.setFont(new Font("Dialog", 1, 20));
-	        queryB.setPreferredSize(new Dimension(238, 30));
-	        queryB.addActionListener(new ActionListener() {
+			// edit button
+			JPanel edit = new JPanel();
+			final JButton queryB = new JButton("Query");
+			queryB.setFont(new Font("Dialog", 1, 20));
+			queryB.setPreferredSize(new Dimension(238, 30));
+			queryB.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					try {
 						String qs = qts.getText();
 						String qn = qtn.getText();
-						if(StringUtils.isEmpty(qs) || StringUtils.isEmpty(qn)) {
-							 JOptionPane.showMessageDialog(cp, "Parameters error!");
-							 return;
+						if (StringUtils.isEmpty(qs) || StringUtils.isEmpty(qn)) {
+							JOptionPane.showMessageDialog(cp, "Parameters error!");
+							return;
 						}
 						list = es.queryEntity(null, qs, qn, key, key1);
-						entity = list==null||list.size()==0 ? null : list.get(0);
-						if(entity != null) {
-							for(int i=0; i<dataColumns.size(); i++) {
-								JTextField value = (JTextField)cp.getComponent(1+i*3+1);
-								if(i < 2) {
+						entity = list == null || list.size() == 0 ? null : list.get(0);
+						if (entity != null) {
+							for (int i = 0; i < dataColumns.size(); i++) {
+								JTextField value = (JTextField) cp.getComponent(1 + i * 3 + 1);
+								if (i < 2) {
 									value.setEditable(false);
 								}
-								value.setText((String)CommonUtil.getField(entity, dataColumns.get(i)));
+								value.setText((String) CommonUtil.getField(entity, dataColumns.get(i)));
 							}
 						}
 					} catch (Exception ex) {
@@ -267,25 +267,25 @@ public class JFrameTest extends JFrame {
 					}
 				}
 			});
-	        edit.add(queryB);
-	        final JButton editB = new JButton("Edit");
-	        editB.setFont(new Font("Dialog", 1, 20));
-	        // 因为JButen是属于小器件类型的，所以setSize不能对其惊醒大小的设置，一般用以下方法设置大小
-	        editB.setPreferredSize(new Dimension(238, 30));
-	        editB.addActionListener(new ActionListener() {
+			edit.add(queryB);
+			final JButton editB = new JButton("Edit");
+			editB.setFont(new Font("Dialog", 1, 20));
+			// 因为JButen是属于小器件类型的，所以setSize不能对其惊醒大小的设置，一般用以下方法设置大小
+			editB.setPreferredSize(new Dimension(238, 30));
+			editB.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					
+
 				}
 			});
-	        edit.add(editB);
-	        cp.add(edit);
-            layout.setConstraints(edit, GBCsUtil.gbcsSet(gbcs, 0, 1, 0));
-            cp.validate();
-            cp.repaint();
+			edit.add(editB);
+			cp.add(edit);
+			layout.setConstraints(edit, GBCsUtil.gbcsSet(gbcs, 0, 1, 0));
+			cp.validate();
+			cp.repaint();
 		}
 	}
-	
+
 	class QueryListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -293,22 +293,20 @@ public class JFrameTest extends JFrame {
 			cp.removeAll();
 			mouseListener = false;
 			setQueryOptions(true);
-         	// query button
-	        final JButton jb = new JButton("Query");
-	        jb.setFont(new Font("Dialog", 1, 20));
-	        jb.addActionListener(new ActionListener() {
+			// query button
+			final JButton jb = new JButton("Query");
+			jb.setFont(new Font("Dialog", 1, 20));
+			jb.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					try {
 						String qlev = levt.getText();
-						String qkey = keyt.getPassword() == null ?
-								null : new String(keyt.getPassword());
+						String qkey = keyt.getPassword() == null ? null : new String(keyt.getPassword());
 						String qs = qts.getText();
 						String qn = qtn.getText();
-						if(key1.equals(qkey)) {
+						if (key1.equals(qkey)) {
 							// show query datas, can flush
-							table.setModel(new MyTableModel(es.queryEntity(
-									qlev, qs, qn, key, key1)));
+							table.setModel(new MyTableModel(es.queryEntity(qlev, qs, qn, key, key1)));
 							TableColumnModel tcm = table.getColumnModel();
 							// id列设置隐藏
 							TableColumn id = tcm.getColumn(0);
@@ -320,8 +318,8 @@ public class JFrameTest extends JFrame {
 							TableColumn operate = tcm.getColumn(Entity.OPERATE_INDEX);
 							operate.setCellRenderer(new MyCellRenderer());
 							operate.setCellEditor(new MyCellEditor());
-					        JTableTest.fitTableColumns(table);
-							if(!mouseListener) {
+							JTableTest.fitTableColumns(table);
+							if (!mouseListener) {
 								table.addMouseListener(new TableMouseAdapter());
 								mouseListener = true;
 							}
@@ -331,104 +329,105 @@ public class JFrameTest extends JFrame {
 					}
 				}
 			});
-	        cp.add(jb);
-            layout.setConstraints(jb, GBCsUtil.gbcsSet(gbcs, 0, 1, 0));
-         	// table list
-            table = new JTableTest(list);
-            scrollPane = new JScrollPane(table);
-            cp.add(scrollPane);
-            layout.setConstraints(scrollPane, GBCsUtil.gbcsSet(gbcs, 0, 1, 0));
-            cp.validate();
-            cp.repaint();
+			cp.add(jb);
+			layout.setConstraints(jb, GBCsUtil.gbcsSet(gbcs, 0, 1, 0));
+			// table list
+			table = new JTableTest(list);
+			scrollPane = new JScrollPane(table);
+			cp.add(scrollPane);
+			layout.setConstraints(scrollPane, GBCsUtil.gbcsSet(gbcs, 0, 1, 0));
+			cp.validate();
+			cp.repaint();
 		}
 	}
-	
+
 	class DeleteListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			cp.removeAll();
 			setQueryOptions(false);
 			setResultOptions();
-	        // query button
-	        JPanel edit = new JPanel();
-	        final JButton queryB = new JButton("Query");
-	        queryB.setFont(new Font("Dialog", 1, 20));
-	        queryB.setPreferredSize(new Dimension(238, 30));
-	        queryB.addActionListener(new ActionListener() {
+			// query button
+			JPanel edit = new JPanel();
+			final JButton queryB = new JButton("Query");
+			queryB.setFont(new Font("Dialog", 1, 20));
+			queryB.setPreferredSize(new Dimension(238, 30));
+			queryB.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					// TODO
 				}
 			});
-	        edit.add(queryB);
-	        final JButton deleteB = new JButton("Delete");
-	        deleteB.setFont(new Font("Dialog", 1, 20));
-	        // 因为JButen是属于小器件类型的，所以setSize不能对其惊醒大小的设置，一般用以下方法设置大小
-	        deleteB.setPreferredSize(new Dimension(238, 30));
-	        deleteB.addActionListener(new ActionListener() {
+			edit.add(queryB);
+			final JButton deleteB = new JButton("Delete");
+			deleteB.setFont(new Font("Dialog", 1, 20));
+			// 因为JButen是属于小器件类型的，所以setSize不能对其惊醒大小的设置，一般用以下方法设置大小
+			deleteB.setPreferredSize(new Dimension(238, 30));
+			deleteB.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					// TODO
 				}
 			});
-	        edit.add(deleteB);
-	        cp.add(edit);
-            layout.setConstraints(edit, GBCsUtil.gbcsSet(gbcs, 0, 1, 0));
-            cp.validate();
-            cp.repaint();
+			edit.add(deleteB);
+			cp.add(edit);
+			layout.setConstraints(edit, GBCsUtil.gbcsSet(gbcs, 0, 1, 0));
+			cp.validate();
+			cp.repaint();
 		}
 	}
-	
+
 	/**
 	 * 鼠标双击时间响应
+	 * 
 	 * @author wp
 	 *
 	 */
 	class TableMouseAdapter extends MouseAdapter {
-		public void mouseClicked(MouseEvent e) { 
-			if(e.getClickCount() == 2) { // 实现双击 
-				// 获得行位置 
-				int row = ((JTable)e.getSource()).rowAtPoint(e.getPoint()); 
-				// 获得列位置 
-                int col = ((JTable)e.getSource()).columnAtPoint(e.getPoint()); 
-                // 获得点击单元格数据，复制到剪切板
-                String value = String.valueOf(table.getValueAt(row, col));
-                StringSelection stringSelection = new StringSelection(value);
-                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, null);
-                //JOptionPane.showMessageDialog(cp, "复制成功！");
-			} 
-		} 
+		public void mouseClicked(MouseEvent e) {
+			if (e.getClickCount() == 2) { // 实现双击
+				// 获得行位置
+				int row = ((JTable) e.getSource()).rowAtPoint(e.getPoint());
+				// 获得列位置
+				int col = ((JTable) e.getSource()).columnAtPoint(e.getPoint());
+				// 获得点击单元格数据，复制到剪切板
+				String value = String.valueOf(table.getValueAt(row, col));
+				StringSelection stringSelection = new StringSelection(value);
+				Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, null);
+				// JOptionPane.showMessageDialog(cp, "复制成功！");
+			}
+		}
 	}
-	
+
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				frame = new JFrameTest();
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				frame.setVisible(true);
-				if(key == null) {
+				if (key == null) {
 					JOptionPane.showMessageDialog(cp, "获取key失败！");
 					System.exit(0);
 				}
 				JDialogTest jd = new JDialogTest(frame, "check");
-				while(StringUtils.isEmpty(key1) || StringUtils.isEmpty(key2)) {
+				while (StringUtils.isEmpty(key1) || StringUtils.isEmpty(key2)) {
 					try {
 						jd.setVisible(true);
 						List<String> inputs = jd.getInputs();
-						if(inputs != null) {
+						if (inputs != null) {
 							String t1 = ClassicalCoder.substitutionDecrypt(temp1, inputs.get(0));
 							String t2 = ClassicalCoder.substitutionDecrypt(temp2, inputs.get(1));
-							if(DigesterCoder.getStringDigest(inputs.get(0), "MD5").equals(t1) &&
-									DigesterCoder.getStringDigest(inputs.get(1), "MD5").equals(t2)) {
+							if (DigesterCoder.getStringDigest(inputs.get(0), "MD5").equals(t1)
+									&& DigesterCoder.getStringDigest(inputs.get(1), "MD5").equals(t2)) {
 								key1 = inputs.get(0);
 								key2 = inputs.get(1);
 								key = ClassicalCoder.substitutionDecrypt(key, key2);
-								CacheUtil.setCache("key", key);
-								CacheUtil.setCache("key1", key1);
-								CacheUtil.setCache("key2", key2);
+								CacheUtils.setCache("key", key);
+								CacheUtils.setCache("key1", key1);
+								CacheUtils.setCache("key2", key2);
 							}
 						}
-					} catch(Exception ex) {
+					} catch (Exception ex) {
 						LOG.error(ex.getMessage());
 						System.exit(0);
 					}

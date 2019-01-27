@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.wp.study.base.util.IoUtil;
+import com.wp.study.base.util.IoUtils;
 
 public class DigesterCoder {
 
@@ -72,7 +72,7 @@ public class DigesterCoder {
 					LOG.error(e.getMessage());
 				} finally {
 					// 关闭输入输出流
-					IoUtil.closeQuietly(in);
+					IoUtils.closeQuietly(in);
 				}
 			} else {
 				LOG.warn("file is directory!");

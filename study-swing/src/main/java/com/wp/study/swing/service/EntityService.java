@@ -16,13 +16,26 @@ import com.wp.study.algorithm.encryption.ClassicalCoder;
 import com.wp.study.algorithm.encryption.EncryptionFactory;
 import com.wp.study.base.constant.CommonConstants;
 import com.wp.study.base.pojo.Entity;
-import com.wp.study.base.util.IoUtil;
 import com.wp.study.jdbc.derby.dao.EntityMapper;
 import com.wp.study.swing.util.CommonUtil;
 
 public class EntityService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(EntityService.class);
+
+	/**
+	 * sqlSession
+	 */
+	private SqlSession sqlSession;
+
+	public EntityService() {
+		String resource = "com/wp/study/swing/service/mybatis-config.xml";
+		try {
+			sqlSession = new SqlSessionFactoryBuilder().build(Resources.getResourceAsReader(resource)).openSession();
+		} catch (Exception e) {
+			throw new RuntimeException("getSqlSession fail", e);
+		}
+	}
 
 	/**
 	 * 添加entity
@@ -33,10 +46,22 @@ public class EntityService {
 	 * @return
 	 */
 	public int addEntity(Entity entity, String key, String key1) {
+		return addEntity(entity, key, key1, CommonConstants.ENCRYPTION_ALGO_AES);
+	}
+
+	/**
+	 * 添加entity
+	 * 
+	 * @param entity
+	 * @param key
+	 * @param key1
+	 * @param encryption
+	 * @return
+	 */
+	public int addEntity(Entity entity, String key, String key1, String encryption) {
 		int result = 0;
-		SqlSession sqlSession = getSqlSession();
 		try {
-			result = entityEncrypt(entity, key, key1, CommonConstants.ENCRYPTION_ALGO_IDEA);
+			result = entityEncrypt(entity, key, key1, encryption);
 			// entity encrypt fail
 			if (result == 0) {
 				return result;
@@ -54,10 +79,7 @@ public class EntityService {
 				result = -1;
 			}
 		} catch (Exception e) {
-			// add entity fail
-			LOG.error(e.getMessage());
-		} finally {
-			IoUtil.closeQuietly(sqlSession);
+			LOG.error("addEntity fail, error:", e);
 		}
 		return result;
 	}
@@ -71,10 +93,22 @@ public class EntityService {
 	 * @return
 	 */
 	public int editEntity(Entity entity, String key, String key1) {
+		return editEntity(entity, key, key1, CommonConstants.ENCRYPTION_ALGO_AES);
+	}
+
+	/**
+	 * 编辑entity
+	 * 
+	 * @param entity
+	 * @param key
+	 * @param key1
+	 * @param encryption
+	 * @return
+	 */
+	public int editEntity(Entity entity, String key, String key1, String encryption) {
 		int result = 0;
-		SqlSession sqlSession = getSqlSession();
 		try {
-			result = entityEncrypt(entity, key, key1, CommonConstants.ENCRYPTION_ALGO_IDEA);
+			result = entityEncrypt(entity, key, key1, encryption);
 			if (result == 0) {
 				return result; // entity encrypt fail
 			}
@@ -82,10 +116,7 @@ public class EntityService {
 			result = entityMapper.editEntity(entity);
 			sqlSession.commit();
 		} catch (Exception e) {
-			// edit entity fail
-			LOG.error(e.getMessage());
-		} finally {
-			IoUtil.closeQuietly(sqlSession);
+			LOG.error("editEntity fail, error:", e);
 		}
 		return result;
 	}
@@ -102,7 +133,6 @@ public class EntityService {
 	 */
 	public List<Entity> queryEntity(String level, String site, String name, String key, String key1) {
 		List<Entity> entityList = null;
-		SqlSession sqlSession = getSqlSession();
 		site = CommonUtil.strEncrypt(site, key1);
 		name = CommonUtil.strEncrypt(name, key1);
 		try {
@@ -113,12 +143,15 @@ public class EntityService {
 			params.put("name", name);
 			entityList = entityMapper.queryEntityWithConditions(params);
 			for (Entity entity : entityList) {
-				entityDecrypt(entity, key, key1, CommonConstants.ENCRYPTION_ALGO_IDEA);
+				entityDecrypt(entity, key, key1, CommonConstants.ENCRYPTION_ALGO_AES);
+//				int del = deleteEntity(entity.getId());
+//				LOG.error("deleteEntity, id={}, del={}", entity.getId(), del);
+//				if(del == 1) {
+//					addEntity(entity, key, key1, CommonConstants.ENCRYPTION_ALGO_AES);
+//				}
 			}
 		} catch (Exception e) {
-			LOG.error(e.getMessage());
-		} finally {
-			IoUtil.closeQuietly(sqlSession);
+			LOG.error("queryEntity fail, error:", e);
 		}
 		return entityList;
 	}
@@ -131,34 +164,14 @@ public class EntityService {
 	 */
 	public int deleteEntity(Integer id) {
 		int result = 0;
-		SqlSession sqlSession = getSqlSession();
 		try {
 			EntityMapper entityMapper = sqlSession.getMapper(EntityMapper.class);
 			result = entityMapper.deleteEntityById(id);
 			sqlSession.commit();
 		} catch (Exception e) {
-			// delete entity fail
-			LOG.error(e.getMessage());
-		} finally {
-			IoUtil.closeQuietly(sqlSession);
+			LOG.error("deleteEntity fail, error:", e);
 		}
 		return result;
-	}
-
-	/**
-	 * 获取sqlSession
-	 * 
-	 * @return
-	 */
-	private SqlSession getSqlSession() {
-		String resource = "com/wp/study/swing/service/mybatis-config.xml";
-		SqlSession sqlSession = null;
-		try {
-			sqlSession = new SqlSessionFactoryBuilder().build(Resources.getResourceAsReader(resource)).openSession();
-		} catch (Exception e) {
-			LOG.error(e.getMessage());
-		}
-		return sqlSession;
 	}
 
 	/**
@@ -197,7 +210,7 @@ public class EntityService {
 			}
 			result = 1;
 		} catch (Exception e) {
-			LOG.error(e.getMessage());
+			LOG.error("entityEncrypt fail, error:", e);
 		}
 		return result;
 	}
@@ -240,7 +253,7 @@ public class EntityService {
 			}
 			result = 1;
 		} catch (Exception e) {
-			LOG.error(e.getMessage());
+			LOG.error("entityDecrypt fail, error:", e);
 		}
 		return result;
 	}

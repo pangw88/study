@@ -24,9 +24,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.wp.study.base.util.HttpUtil;
-import com.wp.study.base.util.IoUtil;
-import com.wp.study.base.util.JsonUtil;
+import com.wp.study.base.util.HttpUtils;
+import com.wp.study.base.util.IoUtils;
+import com.wp.study.base.util.JsonUtils;
 import com.wp.study.praxis.file.FileOperation;
 import com.wp.study.praxis.image.reptile.adapter.WebsiteAdapterUtils;
 import com.wp.study.praxis.image.reptile.filter.XmlFilter;
@@ -81,7 +81,7 @@ public class ImageReptile {
 			e.printStackTrace();
 		} finally {
 			// 关闭输入输出流
-			IoUtil.closeQuietly(br);
+			IoUtils.closeQuietly(br);
 		}
 		return fileInfoSet;
 	}
@@ -109,7 +109,7 @@ public class ImageReptile {
 						int status = 1;
 						try {
 							if(download.addTryTimes() > 5) {
-								System.out.println("download fail over 5 times, download=" + JsonUtil.convertBeanToJson(download));
+								System.out.println("download fail over 5 times, download=" + JsonUtils.convertBeanToJson(download));
 								download.setHasDown(true);
 								return;
 							}
@@ -119,7 +119,7 @@ public class ImageReptile {
 							}
 							File output = new File(dic, download.getImageName());
 							if(!output.exists()) {
-								status = HttpUtil.doGetDownload(download.getDownUrl(), output);
+								status = HttpUtils.doGetDownload(download.getDownUrl(), output);
 								download.setStatus(status);
 							}
 							// 校验图片有效性
@@ -157,7 +157,7 @@ public class ImageReptile {
 			e.printStackTrace();
 		} finally {
 			// 关闭输入输出流
-			IoUtil.closeQuietly(fw);
+			IoUtils.closeQuietly(fw);
 		}
 		// 遍历下载图片
 		downloadImage(nextDownloads);
@@ -252,7 +252,7 @@ public class ImageReptile {
 				if(StringUtils.isBlank(record)) {
 					continue;
 				}
-				DownloadDO download = JsonUtil.convertJsonToBean(record, DownloadDO.class);
+				DownloadDO download = JsonUtils.convertJsonToBean(record, DownloadDO.class);
 				if(null != download) {
 					downloadedMap.put(download.getaUrl(), download);
 				}
@@ -263,7 +263,7 @@ public class ImageReptile {
 		Map<String, DownloadDO> urlMap = new HashMap<String, DownloadDO>();
 		for (String pageUrl : pageUrls) {
 			try {
-				String pageContent = HttpUtil.doGet(pageUrl, String.class);
+				String pageContent = HttpUtils.doGet(pageUrl, String.class);
 				if (StringUtils.isBlank(pageContent)) {
 					System.out.println("page content is blank, pageUrl=" + pageUrl);
 					continue;
@@ -329,7 +329,7 @@ public class ImageReptile {
 	
 	public static void writeDownloaded(DownloadDO download) {
 		if(null != download && !download.isHasDown()) {
-			write(downloadedFilePath, JsonUtil.convertBeanToJson(download));
+			write(downloadedFilePath, JsonUtils.convertBeanToJson(download));
 		}
 	}
 	
@@ -380,7 +380,7 @@ public class ImageReptile {
 		// 关闭filewriter
 		for(Map.Entry<String, FileWriter> entry : fwMap.entrySet()) {
 			// 关闭输入输出流
-			IoUtil.closeQuietly(entry.getValue());
+			IoUtils.closeQuietly(entry.getValue());
 		}
 	}
 	

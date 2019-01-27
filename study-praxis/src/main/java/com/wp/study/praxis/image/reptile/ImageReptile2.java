@@ -23,8 +23,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.wp.study.base.util.HttpUtil;
-import com.wp.study.base.util.IoUtil;
+import com.wp.study.base.util.HttpUtils;
+import com.wp.study.base.util.IoUtils;
 import com.wp.study.praxis.image.reptile.filter.XmlFilter;
 
 public class ImageReptile2 {
@@ -70,7 +70,7 @@ public class ImageReptile2 {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			IoUtil.closeQuietly(br);
+			IoUtils.closeQuietly(br);
 		}
 		return pageUrls;
 	}
@@ -199,7 +199,7 @@ public class ImageReptile2 {
 						try {
 							long startTime = System.currentTimeMillis();
 							File output = new File(dic, index + 101 + ".jpg");
-							int status = HttpUtil.doGetDownload(downloadUrls.get(index), output);
+							int status = HttpUtils.doGetDownload(downloadUrls.get(index), output);
 							System.out.println(output.getPath());
 							log = downloadUrls.get(index) + " status=" + status + " waste=" + (System.currentTimeMillis() - startTime);
 							System.out.println(log);
@@ -228,7 +228,7 @@ public class ImageReptile2 {
 		} catch(Exception e) {
 			e.printStackTrace();
 		} finally {
-			IoUtil.closeQuietly(fw);
+			IoUtils.closeQuietly(fw);
 		}
 	}
 	
@@ -244,7 +244,7 @@ public class ImageReptile2 {
 		}
 		for (String pageUrl : pageUrls) {
 			try {
-				String pageContent = HttpUtil.doGet(pageUrl, String.class);
+				String pageContent = HttpUtils.doGet(pageUrl, String.class);
 				if (StringUtils.isBlank(pageContent)) {
 					throw new RuntimeException("page content is blank");
 				}

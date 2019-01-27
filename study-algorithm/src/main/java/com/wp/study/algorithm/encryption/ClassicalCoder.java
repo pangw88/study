@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @version 1.0
  */
-public abstract class ClassicalCoder {
+public class ClassicalCoder {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ClassicalCoder.class);
 

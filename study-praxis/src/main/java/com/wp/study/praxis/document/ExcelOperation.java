@@ -17,7 +17,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 
-import com.wp.study.base.util.IoUtil;
+import com.wp.study.base.util.IoUtils;
 
 public class ExcelOperation {
 	
@@ -68,7 +68,7 @@ public class ExcelOperation {
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
 		} finally {
-			IoUtil.closeQuietly(fis, wb);
+			IoUtils.closeQuietly(fis, wb);
 		}
 	}
 
@@ -123,7 +123,7 @@ public class ExcelOperation {
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
 		} finally {
-			IoUtil.closeQuietly(fos, wb);
+			IoUtils.closeQuietly(fos, wb);
 		}
 	}
 	

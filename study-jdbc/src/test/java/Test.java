@@ -12,7 +12,7 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.wp.study.base.util.IoUtil;
+import com.wp.study.base.util.IoUtils;
 
 @SuppressWarnings("unused")
 public class Test {
@@ -43,7 +43,7 @@ public class Test {
 		} catch(SQLException se) {
 			LOG.error(se.getMessage());
 		} finally {
-			IoUtil.closeQuietly(rs, statement, conn);
+			IoUtils.closeQuietly(rs, statement, conn);
 		}
 	}
 	

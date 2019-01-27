@@ -19,7 +19,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
-import com.wp.study.base.util.IoUtil;
+import com.wp.study.base.util.IoUtils;
 
 public class AddressSimilarity2 {
 	
@@ -82,7 +82,7 @@ public class AddressSimilarity2 {
 			} catch (NumberFormatException nfe) {
 				throw new RuntimeException(nfe);
 			} finally {
-				IoUtil.closeQuietly(br);
+				IoUtils.closeQuietly(br);
 			}
 		}
 		

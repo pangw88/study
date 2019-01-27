@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.wp.study.base.pojo.Entity;
-import com.wp.study.base.util.CacheUtil;
+import com.wp.study.base.util.CacheUtils;
 import com.wp.study.swing.service.EntityService;
 import com.wp.study.swing.util.CommonUtil;
 
@@ -103,8 +103,8 @@ public class MyCellEditor extends AbstractCellEditor implements TableCellEditor,
 				choose = JOptionPane.showConfirmDialog(cp, "提交修改？", "编辑", 
 						JOptionPane.YES_NO_OPTION);
 				if(choose == 0) {
-					result = es.editEntity(entity, CacheUtil.getCache("key", String.class), 
-							CacheUtil.getCache("key1", String.class));
+					result = es.editEntity(entity, CacheUtils.getCache("key", String.class), 
+							CacheUtils.getCache("key1", String.class));
 					if(result == 1) {
 						JOptionPane.showMessageDialog(cp, "编辑成功!");
 					} else {

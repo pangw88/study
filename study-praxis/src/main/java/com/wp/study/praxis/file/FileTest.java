@@ -11,7 +11,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.wp.study.base.util.IoUtil;
+import com.wp.study.base.util.IoUtils;
 
 public class FileTest {
 	
@@ -84,7 +84,7 @@ public class FileTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			IoUtil.closeQuietly(br);
+			IoUtils.closeQuietly(br);
 		}
 		if(sb.length() > 0) {
 			FileWriter fw = null;
@@ -95,7 +95,7 @@ public class FileTest {
 			} catch(Exception e) {
 				e.printStackTrace();
 			} finally {
-				IoUtil.closeQuietly(fw);
+				IoUtils.closeQuietly(fw);
 			}
 		}
 		if(sb.length() == 0) {
