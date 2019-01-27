@@ -18,7 +18,7 @@ import com.wp.study.base.constant.CommonConstants;
  * 
  * @version 1.0
  */
-public abstract class DESedeCoder {
+public class DESedeCoder implements IEncryptionCoder {
 
 	/**
 	 * 转换密钥
@@ -27,13 +27,32 @@ public abstract class DESedeCoder {
 	 * @return Key 密钥
 	 * @throws Exception
 	 */
-	private static Key toKey(byte[] key) throws Exception {
+	public Key toKey(byte[] key) throws Exception {
 		// 实例化DES密钥材料
 		DESedeKeySpec dks = new DESedeKeySpec(key);
 		// 实例化秘密密钥工厂
 		SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(CommonConstants.ENCRYPTION_ALGO_DESEDE);
 		// 生成秘密密钥
 		return keyFactory.generateSecret(dks);
+	}
+
+	/**
+	 * 生成密钥 <br>
+	 * 
+	 * @return byte[] 二进制密钥
+	 * @throws Exception
+	 */
+	public byte[] initKey() throws Exception {
+		// 实例化
+		KeyGenerator kg = KeyGenerator.getInstance(CommonConstants.ENCRYPTION_ALGO_DESEDE);
+		/*
+		 * DESede 要求密钥长度为 112位或168位
+		 */
+		kg.init(168);
+		// 生成秘密密钥
+		SecretKey secretKey = kg.generateKey();
+		// 获得密钥的二进制编码形式
+		return secretKey.getEncoded();
 	}
 
 	/**
@@ -44,7 +63,7 @@ public abstract class DESedeCoder {
 	 * @return byte[] 解密数据
 	 * @throws Exception
 	 */
-	public static byte[] decrypt(byte[] data, byte[] key) throws Exception {
+	public byte[] decrypt(byte[] data, byte[] key) throws Exception {
 		// 还原密钥
 		Key k = toKey(key);
 		/*
@@ -65,7 +84,7 @@ public abstract class DESedeCoder {
 	 * @return byte[] 加密数据
 	 * @throws Exception
 	 */
-	public static byte[] encrypt(byte[] data, byte[] key) throws Exception {
+	public byte[] encrypt(byte[] data, byte[] key) throws Exception {
 		// 还原密钥
 		Key k = toKey(key);
 		/*
@@ -78,22 +97,4 @@ public abstract class DESedeCoder {
 		return cipher.doFinal(data);
 	}
 
-	/**
-	 * 生成密钥 <br>
-	 * 
-	 * @return byte[] 二进制密钥
-	 * @throws Exception
-	 */
-	public static byte[] initKey() throws Exception {
-		// 实例化
-		KeyGenerator kg = KeyGenerator.getInstance(CommonConstants.ENCRYPTION_ALGO_DESEDE);
-		/*
-		 * DESede 要求密钥长度为 112位或168位
-		 */
-		kg.init(168);
-		// 生成秘密密钥
-		SecretKey secretKey = kg.generateKey();
-		// 获得密钥的二进制编码形式
-		return secretKey.getEncoded();
-	}
 }

@@ -27,14 +27,15 @@ public class AESCoderTest {
 			String inputStr = "AES";
 			byte[] inputData = inputStr.getBytes();
 			LOG.info("原文:{}", inputStr);
+			AESCoder aesCoder = new AESCoder();
 			// 初始化密钥
-			byte[] key = AESCoder.initKey();
+			byte[] key = aesCoder.initKey();
 			LOG.info("密钥:{}", Base64.encodeBase64String(key));
 			// 加密
-			inputData = AESCoder.encrypt(inputData, key);
+			inputData = aesCoder.encrypt(inputData, key);
 			LOG.info("加密后:{}", Base64.encodeBase64String(inputData));
 			// 解密
-			byte[] outputData = AESCoder.decrypt(inputData, key);
+			byte[] outputData = aesCoder.decrypt(inputData, key);
 			String outputStr = new String(outputData);
 			LOG.info("解密后:{}", outputStr);
 			// 校验

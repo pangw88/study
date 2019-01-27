@@ -27,14 +27,15 @@ public class DESedeCoderTest {
 			String inputStr = "DESede";
 			byte[] inputData = inputStr.getBytes();
 			LOG.info("原文:{}", inputStr);
+			DESedeCoder desedeCoder = new DESedeCoder();
 			// 初始化密钥
-			byte[] key = DESedeCoder.initKey();
+			byte[] key = desedeCoder.initKey();
 			LOG.info("密钥:{}", Base64.encodeBase64String(key));
 			// 加密
-			inputData = DESedeCoder.encrypt(inputData, key);
+			inputData = desedeCoder.encrypt(inputData, key);
 			LOG.info("加密后:{}", Base64.encodeBase64String(inputData));
 			// 解密
-			byte[] outputData = DESedeCoder.decrypt(inputData, key);
+			byte[] outputData = desedeCoder.decrypt(inputData, key);
 			String outputStr = new String(outputData);
 			LOG.info("解密后:{}", outputStr);
 			// 校验

@@ -17,7 +17,7 @@ import com.wp.study.base.constant.CommonConstants;
  * 
  * @version 1.0
  */
-public abstract class AESCoder {
+public class AESCoder implements IEncryptionCoder {
 
 	/**
 	 * 转换密钥
@@ -26,9 +26,28 @@ public abstract class AESCoder {
 	 * @return Key 密钥
 	 * @throws Exception
 	 */
-	private static Key toKey(byte[] key) throws Exception {
+	public Key toKey(byte[] key) throws Exception {
 		// 实例化AES密钥材料
 		return new SecretKeySpec(key, CommonConstants.ENCRYPTION_ALGO_AES);
+	}
+
+	/**
+	 * 生成密钥 <br>
+	 * 
+	 * @return byte[] 二进制密钥
+	 * @throws Exception
+	 */
+	public byte[] initKey() throws Exception {
+		// 实例化
+		KeyGenerator kg = KeyGenerator.getInstance(CommonConstants.ENCRYPTION_ALGO_AES);
+		/*
+		 * AES 要求密钥长度为 128位、192位或 256位
+		 */
+		kg.init(256);
+		// 生成秘密密钥
+		SecretKey secretKey = kg.generateKey();
+		// 获得密钥的二进制编码形式
+		return secretKey.getEncoded();
 	}
 
 	/**
@@ -39,7 +58,7 @@ public abstract class AESCoder {
 	 * @return byte[] 解密数据
 	 * @throws Exception
 	 */
-	public static byte[] decrypt(byte[] data, byte[] key) throws Exception {
+	public byte[] decrypt(byte[] data, byte[] key) throws Exception {
 		// 还原密钥
 		Key k = toKey(key);
 		/*
@@ -60,7 +79,7 @@ public abstract class AESCoder {
 	 * @return byte[] 加密数据
 	 * @throws Exception
 	 */
-	public static byte[] encrypt(byte[] data, byte[] key) throws Exception {
+	public byte[] encrypt(byte[] data, byte[] key) throws Exception {
 		// 还原密钥
 		Key k = toKey(key);
 		/*
@@ -73,22 +92,4 @@ public abstract class AESCoder {
 		return cipher.doFinal(data);
 	}
 
-	/**
-	 * 生成密钥 <br>
-	 * 
-	 * @return byte[] 二进制密钥
-	 * @throws Exception
-	 */
-	public static byte[] initKey() throws Exception {
-		// 实例化
-		KeyGenerator kg = KeyGenerator.getInstance(CommonConstants.ENCRYPTION_ALGO_AES);
-		/*
-		 * AES 要求密钥长度为 128位、192位或 256位
-		 */
-		kg.init(256);
-		// 生成秘密密钥
-		SecretKey secretKey = kg.generateKey();
-		// 获得密钥的二进制编码形式
-		return secretKey.getEncoded();
-	}
 }

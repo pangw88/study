@@ -18,7 +18,7 @@ import com.wp.study.base.constant.CommonConstants;
  * @version 1.0
  * @since 1.0
  */
-public abstract class IDEACoder {
+public class IDEACoder implements IEncryptionCoder {
 
 	/**
 	 * 转换密钥
@@ -27,9 +27,28 @@ public abstract class IDEACoder {
 	 * @return Key 密钥
 	 * @throws Exception
 	 */
-	private static Key toKey(byte[] key) throws Exception {
+	public Key toKey(byte[] key) throws Exception {
 		// 生成秘密密钥
 		return new SecretKeySpec(key, CommonConstants.ENCRYPTION_ALGO_IDEA);
+	}
+
+	/**
+	 * 生成密钥 <br>
+	 * 
+	 * @return byte[] 二进制密钥
+	 * @throws Exception
+	 */
+	public byte[] initKey() throws Exception {
+		// 加入BouncyCastleProvider支持
+		Security.addProvider(new BouncyCastleProvider());
+		// 实例化
+		KeyGenerator kg = KeyGenerator.getInstance(CommonConstants.ENCRYPTION_ALGO_IDEA);
+		// 初始化
+		kg.init(128);
+		// 生成秘密密钥
+		SecretKey secretKey = kg.generateKey();
+		// 获得密钥的二进制编码形式
+		return secretKey.getEncoded();
 	}
 
 	/**
@@ -40,7 +59,7 @@ public abstract class IDEACoder {
 	 * @return byte[] 解密数据
 	 * @throws Exception
 	 */
-	public static byte[] decrypt(byte[] data, byte[] key) throws Exception {
+	public byte[] decrypt(byte[] data, byte[] key) throws Exception {
 		// 加入BouncyCastleProvider支持
 		Security.addProvider(new BouncyCastleProvider());
 		// 还原密钥
@@ -61,7 +80,7 @@ public abstract class IDEACoder {
 	 * @return byte[] 加密数据
 	 * @throws Exception
 	 */
-	public static byte[] encrypt(byte[] data, byte[] key) throws Exception {
+	public byte[] encrypt(byte[] data, byte[] key) throws Exception {
 		// 加入BouncyCastleProvider支持
 		Security.addProvider(new BouncyCastleProvider());
 		// 还原密钥
@@ -74,22 +93,4 @@ public abstract class IDEACoder {
 		return cipher.doFinal(data);
 	}
 
-	/**
-	 * 生成密钥 <br>
-	 * 
-	 * @return byte[] 二进制密钥
-	 * @throws Exception
-	 */
-	public static byte[] initKey() throws Exception {
-		// 加入BouncyCastleProvider支持
-		Security.addProvider(new BouncyCastleProvider());
-		// 实例化
-		KeyGenerator kg = KeyGenerator.getInstance(CommonConstants.ENCRYPTION_ALGO_IDEA);
-		// 初始化
-		kg.init(128);
-		// 生成秘密密钥
-		SecretKey secretKey = kg.generateKey();
-		// 获得密钥的二进制编码形式
-		return secretKey.getEncoded();
-	}
 }

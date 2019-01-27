@@ -18,7 +18,7 @@ import com.wp.study.base.constant.CommonConstants;
  * 
  * @version 1.0
  */
-public abstract class DESCoder {
+public class DESCoder implements IEncryptionCoder {
 
 	/**
 	 * 转换密钥
@@ -27,13 +27,39 @@ public abstract class DESCoder {
 	 * @return Key 密钥
 	 * @throws Exception
 	 */
-	private static Key toKey(byte[] key) throws Exception {
+	public Key toKey(byte[] key) throws Exception {
 		// 实例化DES密钥材料
 		DESKeySpec dks = new DESKeySpec(key);
 		// 实例化秘密密钥工厂
 		SecretKeyFactory keyFactory = SecretKeyFactory.getInstance(CommonConstants.ENCRYPTION_ALGO_DES);
 		// 生成秘密密钥
 		return keyFactory.generateSecret(dks);
+	}
+
+	/**
+	 * 生成密钥 <br>
+	 * Java 6 只支持56bit密钥 <br>
+	 * Bouncy Castle 支持64bit密钥 <br>
+	 * 
+	 * @return byte[] 二进制密钥
+	 * @throws Exception
+	 */
+	public byte[] initKey() throws Exception {
+		/*
+		 * 实例化密钥生成器
+		 * 
+		 * 若要使用64bit密钥注意替换 将下述代码中的KeyGenerator.getInstance(CIPHER_ALGORITHM);
+		 * 替换为KeyGenerator.getInstance(CIPHER_ALGORITHM, "BC");
+		 */
+		KeyGenerator kg = KeyGenerator.getInstance(CommonConstants.ENCRYPTION_ALGO_DES);
+		/*
+		 * 初始化密钥生成器 若要使用64bit密钥注意替换 将下述代码kg.init(56); 替换为kg.init(64);
+		 */
+		kg.init(56, new SecureRandom());
+		// 生成秘密密钥
+		SecretKey secretKey = kg.generateKey();
+		// 获得密钥的二进制编码形式
+		return secretKey.getEncoded();
 	}
 
 	/**
@@ -44,7 +70,7 @@ public abstract class DESCoder {
 	 * @return byte[] 解密数据
 	 * @throws Exception
 	 */
-	public static byte[] decrypt(byte[] data, byte[] key) throws Exception {
+	public byte[] decrypt(byte[] data, byte[] key) throws Exception {
 		// 还原密钥
 		Key k = toKey(key);
 		// 实例化
@@ -63,7 +89,7 @@ public abstract class DESCoder {
 	 * @return byte[] 加密数据
 	 * @throws Exception
 	 */
-	public static byte[] encrypt(byte[] data, byte[] key) throws Exception {
+	public byte[] encrypt(byte[] data, byte[] key) throws Exception {
 		// 还原密钥
 		Key k = toKey(key);
 		// 实例化
@@ -74,29 +100,4 @@ public abstract class DESCoder {
 		return cipher.doFinal(data);
 	}
 
-	/**
-	 * 生成密钥 <br>
-	 * Java 6 只支持56bit密钥 <br>
-	 * Bouncy Castle 支持64bit密钥 <br>
-	 * 
-	 * @return byte[] 二进制密钥
-	 * @throws Exception
-	 */
-	public static byte[] initKey() throws Exception {
-		/*
-		 * 实例化密钥生成器
-		 * 
-		 * 若要使用64bit密钥注意替换 将下述代码中的KeyGenerator.getInstance(CIPHER_ALGORITHM);
-		 * 替换为KeyGenerator.getInstance(CIPHER_ALGORITHM, "BC");
-		 */
-		KeyGenerator kg = KeyGenerator.getInstance(CommonConstants.ENCRYPTION_ALGO_DES);
-		/*
-		 * 初始化密钥生成器 若要使用64bit密钥注意替换 将下述代码kg.init(56); 替换为kg.init(64);
-		 */
-		kg.init(56, new SecureRandom());
-		// 生成秘密密钥
-		SecretKey secretKey = kg.generateKey();
-		// 获得密钥的二进制编码形式
-		return secretKey.getEncoded();
-	}
 }

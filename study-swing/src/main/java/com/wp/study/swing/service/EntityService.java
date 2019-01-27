@@ -13,16 +13,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.wp.study.algorithm.encryption.ClassicalCoder;
-import com.wp.study.algorithm.encryption.IDEACoder;
+import com.wp.study.algorithm.encryption.EncryptionFactory;
+import com.wp.study.base.constant.CommonConstants;
 import com.wp.study.base.pojo.Entity;
 import com.wp.study.base.util.IoUtil;
 import com.wp.study.jdbc.derby.dao.EntityMapper;
 import com.wp.study.swing.util.CommonUtil;
 
 public class EntityService {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(EntityService.class);
-	
+
 	/**
 	 * 添加entity
 	 * 
@@ -35,9 +36,9 @@ public class EntityService {
 		int result = 0;
 		SqlSession sqlSession = getSqlSession();
 		try {
-			result = entityEncrypt(entity, key, key1);
+			result = entityEncrypt(entity, key, key1, CommonConstants.ENCRYPTION_ALGO_IDEA);
 			// entity encrypt fail
-			if(result == 0) {
+			if (result == 0) {
 				return result;
 			}
 			EntityMapper entityMapper = sqlSession.getMapper(EntityMapper.class);
@@ -45,7 +46,7 @@ public class EntityService {
 			params.put("site", entity.getSite());
 			params.put("name", entity.getName());
 			List<Entity> resList = entityMapper.queryEntityWithConditions(params);
-			if(resList == null || resList.size() == 0) {
+			if (resList == null || resList.size() == 0) {
 				result = entityMapper.addEntity(entity);
 				sqlSession.commit();
 			} else {
@@ -55,12 +56,12 @@ public class EntityService {
 		} catch (Exception e) {
 			// add entity fail
 			LOG.error(e.getMessage());
-        } finally {
-        	IoUtil.closeQuietly(sqlSession);
-        }
+		} finally {
+			IoUtil.closeQuietly(sqlSession);
+		}
 		return result;
 	}
-	
+
 	/**
 	 * 编辑entity
 	 * 
@@ -73,8 +74,8 @@ public class EntityService {
 		int result = 0;
 		SqlSession sqlSession = getSqlSession();
 		try {
-			result = entityEncrypt(entity, key, key1);
-			if(result == 0) {
+			result = entityEncrypt(entity, key, key1, CommonConstants.ENCRYPTION_ALGO_IDEA);
+			if (result == 0) {
 				return result; // entity encrypt fail
 			}
 			EntityMapper entityMapper = sqlSession.getMapper(EntityMapper.class);
@@ -83,12 +84,12 @@ public class EntityService {
 		} catch (Exception e) {
 			// edit entity fail
 			LOG.error(e.getMessage());
-        } finally {
-        	IoUtil.closeQuietly(sqlSession);
-        }
+		} finally {
+			IoUtil.closeQuietly(sqlSession);
+		}
 		return result;
 	}
-	
+
 	/**
 	 * 查询entity
 	 * 
@@ -111,17 +112,17 @@ public class EntityService {
 			params.put("site", site);
 			params.put("name", name);
 			entityList = entityMapper.queryEntityWithConditions(params);
-			for(Entity entity : entityList) {
-				entityDecrypt(entity, key, key1);
+			for (Entity entity : entityList) {
+				entityDecrypt(entity, key, key1, CommonConstants.ENCRYPTION_ALGO_IDEA);
 			}
 		} catch (Exception e) {
 			LOG.error(e.getMessage());
-        } finally {
-        	IoUtil.closeQuietly(sqlSession);
-        }
+		} finally {
+			IoUtil.closeQuietly(sqlSession);
+		}
 		return entityList;
 	}
-	
+
 	/**
 	 * 删除entity
 	 * 
@@ -138,12 +139,12 @@ public class EntityService {
 		} catch (Exception e) {
 			// delete entity fail
 			LOG.error(e.getMessage());
-        } finally {
-        	IoUtil.closeQuietly(sqlSession);
-        }
+		} finally {
+			IoUtil.closeQuietly(sqlSession);
+		}
 		return result;
 	}
-	
+
 	/**
 	 * 获取sqlSession
 	 * 
@@ -153,76 +154,23 @@ public class EntityService {
 		String resource = "com/wp/study/swing/service/mybatis-config.xml";
 		SqlSession sqlSession = null;
 		try {
-			sqlSession = new SqlSessionFactoryBuilder().build(Resources  
-	            .getResourceAsReader(resource)).openSession();  
-        } catch (Exception e) {  
-        	LOG.error(e.getMessage());
-        }
-		return sqlSession;
-	}
-	
-	/**
-	 * 对entity进行加密
-	 * 
-	 * @param entity
-	 * @param key
-	 * @param key1
-	 * @param algo
-	 * @return
-	 */
-	private static int entityEncrypt(Entity entity, String key, String key1, String algo) {
-		int result = 0;
-		List<String> basicCols = Entity.getBasicColumns();
-		List<String> usedCols = Entity.getDetailColumns();
-		try {
-			Integer prior = CommonUtil.calLevel(entity.getPriority());
-			for (String column : basicCols) {
-				String value = (String) CommonUtil.getField(entity, column);
-				if (StringUtils.isNotEmpty(value)) {
-					value = ClassicalCoder.substitutionEncrypt(
-							Base64.encodeBase64String(value.getBytes()), key1);
-					CommonUtil.setField(entity, column, value);
-				}
-			}
-			for (String column : usedCols) {
-				String value = (String) CommonUtil.getField(entity, column);
-				if (StringUtils.isNotEmpty(value)) {
-					if (prior == 0) {
-						value = ClassicalCoder.transpositionEncrypt(value);
-					} else {
-						switch (algo) {
-						case "IDEA":
-							
-							break;
-
-						default:
-							break;
-						}
-						
-						value = ClassicalCoder.substitutionEncrypt(Base64
-								.encodeBase64String(IDEACoder.encrypt(
-										value.getBytes(),
-										Base64.decodeBase64(key))), key1);
-					}
-					CommonUtil.setField(entity, column, value);
-				}
-			}
-			result = 1;
+			sqlSession = new SqlSessionFactoryBuilder().build(Resources.getResourceAsReader(resource)).openSession();
 		} catch (Exception e) {
 			LOG.error(e.getMessage());
 		}
-		return result;
+		return sqlSession;
 	}
-	
+
 	/**
 	 * 对entity进行加密
 	 * 
 	 * @param entity
 	 * @param key
 	 * @param key1
+	 * @param encryption
 	 * @return
 	 */
-	private static int entityEncrypt(Entity entity, String key, String key1) {
+	private static int entityEncrypt(Entity entity, String key, String key1, String encryption) {
 		int result = 0;
 		List<String> basicCols = Entity.getBasicColumns();
 		List<String> usedCols = Entity.getDetailColumns();
@@ -231,8 +179,7 @@ public class EntityService {
 			for (String column : basicCols) {
 				String value = (String) CommonUtil.getField(entity, column);
 				if (StringUtils.isNotEmpty(value)) {
-					value = ClassicalCoder.substitutionEncrypt(
-							Base64.encodeBase64String(value.getBytes()), key1);
+					value = ClassicalCoder.substitutionEncrypt(Base64.encodeBase64String(value.getBytes()), key1);
 					CommonUtil.setField(entity, column, value);
 				}
 			}
@@ -242,10 +189,8 @@ public class EntityService {
 					if (prior == 0) {
 						value = ClassicalCoder.transpositionEncrypt(value);
 					} else {
-						value = ClassicalCoder.substitutionEncrypt(Base64
-								.encodeBase64String(IDEACoder.encrypt(
-										value.getBytes(),
-										Base64.decodeBase64(key))), key1);
+						byte[] temp = EncryptionFactory.encrypt(encryption, value.getBytes(), Base64.decodeBase64(key));
+						value = ClassicalCoder.substitutionEncrypt(Base64.encodeBase64String(temp), key1);
 					}
 					CommonUtil.setField(entity, column, value);
 				}
@@ -263,9 +208,10 @@ public class EntityService {
 	 * @param entity
 	 * @param key
 	 * @param key1
+	 * @param encryption
 	 * @return
 	 */
-	private static int entityDecrypt(Entity entity, String key, String key1) {
+	private static int entityDecrypt(Entity entity, String key, String key1, String encryption) {
 		int result = 0;
 		List<String> basicCols = Entity.getBasicColumns();
 		List<String> usedCols = Entity.getDetailColumns();
@@ -274,8 +220,7 @@ public class EntityService {
 			for (String column : basicCols) {
 				String value = (String) CommonUtil.getField(entity, column);
 				if (StringUtils.isNotEmpty(value)) {
-					value = new String(Base64.decodeBase64(ClassicalCoder
-							.substitutionDecrypt(value, key1)));
+					value = new String(Base64.decodeBase64(ClassicalCoder.substitutionDecrypt(value, key1)));
 					CommonUtil.setField(entity, column, value);
 				}
 			}
@@ -285,10 +230,10 @@ public class EntityService {
 					if (prior == 0) {
 						value = ClassicalCoder.transpositionDecrypt(value);
 					} else {
-						value = new String(IDEACoder.decrypt(Base64
-								.decodeBase64(ClassicalCoder
-										.substitutionDecrypt(value, key1)),
-								Base64.decodeBase64(key)));
+						byte[] temp = EncryptionFactory.decrypt(encryption,
+								Base64.decodeBase64(ClassicalCoder.substitutionDecrypt(value, key1)),
+								Base64.decodeBase64(key));
+						value = new String(temp);
 					}
 					CommonUtil.setField(entity, column, value);
 				}
@@ -299,4 +244,5 @@ public class EntityService {
 		}
 		return result;
 	}
+
 }

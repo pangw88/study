@@ -27,14 +27,15 @@ public class IDEACoderTest {
 			String inputStr = "IDEA";
 			byte[] inputData = inputStr.getBytes();
 			LOG.info("原文:{}", inputStr);
+			IDEACoder ideaCoder = new IDEACoder();
 			// 初始化密钥
-			byte[] key = IDEACoder.initKey();
+			byte[] key = ideaCoder.initKey();
 			LOG.info("密钥:{}", Base64.encodeBase64String(key));
 			// 加密
-			inputData = IDEACoder.encrypt(inputData, key);
+			inputData = ideaCoder.encrypt(inputData, key);
 			LOG.info("加密后:{}", Base64.encodeBase64String(inputData));
 			// 解密
-			byte[] outputData = IDEACoder.decrypt(inputData, key);
+			byte[] outputData = ideaCoder.decrypt(inputData, key);
 			String outputStr = new String(outputData);
 			LOG.info("解密后:{}", outputStr);
 			// 校验
