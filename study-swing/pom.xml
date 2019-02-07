@@ -39,7 +39,7 @@
 	            <configuration>  
 	                <archive>  
 	                    <manifest>  
-	                        <mainClass>com.xxg.Main</mainClass>  
+	                        <mainClass>com.wp.study.swing.jframe.JFrameTest</mainClass>  
 	                    </manifest>  
 	                </archive>  
 	                <descriptorRefs>  
