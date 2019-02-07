@@ -11,7 +11,7 @@
             <dataSource type="POOLED">  
                 <property name="driver" value="org.apache.derby.jdbc.EmbeddedDriver" />  
                 <!-- <property name="url" value="jdbc:derby:study;create=false" />  -->
-                <property name="url" value="jdbc:derby:D:\git\study\study-swing\study;create=false" />  
+                <property name="url" value="jdbc:derby:D:\git\study\study-swing\src\main\resources\study;create=false" />  
                 <property name="username" value="app" />  
                 <property name="password" value="123456" />
             </dataSource>
