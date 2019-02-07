@@ -17,5 +17,7 @@ public class CommonConstants {
 	public static final String ENCRYPTION_ALGO_DESEDE_CIPHER = "DESede/ECB/PKCS5Padding";
 	public static final String ENCRYPTION_ALGO_IDEA = "IDEA";
 	public static final String ENCRYPTION_ALGO_IDEA_CIPHER = "IDEA/ECB/PKCS5Padding";
+	
+	public static final String UTF_8 = "UTF-8";
 
 }

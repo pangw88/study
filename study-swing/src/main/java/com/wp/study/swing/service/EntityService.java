@@ -6,9 +6,7 @@ import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,20 +20,6 @@ import com.wp.study.swing.util.CommonUtil;
 public class EntityService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(EntityService.class);
-
-	/**
-	 * sqlSession
-	 */
-	private SqlSession sqlSession;
-
-	public EntityService() {
-		String resource = "com/wp/study/swing/service/mybatis-config.xml";
-		try {
-			sqlSession = new SqlSessionFactoryBuilder().build(Resources.getResourceAsReader(resource)).openSession();
-		} catch (Exception e) {
-			throw new RuntimeException("getSqlSession fail", e);
-		}
-	}
 
 	/**
 	 * 添加entity
@@ -60,7 +44,9 @@ public class EntityService {
 	 */
 	public int addEntity(Entity entity, String key, String key1, String encryption) {
 		int result = 0;
+		SqlSession sqlSession = null;
 		try {
+			sqlSession = SqlSessionService.getSqlSession();
 			result = entityEncrypt(entity, key, key1, encryption);
 			// entity encrypt fail
 			if (result == 0) {
@@ -73,13 +59,14 @@ public class EntityService {
 			List<Entity> resList = entityMapper.queryEntityWithConditions(params);
 			if (resList == null || resList.size() == 0) {
 				result = entityMapper.addEntity(entity);
-				sqlSession.commit();
 			} else {
 				// entity has existed
 				result = -1;
 			}
 		} catch (Exception e) {
 			LOG.error("addEntity fail, error:", e);
+		} finally {
+			SqlSessionService.commitAndClose(sqlSession);
 		}
 		return result;
 	}
@@ -107,16 +94,19 @@ public class EntityService {
 	 */
 	public int editEntity(Entity entity, String key, String key1, String encryption) {
 		int result = 0;
+		SqlSession sqlSession = null;
 		try {
+			sqlSession = SqlSessionService.getSqlSession();
 			result = entityEncrypt(entity, key, key1, encryption);
 			if (result == 0) {
 				return result; // entity encrypt fail
 			}
 			EntityMapper entityMapper = sqlSession.getMapper(EntityMapper.class);
 			result = entityMapper.editEntity(entity);
-			sqlSession.commit();
 		} catch (Exception e) {
 			LOG.error("editEntity fail, error:", e);
+		} finally {
+			SqlSessionService.commitAndClose(sqlSession);
 		}
 		return result;
 	}
@@ -135,7 +125,9 @@ public class EntityService {
 		List<Entity> entityList = null;
 		site = CommonUtil.strEncrypt(site, key1);
 		name = CommonUtil.strEncrypt(name, key1);
+		SqlSession sqlSession = null;
 		try {
+			sqlSession = SqlSessionService.getSqlSession();
 			EntityMapper entityMapper = sqlSession.getMapper(EntityMapper.class);
 			Map<String, String> params = new HashMap<String, String>();
 			params.put("level", level);
@@ -144,14 +136,11 @@ public class EntityService {
 			entityList = entityMapper.queryEntityWithConditions(params);
 			for (Entity entity : entityList) {
 				entityDecrypt(entity, key, key1, CommonConstants.ENCRYPTION_ALGO_AES);
-//				int del = deleteEntity(entity.getId());
-//				LOG.error("deleteEntity, id={}, del={}", entity.getId(), del);
-//				if(del == 1) {
-//					addEntity(entity, key, key1, CommonConstants.ENCRYPTION_ALGO_AES);
-//				}
 			}
 		} catch (Exception e) {
 			LOG.error("queryEntity fail, error:", e);
+		} finally {
+			SqlSessionService.commitAndClose(sqlSession);
 		}
 		return entityList;
 	}
@@ -164,12 +153,15 @@ public class EntityService {
 	 */
 	public int deleteEntity(Integer id) {
 		int result = 0;
+		SqlSession sqlSession = null;
 		try {
+			sqlSession = SqlSessionService.getSqlSession();
 			EntityMapper entityMapper = sqlSession.getMapper(EntityMapper.class);
 			result = entityMapper.deleteEntityById(id);
-			sqlSession.commit();
 		} catch (Exception e) {
 			LOG.error("deleteEntity fail, error:", e);
+		} finally {
+			SqlSessionService.commitAndClose(sqlSession);
 		}
 		return result;
 	}
@@ -192,7 +184,7 @@ public class EntityService {
 			for (String column : basicCols) {
 				String value = (String) CommonUtil.getField(entity, column);
 				if (StringUtils.isNotEmpty(value)) {
-					value = ClassicalCoder.substitutionEncrypt(Base64.encodeBase64String(value.getBytes()), key1);
+					value = ClassicalCoder.substitutionEncrypt(Base64.encodeBase64String(value.getBytes(CommonConstants.UTF_8)), key1);
 					CommonUtil.setField(entity, column, value);
 				}
 			}
@@ -202,7 +194,7 @@ public class EntityService {
 					if (prior == 0) {
 						value = ClassicalCoder.transpositionEncrypt(value);
 					} else {
-						byte[] temp = EncryptionFactory.encrypt(encryption, value.getBytes(), Base64.decodeBase64(key));
+						byte[] temp = EncryptionFactory.encrypt(encryption, value.getBytes(CommonConstants.UTF_8), Base64.decodeBase64(key));
 						value = ClassicalCoder.substitutionEncrypt(Base64.encodeBase64String(temp), key1);
 					}
 					CommonUtil.setField(entity, column, value);
@@ -233,22 +225,23 @@ public class EntityService {
 			for (String column : basicCols) {
 				String value = (String) CommonUtil.getField(entity, column);
 				if (StringUtils.isNotEmpty(value)) {
-					value = new String(Base64.decodeBase64(ClassicalCoder.substitutionDecrypt(value, key1)));
+					value = new String(Base64.decodeBase64(ClassicalCoder.substitutionDecrypt(value, key1)), CommonConstants.UTF_8);
 					CommonUtil.setField(entity, column, value);
 				}
 			}
 			for (String column : usedCols) {
 				String value = (String) CommonUtil.getField(entity, column);
 				if (StringUtils.isNotEmpty(value)) {
+					String decryptValue = null;
 					if (prior == 0) {
-						value = ClassicalCoder.transpositionDecrypt(value);
+						decryptValue = ClassicalCoder.transpositionDecrypt(value);
 					} else {
 						byte[] temp = EncryptionFactory.decrypt(encryption,
 								Base64.decodeBase64(ClassicalCoder.substitutionDecrypt(value, key1)),
 								Base64.decodeBase64(key));
-						value = new String(temp);
+						decryptValue = new String(temp, CommonConstants.UTF_8);
 					}
-					CommonUtil.setField(entity, column, value);
+					CommonUtil.setField(entity, column, decryptValue);
 				}
 			}
 			result = 1;

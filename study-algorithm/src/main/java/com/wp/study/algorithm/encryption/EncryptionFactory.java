@@ -1,5 +1,8 @@
 package com.wp.study.algorithm.encryption;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.wp.study.base.constant.CommonConstants;
 
 /**
@@ -9,6 +12,8 @@ import com.wp.study.base.constant.CommonConstants;
  *
  */
 public class EncryptionFactory {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(EncryptionFactory.class);
 
 	/**
 	 * 获取加密算法coder
@@ -51,7 +56,12 @@ public class EncryptionFactory {
 		if (null == encryptionCoder) {
 			throw new Exception("EncryptionCoder not exist, encryption=" + encryption);
 		}
-		return encryptionCoder.encrypt(data, key);
+		try {
+			return encryptionCoder.encrypt(data, key);
+		} catch(Exception e) {
+			LOG.error("===>>> encrypt fail, encryption={}, data={}, key={}", encryption, new String(data),  new String(key));
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**
@@ -68,7 +78,12 @@ public class EncryptionFactory {
 		if (null == encryptionCoder) {
 			throw new Exception("EncryptionCoder not exist, encryption=" + encryption);
 		}
-		return encryptionCoder.decrypt(data, key);
+		try {
+			return encryptionCoder.decrypt(data, key);
+		} catch(Exception e) {
+			LOG.error("===>>> decrypt fail, encryption={}, data={}, key={}", encryption, new String(data),  new String(key));
+			throw new RuntimeException(e);
+		}
 	}
 
 }
