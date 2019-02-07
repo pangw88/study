@@ -3,4 +3,3 @@
 derby*
 derby.log
 /bin/
-/src/main/resources/script/derby.log
