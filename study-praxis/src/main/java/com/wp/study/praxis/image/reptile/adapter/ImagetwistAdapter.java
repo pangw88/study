@@ -18,7 +18,7 @@ public class ImagetwistAdapter {
 	 * @param aUrl
 	 * @return
 	 */
-	public static DownloadDO getImageUrl(String albumName,String aUrl) {
+	public static DownloadDO getImageUrl(String albumName, String aUrl) {
 		// 加载要下载的页面地址
 		DownloadDO download = null;
 		try {
@@ -29,20 +29,20 @@ public class ImagetwistAdapter {
 				System.out.println("page content is blank aUrl=" + aUrl);
 				return download;
 			}
-			
+
 			// 获取所有img标签
 			List<String> imgEles = XmlFilter.getElements(pageContent, "img");
 			if (null != imgEles && !imgEles.isEmpty()) {
-				for(String img : imgEles) {
+				for (String img : imgEles) {
 					List<String> classValues = XmlFilter.getAttributeValues(img, "class");
 					if (null == classValues || classValues.size() == 0) {
 						continue;
 					}
-					for(String str : classValues) {
-						if("pic img img-responsive".equals(str)) {
+					for (String str : classValues) {
+						if ("pic img img-responsive".equals(str)) {
 							List<String> altValues = XmlFilter.getAttributeValues(img, "alt");
 							String picName = altValues.get(0);
-							if(!picName.toLowerCase().endsWith(".jpg")) {
+							if (!picName.toLowerCase().endsWith(".jpg")) {
 								picName += ".jpg";
 							} else {
 								picName = picName.substring(0, picName.length() - 4) + ".jpg";
@@ -59,5 +59,5 @@ public class ImagetwistAdapter {
 		}
 		return download;
 	}
-	
+
 }

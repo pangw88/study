@@ -27,8 +27,8 @@ public class FileOperationTest {
 			/*File file = new File("F:/ftp/karen nishino");
 			File info = new File("F:/1.txt");
 			FileOperation.checkExist(file, info);*/
-			/*String path = "F:\\Downloads\\bunc_007_003";
-			FileOperation.rename(new File(path));*/
+			String path = "D:\\QMDownload\\tt";
+			FileOperation.rename(new File(path));
 			/*File path = new File("G:/Album/Beauty/Koharu Nishino");
 			FileOperation.checkSubValidAndCut(path);*/
             /*File f1 = new File("H:/Album/Beauty/Koharu Nishino"); 
@@ -47,9 +47,9 @@ public class FileOperationTest {
 			FileOperation.merge(new File("F:/Downloads/abs/200GANA-953.7z"), f1, f2, f3, f4);*/
 //			File dir = new File("G:\\Album\\Beauty\\Momo Shiina");
 //			compress(dir, "rar", "90890219");
-			File baseDir = new File("F:\\photo\\invalid\\SEJIN 세진\\2015.10.21 [세진] 소파 위에 미녀 [44P]");
-			File targetDir = new File("F:\\photo\\invalid\\SEJIN 세진\\2016.05.28 [세진] 소파 위에 미녀 [44P]");
-			FileOperation.replaceName(baseDir, targetDir);
+//			File baseDir = new File("F:\\photo\\invalid\\SEJIN 세진\\2015.10.21 [세진] 소파 위에 미녀 [44P]");
+//			File targetDir = new File("F:\\photo\\invalid\\SEJIN 세진\\2016.05.28 [세진] 소파 위에 미녀 [44P]");
+//			FileOperation.replaceName(baseDir, targetDir);
 			// 任务结束
 			LOG.info("wasteTime=" + (System.currentTimeMillis() - startTime));
 		} catch(Exception e) {

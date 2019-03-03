@@ -34,8 +34,9 @@ import com.wp.study.praxis.image.reptile.model.DownloadDO;
 
 public class ImageReptile {
 	
-	private static String urlFilePath = "F:/photo/page_url.txt";
-	private static String downloadedFilePath = "F:/photo/downloaded_info.txt";
+	private static String urlFilePath = "E:/photo/page_url.txt";
+	private static String fileDirPath = "E:/photo/page_dir";
+	private static String downloadedFilePath = "E:/photo/downloaded_info.txt";
 	
 	private static ExecutorService downloadPool = new ThreadPoolExecutor(15, 15, 5, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(5000));
 	private static Map<String, FileWriter> fwMap = new ConcurrentHashMap<String, FileWriter>() {
@@ -52,6 +53,23 @@ public class ImageReptile {
 	private static Lock lock = new ReentrantLock();
 	private static AtomicInteger generateImageUrlSize = new AtomicInteger(0);
 	private static AtomicInteger downloadImageUrlSize = new AtomicInteger(0);
+	
+	/**
+	 * 加载文件信息
+	 * 
+	 * @param dirPath
+	 * @return
+	 */
+	public static File[] loadFileInfo1(String dirPath) {
+		if (StringUtils.isBlank(dirPath)) {
+			throw new RuntimeException("invalid dir path");
+		}
+		File dir = new File(dirPath);
+		if (!dir.exists() || !dir.isDirectory()) {
+			throw new RuntimeException("dir not exists, filePath=" + dirPath);
+		}
+		return dir.listFiles();
+	}
 
 	/**
 	 * 加载文件信息
@@ -59,7 +77,7 @@ public class ImageReptile {
 	 * @param filePath
 	 * @return
 	 */
-	public static Set<String> loadFileInfo(String filePath) {
+	public static Set<String> loadFileInfo0(String filePath) {
 		if (StringUtils.isBlank(filePath)) {
 			throw new RuntimeException("invalid file path");
 		}
@@ -113,7 +131,7 @@ public class ImageReptile {
 								download.setHasDown(true);
 								return;
 							}
-							File dic = new File("F:/photo/" + download.getAlbumName());
+							File dic = new File("E:/photo/" + download.getAlbumName());
 							if(!dic.exists()) {
 								dic.mkdirs();
 							}
@@ -187,7 +205,7 @@ public class ImageReptile {
 							String aUrl = entry.getKey();
 							download = entry.getValue();
 							if(null != download && StringUtils.isBlank(download.getDownUrl())) {
-								download = WebsiteAdapterUtils.getImageUrl(aUrl, download.getAlbumName());
+								download = WebsiteAdapterUtils.getImageUrl(download.getAlbumName(), aUrl, download.getImgUrl());
 							}
 						} catch (Exception e) {
 							e.printStackTrace();
@@ -234,20 +252,116 @@ public class ImageReptile {
 	
 	/**
 	 * 
+	 * @param fileDirPath
+	 * @param downloadedPath
+	 * @param cleanHistory
+	 */
+	public static void batchReptile1(String fileDirPath, String downloadedPath, boolean cleanHistory) {
+		// 加载要下载的主页面地址
+		File[] files = loadFileInfo1(fileDirPath);
+		if (null == files || files.length == 0) {
+			return;
+		}
+		
+		// 加载已经下载的资源信息
+		if(!cleanHistory) {
+			Set<String> records = loadFileInfo0(downloadedPath);
+			for(String record : records) {
+				if(StringUtils.isBlank(record)) {
+					continue;
+				}
+				DownloadDO download = JsonUtils.convertJsonToBean(record, DownloadDO.class);
+				if(null != download) {
+					downloadedMap.put(download.getaUrl(), download);
+				}
+			}
+		}
+		
+		// 加载实际图片存储的页面地址
+		Map<String, DownloadDO> urlMap = new HashMap<String, DownloadDO>();
+		for (File file : files) {
+			try {
+				String pageContent = FileOperation.read(file);
+				if (StringUtils.isBlank(pageContent)) {
+					System.out.println("page content is blank, file=" + file);
+					continue;
+				}
+				
+				String albumName = file.getName();
+				
+				// 生成下载链接
+				List<String> eles = XmlFilter.getElements(pageContent, "a");
+				for (String ele : eles) {
+					// 获取a标签href
+					List<String> hrefValues = XmlFilter.getAttributeValues(ele, "href");
+					if (null == hrefValues || hrefValues.size() == 0) {
+						continue;
+					}
+					// 获取a->img标签src
+					List<String> subImgEles = XmlFilter.getElements(ele, "img");
+					if (null == subImgEles || subImgEles.size() == 0) {
+						continue;
+					}
+					List<String> srcValues = XmlFilter.getAttributeValues(subImgEles.get(0), "src");
+					if (null == srcValues || srcValues.size() == 0) {
+						continue;
+					}
+					
+					String aUrl = hrefValues.get(0);
+					String imgUrl = srcValues.get(0);
+					if (StringUtils.isBlank(imgUrl)) {
+						// System.out.println("input parameter is blank, imgUrl=" + imgUrl);
+						continue;
+					}
+					if (!imgUrl.startsWith("http")) {
+						// System.out.println("not support protocol, imgUrl=" + imgUrl);
+						continue;
+					}
+					if (imgUrl.endsWith(".gif") || imgUrl.endsWith(".png")) {
+						// System.out.println("not support image format, imgUrl=" + imgUrl);
+						continue;
+					}
+					DownloadDO download = downloadedMap.get(aUrl);
+					if(null == download) {
+						download = new DownloadDO();
+						download.setAlbumName(albumName);
+						download.setImgUrl(imgUrl);
+					}
+					urlMap.put(aUrl, download);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		// 获取实际图片下载对象
+		List<DownloadDO> downloads = getDownloads(urlMap);
+		if(null == downloads || downloads.isEmpty()) {
+			return;
+		}
+		// 下载图片
+		downloadImage(downloads);
+		
+		// 关闭各种资源池
+		closeSource();
+	}
+	
+	/**
+	 * 
 	 * @param urlFilePath
 	 * @param downloadedPath
 	 * @param cleanHistory
 	 */
-	public static void batchReptile(String urlFilePath, String downloadedPath, boolean cleanHistory) {
+	public static void batchReptile0(String urlFilePath, String downloadedPath, boolean cleanHistory) {
 		// 加载要下载的主页面地址
-		Set<String> pageUrls = loadFileInfo(urlFilePath);
+		Set<String> pageUrls = loadFileInfo0(urlFilePath);
 		if (null == pageUrls || pageUrls.size() == 0) {
 			return;
 		}
 		
 		// 加载已经下载的资源信息
 		if(!cleanHistory) {
-			Set<String> records = loadFileInfo(downloadedPath);
+			Set<String> records = loadFileInfo0(downloadedPath);
 			for(String record : records) {
 				if(StringUtils.isBlank(record)) {
 					continue;
@@ -307,6 +421,7 @@ public class ImageReptile {
 					if(null == download) {
 						download = new DownloadDO();
 						download.setAlbumName(albumName);
+						download.setImgUrl(imgUrl);
 					}
 					urlMap.put(aUrl, download);
 				}
@@ -386,7 +501,7 @@ public class ImageReptile {
 	
 	public static void main(String[] args) {
 		long startTime = System.currentTimeMillis();
-		batchReptile(urlFilePath, downloadedFilePath, false);
+		batchReptile1(fileDirPath, downloadedFilePath, false);
 		System.out.println("wasteTime=" + (System.currentTimeMillis() - startTime));
 	}
 

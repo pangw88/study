@@ -5,6 +5,7 @@ public class DownloadDO {
 	private String albumName;
 	private String imageName;
 	private String aUrl;
+	private String imgUrl;
 	private String downUrl;
 	private Integer status;
 	private Long wasteTime;
@@ -40,6 +41,14 @@ public class DownloadDO {
 
 	public void setImageName(String imageName) {
 		this.imageName = imageName;
+	}
+
+	public String getImgUrl() {
+		return imgUrl;
+	}
+
+	public void setImgUrl(String imgUrl) {
+		this.imgUrl = imgUrl;
 	}
 
 	public String getaUrl() {
