@@ -39,6 +39,18 @@ public final class FingerPrint {
 		}
 		return compare;
 	}
+	
+	public static float getSimilarity(File image0, File image1) {
+		float compare = 0.0f;
+		try {
+			FingerPrint fp1 = new FingerPrint(ImageIO.read(image0));
+			FingerPrint fp2 = new FingerPrint(ImageIO.read(image1));
+			compare = fp1.compare(fp2);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return compare;
+	}
 
 	/**
 	 * 图像指纹的尺寸,将图像resize到指定的尺寸，来计算哈希数组
