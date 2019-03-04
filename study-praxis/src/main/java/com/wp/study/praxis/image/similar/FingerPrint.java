@@ -6,10 +6,11 @@ import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 
 import javax.imageio.ImageIO;
+
+import com.wp.study.base.util.ByteUtils;
 
 /**
  * 均值哈希实现图像指纹比较
@@ -19,34 +20,42 @@ public final class FingerPrint {
 
 	public static void main(String[] args) {
 		try {
-			FingerPrint fp1 = new FingerPrint(ImageIO.read(new File("/Users/sun/Downloads/1.jpg")));
-			FingerPrint fp2 = new FingerPrint(ImageIO.read(new File("/Users/sun/Downloads/2.jpg")));
-			System.out.println(fp1.toString(true));
-			System.out.printf("sim=%f", fp1.compare(fp2));
-		} catch (IOException e) {
+			byte[] bytes = { 0, 1, 0, 1 };
+			String str = ByteUtils.bytes2String(bytes);
+			System.out.println(str);
+			String dirPath = new File("E:\\image\\fingers").getParentFile().getAbsolutePath();
+			String fingerFileName = dirPath.replaceAll("\\\\", "~");
+			fingerFileName = fingerFileName.replaceAll(":", "@");
+			System.out.println(dirPath);
+			System.out.printf(fingerFileName);
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
 	public static float getSimilarity(String imagePath0, String imagePath1) {
-		float compare = 0.0f;
-		try {
-			FingerPrint fp1 = new FingerPrint(ImageIO.read(new File(imagePath0)));
-			FingerPrint fp2 = new FingerPrint(ImageIO.read(new File(imagePath1)));
-			compare = fp1.compare(fp2);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return compare;
+		return getSimilarity(new File(imagePath0), new File(imagePath1));
 	}
-	
+
 	public static float getSimilarity(File image0, File image1) {
 		float compare = 0.0f;
 		try {
 			FingerPrint fp1 = new FingerPrint(ImageIO.read(image0));
 			FingerPrint fp2 = new FingerPrint(ImageIO.read(image1));
 			compare = fp1.compare(fp2);
-		} catch (IOException e) {
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return compare;
+	}
+
+	public static float getSimilarity(byte[] images0, byte[] images1) {
+		float compare = 0.0f;
+		try {
+			FingerPrint fp1 = new FingerPrint(images0);
+			FingerPrint fp2 = new FingerPrint(images1);
+			compare = fp1.compare(fp2);
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return compare;
@@ -75,7 +84,7 @@ public final class FingerPrint {
 		this(hashValue(src));
 	}
 
-	private static byte[] hashValue(BufferedImage src) {
+	public static byte[] hashValue(BufferedImage src) {
 		BufferedImage hashImage = resize(src, HASH_SIZE, HASH_SIZE);
 		byte[] matrixGray = (byte[]) toGray(hashImage).getData().getDataElements(0, 0, HASH_SIZE, HASH_SIZE, null);
 		return binaryzation(matrixGray);
