@@ -6,43 +6,123 @@ import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageTypeSpecifier;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.wp.study.base.util.IoUtils;
 
 public class ImageRepaint {
 
+	private static ExecutorService repaintPool = new ThreadPoolExecutor(8, 8, 5, TimeUnit.MINUTES,
+			new ArrayBlockingQueue<Runnable>(10000));
+
 	public static void main(String[] args) {
-		File image0 = new File("D:\\QMDownload\\tt\\fuuka-n01\\gh_fuuka-n001.jpg");
-		File image1 = new File("D:\\希捷数据救护\\done\\Fuuka Nishihama--done\\p_fuuka_st1_01\\p_fuuka_st1_01_001.jpg");
-		long begin0 = System.currentTimeMillis();
 		try {
-			repaint(image0, image1);
+			// 重命名详情输出
+			FileWriter fw = new FileWriter(new File("E:\\image\\repaint_" + System.currentTimeMillis())) {
+				@Override
+				public void write(String str) throws IOException {
+					super.write(str + "\r\n"); // 换行
+				}
+			};
+			File file = new File("E:\\image\\similarity_1551642277122");
+			Map<String, String> map = loadFingers(file);
+			System.out.println(map.size());
+			final CountDownLatch latch = new CountDownLatch(map.size());
+			for (Map.Entry<String, String> entry : map.entrySet()) {
+				// 将bufferedImage对象输出到磁盘上
+				File targetDir = new File(new File(entry.getValue()).getParent() + "_repaint");
+				if (!targetDir.exists()) {
+					targetDir.mkdirs();
+				}
+				repaintPool.submit(new Runnable() {
+					@Override
+					public void run() {
+						boolean result = false;
+						try {
+							result = repaint(new File(entry.getKey()), new File(entry.getValue()), 120, 0.33f);
+						} catch (Throwable e) {
+							System.out.println(e);
+						} finally {
+							try {
+								fw.write("" + result + "  " + entry.getKey() + "=" + entry.getValue());
+							} catch (Throwable e) {
+								System.out.println(e);
+							}
+							latch.countDown();
+						}
+					}
+				});
+			}
+			try {
+				latch.await();
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+			IoUtils.closeQuietly(fw);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			System.out.println("waste=" + (System.currentTimeMillis() - begin0));
+			repaintPool.shutdown();
 		}
 	}
 
-	public static void repaint(File image0, File image1) {
+	public static boolean repaint(File image0, File image1, int h, float logoWidthRatio) {
 		BufferedImage scaleImage = null;
 		BufferedImage targetImage = null;
+		boolean result = false;
 		try {
 			scaleImage = getFasterScaledInstance(image0, 1280, 1200, true);
 			targetImage = ImageIO.read(image1);
+			int w = (int) (targetImage.getWidth() * logoWidthRatio);
 			// 此方式为沿Height方向扫描
-			for (int i = 0; i < targetImage.getWidth(); i++) {
-				for (int j = 0; j < 50; j++) {
+			for (int i = 0; i < w; i++) {
+				for (int j = 0; j < h; j++) {
 					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
 				}
 			}
-			// 将bufferedImage对象输出到磁盘上
-			File targetDir = new File(image1.getParentFile().getAbsolutePath() + "_repaint");
-			if (!targetDir.exists()) {
-				targetDir.mkdirs();
+			for (int i = (targetImage.getWidth() - w); i < targetImage.getWidth(); i++) {
+				for (int j = 0; j < h; j++) {
+					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
+				}
 			}
-			ImageIO.write(targetImage, "jpg", new File(targetDir, image1.getName()));
+			ImageWriter writer = null;
+			ImageTypeSpecifier type = ImageTypeSpecifier.createFromRenderedImage(targetImage);
+			Iterator<ImageWriter> iter = ImageIO.getImageWriters(type, "jpg");
+			if (iter.hasNext()) {
+				writer = iter.next();
+			}
+			File target = new File(new File(image1.getParent() + "_repaint"), image1.getName());
+			if (writer != null) {
+				IIOImage iioImage = new IIOImage(targetImage, null, null);
+				ImageWriteParam param = writer.getDefaultWriteParam();
+				param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+				param.setCompressionQuality(1.0f);
+				ImageOutputStream outputStream = ImageIO.createImageOutputStream(target);
+				writer.setOutput(outputStream);
+				writer.write(null, iioImage, param);
+			}
+			result = target.exists();
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -53,6 +133,10 @@ public class ImageRepaint {
 				targetImage.flush();
 			}
 		}
+		if (!result) {
+			System.out.println("" + result + "  " + image0 + "=" + image1);
+		}
+		return result;
 	}
 
 	public static BufferedImage getCommonScaledInstance(File imageFile, int x, int y) {
@@ -143,6 +227,43 @@ public class ImageRepaint {
 			}
 		}
 		return ret;
+	}
+
+	/**
+	 * 加载文件信息
+	 * 
+	 * @param file
+	 * @return
+	 */
+	public static Map<String, String> loadFingers(File file) {
+		Map<String, String> map = new HashMap<String, String>();
+		BufferedReader br = null;
+		try {
+			if (!file.exists()) {
+				file.createNewFile();
+				return map;
+			}
+			br = new BufferedReader(new FileReader(file));
+			String line = null;
+			int i = 0;
+			while (null != (line = br.readLine())) {
+				System.out.print("map.size()=" + map.size() + " ");
+				System.out.println(i++);
+				if (StringUtils.isNotBlank(line)) {
+					line = line.trim();
+					String[] arr = line.split("=");
+					if (arr.length == 2) {
+						map.put(arr[0], arr[1]);
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			// 关闭输入输出流
+			IoUtils.closeQuietly(br);
+		}
+		return map;
 	}
 
 }

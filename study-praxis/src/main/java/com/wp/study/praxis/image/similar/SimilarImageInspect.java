@@ -1,4 +1,4 @@
-package com.wp.study.praxis.image;
+package com.wp.study.praxis.image.similar;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -22,7 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.wp.study.base.util.ByteUtils;
 import com.wp.study.base.util.IoUtils;
-import com.wp.study.praxis.image.similar.FingerPrint;
 
 public class SimilarImageInspect {
 
