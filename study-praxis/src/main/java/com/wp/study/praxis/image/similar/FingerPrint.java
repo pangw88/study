@@ -23,6 +23,8 @@ import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.wp.study.base.util.ByteUtils;
 import com.wp.study.base.util.IoUtils;
@@ -33,38 +35,29 @@ import com.wp.study.base.util.IoUtils;
  */
 public final class FingerPrint {
 
-	private static Map<String, Map<String, String>> fingerMap = new ConcurrentHashMap<String, Map<String, String>>();
-	private static Map<String, FileWriter> fwMap = new ConcurrentHashMap<String, FileWriter>();
+	private static final Logger LOG = LoggerFactory.getLogger(FingerPrint.class);
 
-	private static ExecutorService computeSimilarPool = new ThreadPoolExecutor(8, 8, 5, TimeUnit.MINUTES,
-			new ArrayBlockingQueue<Runnable>(10000));
+	private static Map<String, Map<String, String>> fingerMap = new ConcurrentHashMap<String, Map<String, String>>();
+
+	private static ExecutorService computeSimilarPool = null;
 
 	public static void main(String[] args) {
+		File[] dirs = { new File("D:\\temp") };
+		computeImageFinger(dirs);
+	}
+
+	public static void computeImageFinger(File[] dirs) {
 		try {
-			computeImageFinger(new File("D:\\QMDownload\\tt"));
+			computeSimilarPool = new ThreadPoolExecutor(8, 8, 5, TimeUnit.MINUTES,
+					new ArrayBlockingQueue<Runnable>(10000));
+			for (File dir : dirs) {
+				computeImageFinger(dir);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			computeSimilarPool.shutdown();
-			destroy();
-		}
-	}
-
-	public static void destroy() {
-		for (Map.Entry<String, FileWriter> entry : fwMap.entrySet()) {
-			try {
-				FileWriter fw = entry.getValue();
-				Map<String, String> fingerDirMap = fingerMap.get(entry.getKey());
-				if (null != fingerDirMap) {
-					for (Map.Entry<String, String> fingerEntry : fingerDirMap.entrySet()) {
-						fw.write(fingerEntry.getKey() + "=" + fingerEntry.getValue());
-					}
-				}
-				fw.flush();
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				IoUtils.closeQuietly(entry.getValue());
+			if (null != computeSimilarPool) {
+				computeSimilarPool.shutdown();
 			}
 		}
 	}
@@ -80,7 +73,7 @@ public final class FingerPrint {
 			return;
 		}
 		for (File subDir : subDirs) {
-			if (subDir.isFile()) {
+			if (subDir.isFile() || subDir.getName().endsWith("_repaint")) {
 				continue;
 			}
 			File[] imageFiles = subDir.listFiles();
@@ -96,24 +89,23 @@ public final class FingerPrint {
 				if (!fingerFile.exists()) {
 					fingerFile.createNewFile();
 				}
-				fingerMap.put(fingerFileName, loadFingers(fingerFile));
-				fw = new FileWriter(fingerFile) {
-					@Override
-					public void write(String str) throws IOException {
-						super.write(str + "\r\n"); // 换行
-					}
-				};
+				Map<String, String> fingerDirMap = loadFingers(fingerFile);
+				fingerMap.put(fingerFileName, fingerDirMap);
 				final CountDownLatch latch = new CountDownLatch(imageFiles.length);
 				for (File imageFile : imageFiles) {
 					computeSimilarPool.submit(new Runnable() {
 						@Override
 						public void run() {
 							try {
-								String finger = getFinger(imageFile);
-								System.out.println(imageFile + "=" + finger);
+								String finger = fingerDirMap.get(imageFile.getName());
+								if (StringUtils.isBlank(finger)) {
+									byte[] bytes = FingerPrint.hashValue(ImageIO.read(imageFile));
+									finger = ByteUtils.bytes2String(bytes);
+									fingerDirMap.put(imageFile.getName(), finger);
+								}
+								LOG.error("{}={}", imageFile, finger);
 							} catch (Exception e) {
-								System.out.println();
-								System.out.println("fail imageFile=" + imageFile);
+								LOG.error("fail imageFile={}", imageFile);
 								e.printStackTrace();
 							} finally {
 								latch.countDown();
@@ -126,36 +118,23 @@ public final class FingerPrint {
 				} catch (Throwable e) {
 					e.printStackTrace();
 				}
+				fw = new FileWriter(fingerFile) {
+					@Override
+					public void write(String str) throws IOException {
+						super.write(str + "\r\n"); // 换行
+					}
+				};
+				Map<String, String> fingerResult = fingerMap.get(fingerFileName);
+				for (Map.Entry<String, String> entry : fingerResult.entrySet()) {
+					fw.write(entry.getKey() + "=" + entry.getValue());
+				}
+				fingerResult.clear();
 			} catch (Exception e) {
 				e.printStackTrace();
 			} finally {
 				IoUtils.closeQuietly(fw);
 			}
 		}
-	}
-
-	public static String getFinger(File imageFile) {
-		String finger = null;
-		try {
-			String dirPath = imageFile.getParentFile().getAbsolutePath();
-			String fingerFileName = dirPath.replaceAll("\\\\", "~");
-			fingerFileName = fingerFileName.replaceAll(":", "@");
-			Map<String, String> fingerDirMap = fingerMap.get(fingerFileName);
-			finger = fingerDirMap.get(imageFile.getName());
-			if (StringUtils.isBlank(finger)) {
-				byte[] bytes = FingerPrint.hashValue(ImageIO.read(imageFile));
-				finger = fingerDirMap.get(imageFile.getName());
-				if (StringUtils.isBlank(finger)) {
-					synchronized (FingerPrint.class) {
-						finger = ByteUtils.bytes2String(bytes);
-						fingerDirMap.put(imageFile.getName(), finger);
-					}
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return finger;
 	}
 
 	/**
@@ -192,15 +171,11 @@ public final class FingerPrint {
 		return map;
 	}
 
-	public static float getSimilarity(String imagePath0, String imagePath1) {
-		return getSimilarity(new File(imagePath0), new File(imagePath1));
-	}
-
 	public static float getSimilarity(File image0, File image1) {
 		float compare = 0.0f;
 		try {
-			FingerPrint fp1 = new FingerPrint(ImageIO.read(image0));
-			FingerPrint fp2 = new FingerPrint(ImageIO.read(image1));
+			FingerPrint fp1 = new FingerPrint(getFinger(image0));
+			FingerPrint fp2 = new FingerPrint(getFinger(image1));
 			compare = fp1.compare(fp2);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -218,6 +193,32 @@ public final class FingerPrint {
 			e.printStackTrace();
 		}
 		return compare;
+	}
+
+	public static byte[] getFinger(File imageFile) {
+		String finger = null;
+		try {
+			String dirPath = imageFile.getParentFile().getAbsolutePath();
+			String fingerFileName = dirPath.replaceAll("\\\\", "~");
+			fingerFileName = fingerFileName.replaceAll(":", "@");
+			Map<String, String> fingerDirMap = null;
+			synchronized (FingerPrint.class) {
+				fingerDirMap = fingerMap.get(fingerFileName);
+				if (null == fingerDirMap) {
+					fingerDirMap = loadFingers(new File("E:\\image\\fingers", fingerFileName));
+					fingerMap.put(fingerFileName, fingerDirMap);
+				}
+			}
+			finger = fingerDirMap.get(imageFile.getName());
+			if (StringUtils.isBlank(finger)) {
+				byte[] bytes = FingerPrint.hashValue(ImageIO.read(imageFile));
+				finger = ByteUtils.bytes2String(bytes);
+				fingerDirMap.put(imageFile.getName(), finger);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return ByteUtils.string2Bytes(finger);
 	}
 
 	/**

@@ -28,10 +28,14 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.wp.study.base.util.IoUtils;
 
 public class ImageRepaint {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(ImageRepaint.class);
 
 	private static ExecutorService repaintPool = new ThreadPoolExecutor(8, 8, 5, TimeUnit.MINUTES,
 			new ArrayBlockingQueue<Runnable>(10000));
@@ -39,15 +43,17 @@ public class ImageRepaint {
 	public static void main(String[] args) {
 		try {
 			// 重命名详情输出
-			FileWriter fw = new FileWriter(new File("E:\\image\\repaint_" + System.currentTimeMillis())) {
+			FileWriter fw = new FileWriter(new File("E:\\image\\repaint_1552111079996")) {
 				@Override
 				public void write(String str) throws IOException {
 					super.write(str + "\r\n"); // 换行
 				}
 			};
-			File file = new File("E:\\image\\similarity_1551642277122");
+			File file = new File("E:\\image\\similarity_1552111079996");
 			Map<String, String> map = loadFingers(file);
-			System.out.println(map.size());
+			LOG.error("map.size={}", map.size());
+
+			boolean skipImage = false;
 			final CountDownLatch latch = new CountDownLatch(map.size());
 			for (Map.Entry<String, String> entry : map.entrySet()) {
 				// 将bufferedImage对象输出到磁盘上
@@ -60,14 +66,15 @@ public class ImageRepaint {
 					public void run() {
 						boolean result = false;
 						try {
-							result = repaint(new File(entry.getKey()), new File(entry.getValue()), 120, 0.33f);
+							result = repaint(new File(entry.getKey()), new File(entry.getValue()), 150, 1, 1, 0.25f,
+									skipImage);
 						} catch (Throwable e) {
-							System.out.println(e);
+							LOG.error("error:", e);
 						} finally {
 							try {
 								fw.write("" + result + "  " + entry.getKey() + "=" + entry.getValue());
 							} catch (Throwable e) {
-								System.out.println(e);
+								LOG.error("error:", e);
 							}
 							latch.countDown();
 						}
@@ -87,32 +94,47 @@ public class ImageRepaint {
 		}
 	}
 
-	public static boolean repaint(File image0, File image1, int h, float logoWidthRatio) {
+	public static boolean repaint(File image0, File image1, int h, int x, int y, float logoWidthRatio,
+			boolean skipImage) {
 		BufferedImage scaleImage = null;
 		BufferedImage targetImage = null;
 		boolean result = false;
 		try {
-			scaleImage = getFasterScaledInstance(image0, 1280, 1200, true);
+			File target = new File(new File(image1.getParent() + "_repaint"), image1.getName());
+			if (skipImage && target.exists()) {
+				return true;
+			}
+			// 0：左下，1：左上，2：右下，3：右上
+			int location = 0;
+			if (new File(new File("D:\\temp\\右上"), image0.getName()).exists()) {
+				image0 = new File(new File("D:\\temp\\右上"), image0.getName());
+				location = 3;
+			} else if (new File(new File("D:\\temp\\右下"), image0.getName()).exists()) {
+				image0 = new File(new File("D:\\temp\\右下"), image0.getName());
+				location = 2;
+			} else if (new File(new File("D:\\temp\\左上"), image0.getName()).exists()) {
+				image0 = new File(new File("D:\\temp\\左上"), image0.getName());
+				location = 1;
+			} else if (new File(new File("D:\\temp\\左下"), image0.getName()).exists()) {
+				image0 = new File(new File("D:\\temp\\左下"), image0.getName());
+				location = 0;
+			}
+			if (x == y) {
+				scaleImage = ImageIO.read(image0);
+			} else {
+				scaleImage = getFasterScaledInstance(image0, x, y, true);
+			}
+
 			targetImage = ImageIO.read(image1);
 			int w = (int) (targetImage.getWidth() * logoWidthRatio);
-			// 此方式为沿Height方向扫描
-			for (int i = 0; i < w; i++) {
-				for (int j = 0; j < h; j++) {
-					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
-				}
-			}
-			for (int i = (targetImage.getWidth() - w); i < targetImage.getWidth(); i++) {
-				for (int j = 0; j < h; j++) {
-					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
-				}
-			}
+			replacePixel(scaleImage, targetImage, w, h, location);
+			
 			ImageWriter writer = null;
 			ImageTypeSpecifier type = ImageTypeSpecifier.createFromRenderedImage(targetImage);
 			Iterator<ImageWriter> iter = ImageIO.getImageWriters(type, "jpg");
 			if (iter.hasNext()) {
 				writer = iter.next();
 			}
-			File target = new File(new File(image1.getParent() + "_repaint"), image1.getName());
 			if (writer != null) {
 				IIOImage iioImage = new IIOImage(targetImage, null, null);
 				ImageWriteParam param = writer.getDefaultWriteParam();
@@ -121,6 +143,7 @@ public class ImageRepaint {
 				ImageOutputStream outputStream = ImageIO.createImageOutputStream(target);
 				writer.setOutput(outputStream);
 				writer.write(null, iioImage, param);
+				LOG.error("{}", image1);
 			}
 			result = target.exists();
 		} catch (Exception e) {
@@ -134,9 +157,93 @@ public class ImageRepaint {
 			}
 		}
 		if (!result) {
-			System.out.println("" + result + "  " + image0 + "=" + image1);
+			LOG.error("{}  {}={}", result, image0, image1);
 		}
 		return result;
+	}
+	
+	public static void replacePixel(BufferedImage scaleImage, BufferedImage targetImage, int w, int h, int location) {
+		// 此方式为沿Height方向扫描
+		if (location == 0) { // 左下
+			// 左上
+			for (int i = 0; i < w; i++) {
+				for (int j = 0; j < h; j++) {
+					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
+				}
+			}
+			// 右上
+			for (int i = (targetImage.getWidth() - w); i < targetImage.getWidth(); i++) {
+				for (int j = 0; j < h; j++) {
+					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
+				}
+			}
+			// 右下
+			for (int i = (targetImage.getWidth() - w); i < targetImage.getWidth(); i++) {
+				for (int j = targetImage.getHeight() - h; j < targetImage.getHeight(); j++) {
+					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
+				}
+			}
+		}
+		if (location == 1) { // 左上
+			// 左下
+			for (int i = 0; i < w; i++) {
+				for (int j = targetImage.getHeight() - h; j < targetImage.getHeight(); j++) {
+					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
+				}
+			}
+			// 右上
+			for (int i = (targetImage.getWidth() - w); i < targetImage.getWidth(); i++) {
+				for (int j = 0; j < h; j++) {
+					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
+				}
+			}
+			// 右下
+			for (int i = (targetImage.getWidth() - w); i < targetImage.getWidth(); i++) {
+				for (int j = targetImage.getHeight() - h; j < targetImage.getHeight(); j++) {
+					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
+				}
+			}
+		}
+		if (location == 2) { // 右下
+			// 左上
+			for (int i = 0; i < w; i++) {
+				for (int j = 0; j < h; j++) {
+					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
+				}
+			}
+			// 左下
+			for (int i = 0; i < w; i++) {
+				for (int j = targetImage.getHeight() - h; j < targetImage.getHeight(); j++) {
+					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
+				}
+			}
+			// 右上
+			for (int i = (targetImage.getWidth() - w); i < targetImage.getWidth(); i++) {
+				for (int j = 0; j < h; j++) {
+					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
+				}
+			}
+		}
+		if (location == 3) { // 右上
+			// 左上
+			for (int i = 0; i < w; i++) {
+				for (int j = 0; j < h; j++) {
+					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
+				}
+			}
+			// 左下
+			for (int i = 0; i < w; i++) {
+				for (int j = targetImage.getHeight() - h; j < targetImage.getHeight(); j++) {
+					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
+				}
+			}
+			// 右下
+			for (int i = (targetImage.getWidth() - w); i < targetImage.getWidth(); i++) {
+				for (int j = targetImage.getHeight() - h; j < targetImage.getHeight(); j++) {
+					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
+				}
+			}
+		}
 	}
 
 	public static BufferedImage getCommonScaledInstance(File imageFile, int x, int y) {
@@ -247,8 +354,8 @@ public class ImageRepaint {
 			String line = null;
 			int i = 0;
 			while (null != (line = br.readLine())) {
-				System.out.print("map.size()=" + map.size() + " ");
-				System.out.println(i++);
+				LOG.error("map.size()={}", map.size());
+				LOG.error("{}", i++);
 				if (StringUtils.isNotBlank(line)) {
 					line = line.trim();
 					String[] arr = line.split("=");
