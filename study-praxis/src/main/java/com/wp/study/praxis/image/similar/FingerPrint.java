@@ -38,11 +38,11 @@ public final class FingerPrint {
 	private static final Logger LOG = LoggerFactory.getLogger(FingerPrint.class);
 
 	private static Map<String, Map<String, String>> fingerMap = new ConcurrentHashMap<String, Map<String, String>>();
-
 	private static ExecutorService computeSimilarPool = null;
 
 	public static void main(String[] args) {
-		File[] dirs = { new File("D:\\temp") };
+		File[] dirs = { new File("D:\\希捷数据救护\\Ai Takanashi"), new File("D:\\希捷数据救护\\Anjyu Kouzuki"),
+				new File("D:\\希捷数据救护\\Asami Kondou") };
 		computeImageFinger(dirs);
 	}
 
@@ -99,9 +99,18 @@ public final class FingerPrint {
 							try {
 								String finger = fingerDirMap.get(imageFile.getName());
 								if (StringUtils.isBlank(finger)) {
-									byte[] bytes = FingerPrint.hashValue(ImageIO.read(imageFile));
-									finger = ByteUtils.bytes2String(bytes);
-									fingerDirMap.put(imageFile.getName(), finger);
+									if ("Thumbs.db".equals(imageFile.getName())) {
+										imageFile.delete();
+										return;
+									}
+									BufferedImage src = ImageIO.read(imageFile);
+									if (null != src) {
+										byte[] bytes = FingerPrint.hashValue(src);
+										finger = ByteUtils.bytes2String(bytes);
+										fingerDirMap.put(imageFile.getName(), finger);
+									} else {
+										LOG.error("{}={}", imageFile, finger);
+									}
 								}
 								LOG.error("{}={}", imageFile, finger);
 							} catch (Exception e) {
@@ -245,9 +254,13 @@ public final class FingerPrint {
 	}
 
 	public static byte[] hashValue(BufferedImage src) {
-		BufferedImage hashImage = resize(src, HASH_SIZE, HASH_SIZE);
-		byte[] matrixGray = (byte[]) toGray(hashImage).getData().getDataElements(0, 0, HASH_SIZE, HASH_SIZE, null);
-		return binaryzation(matrixGray);
+		if (null != src) {
+			BufferedImage hashImage = resize(src, HASH_SIZE, HASH_SIZE);
+			byte[] matrixGray = (byte[]) toGray(hashImage).getData().getDataElements(0, 0, HASH_SIZE, HASH_SIZE, null);
+			return binaryzation(matrixGray);
+		} else {
+			return null;
+		}
 	}
 
 	/**
@@ -359,8 +372,15 @@ public final class FingerPrint {
 		Graphics g = result.getGraphics();
 		try {
 			g.drawImage(src.getScaledInstance(width, height, Image.SCALE_SMOOTH), 0, 0, null);
+		} catch (Exception e) {
+			LOG.error("resize fail, src={}, error:", src, e);
 		} finally {
-			g.dispose();
+			if (null != g) {
+				g.dispose();
+			}
+			if (null != src) {
+				src.flush();
+			}
 		}
 		return result;
 	}

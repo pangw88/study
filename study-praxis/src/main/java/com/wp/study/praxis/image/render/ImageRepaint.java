@@ -43,13 +43,13 @@ public class ImageRepaint {
 	public static void main(String[] args) {
 		try {
 			// 重命名详情输出
-			FileWriter fw = new FileWriter(new File("E:\\image\\repaint_1552111079996")) {
+			FileWriter fw = new FileWriter(new File("E:\\image\\repaint_1552149325923")) {
 				@Override
 				public void write(String str) throws IOException {
 					super.write(str + "\r\n"); // 换行
 				}
 			};
-			File file = new File("E:\\image\\similarity_1552111079996");
+			File file = new File("E:\\image\\similarity_1552149325923");
 			Map<String, String> map = loadFingers(file);
 			LOG.error("map.size={}", map.size());
 

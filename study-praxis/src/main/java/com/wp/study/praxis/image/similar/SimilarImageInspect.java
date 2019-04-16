@@ -35,7 +35,7 @@ public class SimilarImageInspect {
 			new ArrayBlockingQueue<Runnable>(10000));
 
 	public static void main(String[] args) {
-		File originDir = new File("D:\\temp");
+		File originDir = new File("D:\\compute");
 		File targetDir = new File("D:\\希捷数据救护\\Mayumi Yamanaka");
 		if (!originDir.exists() || !originDir.isDirectory() || !targetDir.exists() || !targetDir.isDirectory()) {
 			return;
@@ -104,7 +104,11 @@ public class SimilarImageInspect {
 		if (null == subTargetDirs || subTargetDirs.length == 0) {
 			return;
 		}
-		for (int i = 0; i < subOriginDirs.length; i++) {
+		int size = subOriginDirs.length;
+		if (originDir.getAbsolutePath().equals(targetDir.getAbsolutePath())) {
+			size = (size / 2) + 1;
+		}
+		for (int i = 0; i < size; i++) {
 			File subOriginDir = subOriginDirs[i];
 			if (subOriginDir.isFile() || subOriginDir.getName().endsWith("_repaint")) {
 				continue;
@@ -119,7 +123,7 @@ public class SimilarImageInspect {
 				similarMap.put(dirName, new HashSet<String>());
 			}
 			for (File file : files) {
-				LOG.error("process rate={}%, current={}", (int) (i * 100 / subTargetDirs.length), subOriginDir);
+				LOG.error("process rate={}%, current={}", (int) (i * 100 / size), subOriginDir);
 				if (!file.isFile()) {
 					LOG.error("{} is not file", file);
 					continue;
