@@ -98,7 +98,7 @@
   		FROM
   			MST_ENTITY
   		ORDER BY 
-  			priority,email,site,name
+  			priority,name
     </select> 
     
     <select id="queryEntityWithConditions" parameterType="HashMap" resultMap="EntityResultMap">  

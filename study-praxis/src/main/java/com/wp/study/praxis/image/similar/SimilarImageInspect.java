@@ -35,8 +35,8 @@ public class SimilarImageInspect {
 			new ArrayBlockingQueue<Runnable>(10000));
 
 	public static void main(String[] args) {
-		File originDir = new File("D:\\compute");
-		File targetDir = new File("D:\\希捷数据救护\\Mayumi Yamanaka");
+		File originDir = new File("D:\\origin_pic");
+		File targetDir = new File("D:\\希捷数据救护\\done\\Asami Kondou");
 		if (!originDir.exists() || !originDir.isDirectory() || !targetDir.exists() || !targetDir.isDirectory()) {
 			return;
 		}

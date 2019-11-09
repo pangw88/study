@@ -9,8 +9,8 @@ import com.wp.study.praxis.image.similar.PhotoDigest;
 public class ImageSililarTest {
 
 	public static void main(String[] args) {
-		String image0 = "D:\\希捷数据救护\\done\\Fuuka Nishihama--done\\p_dvd7_fuuka03\\p_dvd7_fuuka03_013.jpg";
-		String image1 = "D:\\希捷数据救护\\done\\Fuuka Nishihama--done\\p_dvd7_fuuka03\\p_dvd7_fuuka03_014.jpg";
+		String image0 = "D:\\origin_pic\\033s.jpg";
+		String image1 = "D:\\希捷数据救护\\done\\Asami Kondou\\p_dvd20_asami-ko02\\p_dvd20_asami-ko02_033.jpg";
 
 		long begin0 = System.currentTimeMillis();
 		float percent = PhotoDigest.getSimilarity(image0, image1);
