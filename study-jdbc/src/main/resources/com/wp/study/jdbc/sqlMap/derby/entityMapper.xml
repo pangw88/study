@@ -135,7 +135,7 @@
 	    	name=#{name}
         </if>
         ORDER BY 
-  			priority,email,site,name
+  			priority,name
     </select> 
     
     <delete id="deleteEntityById" parameterType="HashMap">  
