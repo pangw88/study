@@ -27,7 +27,7 @@ public class FileOperationTest {
 			/*File file = new File("F:/ftp/karen nishino");
 			File info = new File("F:/1.txt");
 			FileOperation.checkExist(file, info);*/
-			String path = "E:\\Downloads\\Tsukasa Kanzaki";
+			String path = "D:\\希捷数据救护\\Sawamura Risa";
 			FileOperation.rename(new File(path));
 			/*File path = new File("G:/Album/Beauty/Koharu Nishino");
 			FileOperation.checkSubValidAndCut(path);*/
@@ -38,7 +38,7 @@ public class FileOperationTest {
 			/*File winrar = new File("C:/Program Files/WinRAR/WinRAR.exe");
 			File dir = new File("F:/temp");
 			FileOperation.compress(winrar, dir, "90890219", 1);*/
-			/*File f = new File("K:/Album/Beauty/Mayumi Yamanaka");
+			/*File f = new File("K:/Album/Beauty/Mayumi Yamanaka");*
 			FileOperation.getMD5("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov)$", true, f);*/
             /*File f1 = new File("C:/Users/wp/Downloads/200GANA-953.7z.001");
 			File f2 = new File("C:/Users/wp/Downloads/200GANA-953.7z.002");
