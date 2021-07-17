@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="study-pakage" />
+        <module name="study-jdbc" />
+        <module name="study-mq" />
+        <module name="study-swing" />
+        <module name="study-praxis" />
+        <module name="study-algorithm" />
+        <module name="study-hadoop" />
+        <module name="study-spring" />
+        <module name="study-netty4" />
+        <module name="study-base" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="study-algorithm" target="1.8" />
+      <module name="study-base" target="1.8" />
+      <module name="study-hadoop" target="1.8" />
+      <module name="study-jdbc" target="1.8" />
+      <module name="study-mq" target="1.8" />
+      <module name="study-netty4" target="1.8" />
+      <module name="study-pakage" target="1.8" />
+      <module name="study-parent" target="1.8" />
+      <module name="study-praxis" target="1.8" />
+      <module name="study-spring" target="1.8" />
+      <module name="study-swing" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
