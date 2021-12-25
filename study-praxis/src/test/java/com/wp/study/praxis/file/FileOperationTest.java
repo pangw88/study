@@ -27,7 +27,7 @@ public class FileOperationTest {
 			/*File file = new File("F:/ftp/karen nishino");
 			File info = new File("F:/1.txt");
 			FileOperation.checkExist(file, info);*/
-			String path = "E:\\Downloads\\Hiyori Izumi";
+			String path = "D:\\图集\\Mayumi Yamanaka\\minisuka\\p_mayumi-y2_st1_01";
 			FileOperation.rename(new File(path));
 			/*File path = new File("G:/Album/Beauty/Koharu Nishino");
 			FileOperation.checkSubValidAndCut(path);*/

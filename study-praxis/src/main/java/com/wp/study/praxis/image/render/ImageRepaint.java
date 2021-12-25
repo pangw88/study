@@ -66,7 +66,7 @@ public class ImageRepaint {
 					public void run() {
 						boolean result = false;
 						try {
-							result = repaint(new File(entry.getKey()), new File(entry.getValue()), 150, 1, 1, 0.25f,
+							result = repaintAssignArea(new File(entry.getKey()), new File(entry.getValue()), 150, 1, 1, 0.25f,
 									skipImage);
 						} catch (Throwable e) {
 							LOG.error("error:", e);
@@ -94,8 +94,8 @@ public class ImageRepaint {
 		}
 	}
 
-	public static boolean repaint(File image0, File image1, int h, int x, int y, float logoWidthRatio,
-			boolean skipImage) {
+	public static boolean repaintAssignArea(File image0, File image1, int h, int x, int y, float logoWidthRatio,
+											boolean skipImage) {
 		BufferedImage scaleImage = null;
 		BufferedImage targetImage = null;
 		boolean result = false;
@@ -105,30 +105,32 @@ public class ImageRepaint {
 				return true;
 			}
 			// 0：左下，1：左上，2：右下，3：右上
-			int location = 0;
-			if (new File(new File("D:\\temp\\右上"), image0.getName()).exists()) {
-				image0 = new File(new File("D:\\temp\\右上"), image0.getName());
-				location = 3;
-			} else if (new File(new File("D:\\temp\\右下"), image0.getName()).exists()) {
-				image0 = new File(new File("D:\\temp\\右下"), image0.getName());
-				location = 2;
-			} else if (new File(new File("D:\\temp\\左上"), image0.getName()).exists()) {
-				image0 = new File(new File("D:\\temp\\左上"), image0.getName());
-				location = 1;
-			} else if (new File(new File("D:\\temp\\左下"), image0.getName()).exists()) {
-				image0 = new File(new File("D:\\temp\\左下"), image0.getName());
-				location = 0;
-			}
-			if (x == y) {
-				scaleImage = ImageIO.read(image0);
-			} else {
-				scaleImage = getFasterScaledInstance(image0, x, y, true);
+			String location = "";
+			if (new File(new File("E:\\temp\\右上"), image0.getName()).exists()) {
+				image0 = new File(new File("E:\\temp\\右上"), image0.getName());
+				location = "右上";
+			} else if (new File(new File("E:\\temp\\右下"), image0.getName()).exists()) {
+				image0 = new File(new File("E:\\temp\\右下"), image0.getName());
+				location = "右下";
+			} else if (new File(new File("E:\\temp\\左上"), image0.getName()).exists()) {
+				image0 = new File(new File("E:\\temp\\左上"), image0.getName());
+				location = "左上";
+			} else if (new File(new File("E:\\temp\\左下"), image0.getName()).exists()) {
+				image0 = new File(new File("E:\\temp\\左下"), image0.getName());
+				location = "左下";
 			}
 
 			targetImage = ImageIO.read(image1);
+
+			if (x == y) {
+				scaleImage = ImageIO.read(image0);
+			} else {
+				scaleImage = getFasterScaledInstance(image0, targetImage.getWidth(), true);
+			}
+
 			int w = (int) (targetImage.getWidth() * logoWidthRatio);
-			replacePixel(scaleImage, targetImage, w, h, location);
-			
+			replacePixel(targetImage, scaleImage, w, h, location);
+
 			ImageWriter writer = null;
 			ImageTypeSpecifier type = ImageTypeSpecifier.createFromRenderedImage(targetImage);
 			Iterator<ImageWriter> iter = ImageIO.getImageWriters(type, "jpg");
@@ -161,85 +163,97 @@ public class ImageRepaint {
 		}
 		return result;
 	}
+
+	/**
+	 * 重新绘制图片
+	 *
+	 * @param mainImagePath 主图片
+	 * @param assitImagePath 辅助图片
+	 * @param location 待替换位置，”右上“，”右下“，”左上“，”左下“
+	 * @param replaceAreaW 待替换区域宽
+	 * @param replaceAreaH 待替换区域高
+	 * @return
+	 */
+	public static boolean repaintAssignArea(String mainImagePath, String assitImagePath, String location, int replaceAreaW, int replaceAreaH) {
+		BufferedImage scaleAssitImage = null;
+		BufferedImage targetImage = null;
+		boolean result = false;
+		File mainImage = new File(mainImagePath);
+		File assitImage = new File(assitImagePath);
+		try {
+			File repaintDir = new File(mainImage.getParent() + "_repaint");
+			if (!repaintDir.exists()) {
+				repaintDir.mkdirs();
+			}
+			File target = new File(repaintDir, mainImage.getName());
+			if (target.exists()) {
+				return true;
+			}
+
+			// 生成的目标图像以主图像为准
+			targetImage = ImageIO.read(mainImage);
+
+			// 缩放后的辅助图片
+			scaleAssitImage = getFasterScaledInstance(assitImage, targetImage.getWidth(), true);
+
+			replacePixel(targetImage, scaleAssitImage, replaceAreaW, replaceAreaH, location);
+			
+			ImageWriter writer = null;
+			ImageTypeSpecifier type = ImageTypeSpecifier.createFromRenderedImage(targetImage);
+			Iterator<ImageWriter> iter = ImageIO.getImageWriters(type, "jpg");
+			if (iter.hasNext()) {
+				writer = iter.next();
+			}
+			if (writer != null) {
+				IIOImage iioImage = new IIOImage(targetImage, null, null);
+				ImageWriteParam param = writer.getDefaultWriteParam();
+				param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+				param.setCompressionQuality(1.0f);
+				ImageOutputStream outputStream = ImageIO.createImageOutputStream(target);
+				writer.setOutput(outputStream);
+				writer.write(null, iioImage, param);
+				LOG.error("{}", assitImage);
+			}
+			result = target.exists();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (null != scaleAssitImage) {
+				scaleAssitImage.flush();
+			}
+			if (null != targetImage) {
+				targetImage.flush();
+			}
+		}
+		if (!result) {
+			LOG.error("{}  {}={}", result, mainImage, assitImage);
+		}
+		return result;
+	}
 	
-	public static void replacePixel(BufferedImage scaleImage, BufferedImage targetImage, int w, int h, int location) {
+	public static void replacePixel(BufferedImage targetImage, BufferedImage scaleImage, int replaceAreaW, int replaceAreaH, String location) {
 		// 此方式为沿Height方向扫描
-		if (location == 0) { // 左下
-			// 左上
-			for (int i = 0; i < w; i++) {
-				for (int j = 0; j < h; j++) {
+		if ("左上".equals(location)) { // 左上
+			for (int i = 0; i < replaceAreaW; i++) {
+				for (int j = 0; j < replaceAreaH; j++) {
 					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
 				}
 			}
-			// 右上
-			for (int i = (targetImage.getWidth() - w); i < targetImage.getWidth(); i++) {
-				for (int j = 0; j < h; j++) {
+		} else if ("左下".equals(location)) { // 左下
+			for (int i = 0; i < replaceAreaW; i++) {
+				for (int j = targetImage.getHeight() - replaceAreaH; j < targetImage.getHeight(); j++) {
 					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
 				}
 			}
-			// 右下
-			for (int i = (targetImage.getWidth() - w); i < targetImage.getWidth(); i++) {
-				for (int j = targetImage.getHeight() - h; j < targetImage.getHeight(); j++) {
+		} else if ("右上".equals(location)) { // 右上
+			for (int i = (targetImage.getWidth() - replaceAreaW); i < targetImage.getWidth(); i++) {
+				for (int j = 0; j < replaceAreaH; j++) {
 					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
 				}
 			}
-		}
-		if (location == 1) { // 左上
-			// 左下
-			for (int i = 0; i < w; i++) {
-				for (int j = targetImage.getHeight() - h; j < targetImage.getHeight(); j++) {
-					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
-				}
-			}
-			// 右上
-			for (int i = (targetImage.getWidth() - w); i < targetImage.getWidth(); i++) {
-				for (int j = 0; j < h; j++) {
-					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
-				}
-			}
-			// 右下
-			for (int i = (targetImage.getWidth() - w); i < targetImage.getWidth(); i++) {
-				for (int j = targetImage.getHeight() - h; j < targetImage.getHeight(); j++) {
-					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
-				}
-			}
-		}
-		if (location == 2) { // 右下
-			// 左上
-			for (int i = 0; i < w; i++) {
-				for (int j = 0; j < h; j++) {
-					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
-				}
-			}
-			// 左下
-			for (int i = 0; i < w; i++) {
-				for (int j = targetImage.getHeight() - h; j < targetImage.getHeight(); j++) {
-					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
-				}
-			}
-			// 右上
-			for (int i = (targetImage.getWidth() - w); i < targetImage.getWidth(); i++) {
-				for (int j = 0; j < h; j++) {
-					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
-				}
-			}
-		}
-		if (location == 3) { // 右上
-			// 左上
-			for (int i = 0; i < w; i++) {
-				for (int j = 0; j < h; j++) {
-					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
-				}
-			}
-			// 左下
-			for (int i = 0; i < w; i++) {
-				for (int j = targetImage.getHeight() - h; j < targetImage.getHeight(); j++) {
-					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
-				}
-			}
-			// 右下
-			for (int i = (targetImage.getWidth() - w); i < targetImage.getWidth(); i++) {
-				for (int j = targetImage.getHeight() - h; j < targetImage.getHeight(); j++) {
+		} else if ("右下".equals(location)) { // 右下
+			for (int i = (targetImage.getWidth() - replaceAreaW); i < targetImage.getWidth(); i++) {
+				for (int j = targetImage.getHeight() - replaceAreaH; j < targetImage.getHeight(); j++) {
 					targetImage.setRGB(i, j, scaleImage.getRGB(i, j));
 				}
 			}
@@ -272,38 +286,46 @@ public class ImageRepaint {
 		return scaleImage;
 	}
 
-	public static BufferedImage getFasterScaledInstance(File imageFile, int x, int y, boolean progressiveBilinear) {
+	public static BufferedImage getFasterScaledInstance(File imageFile, int scale2With, boolean progressiveBilinear) {
+		BufferedImage originImg = null;
+		try {
+			originImg = ImageIO.read(imageFile);
+			if (originImg.getWidth() == scale2With) {
+				// 原始图片与要缩放的宽相同，直接返回
+				return originImg;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		BufferedImage ret = null;
 		BufferedImage scratchImage = null;
 		Graphics2D g2 = null;
 		try {
-			BufferedImage img = ImageIO.read(imageFile);
-			int type = (img.getTransparency() == Transparency.OPAQUE) ? BufferedImage.TYPE_INT_RGB
+			int type = (originImg.getTransparency() == Transparency.OPAQUE) ? BufferedImage.TYPE_INT_RGB
 					: BufferedImage.TYPE_INT_ARGB;
-			int targetWidth = (int) (img.getWidth(null) * y / x);
-			int targetHeight = (int) (img.getHeight(null) * y / x);
-			ret = img;
+			int scale2Height = scale2With * originImg.getHeight() / originImg.getWidth();
+			ret = originImg;
 			int w, h;
 			int prevW = ret.getWidth();
 			int prevH = ret.getHeight();
 			if (progressiveBilinear) {
-				w = img.getWidth();
-				h = img.getHeight();
+				w = originImg.getWidth();
+				h = originImg.getHeight();
 			} else {
-				w = targetWidth;
-				h = targetHeight;
+				w = scale2With;
+				h = scale2Height;
 			}
 			do {
-				if (progressiveBilinear && w > targetWidth) {
+				if (progressiveBilinear && w > scale2With) {
 					w /= 2;
-					if (w < targetWidth) {
-						w = targetWidth;
+					if (w < scale2With) {
+						w = scale2With;
 					}
 				}
-				if (progressiveBilinear && h > targetHeight) {
+				if (progressiveBilinear && h > scale2Height) {
 					h /= 2;
-					if (h < targetHeight) {
-						h = targetHeight;
+					if (h < scale2Height) {
+						h = scale2Height;
 					}
 				}
 				if (scratchImage == null) {
@@ -315,12 +337,12 @@ public class ImageRepaint {
 				prevW = w;
 				prevH = h;
 				ret = scratchImage;
-			} while (w != targetWidth || h != targetHeight);
+			} while (w != scale2With || h != scale2Height);
 			if (g2 != null) {
 				g2.dispose();
 			}
-			if (targetWidth != ret.getWidth() || targetHeight != ret.getHeight()) {
-				scratchImage = new BufferedImage(targetWidth, targetHeight, type);
+			if (scale2With != ret.getWidth() || scale2Height != ret.getHeight()) {
+				scratchImage = new BufferedImage(scale2With, scale2Height, type);
 				g2 = scratchImage.createGraphics();
 				g2.drawImage(ret, 0, 0, null);
 				g2.dispose();
@@ -331,6 +353,9 @@ public class ImageRepaint {
 		} finally {
 			if (null != g2) {
 				g2.dispose();
+			}
+			if (null != originImg) {
+				originImg.flush();
 			}
 		}
 		return ret;
