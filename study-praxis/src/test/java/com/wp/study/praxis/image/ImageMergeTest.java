@@ -21,17 +21,16 @@ public class ImageMergeTest {
 			// 任务开始
 			long startTime = System.currentTimeMillis();
 			LOG.info("task begin");
-			String mainDir = "D:\\迅雷下载\\fuuka-n_n202\\";
-			String assitDir = "E:\\Fuuka Nishihama\\minisuka\\p_dvd2_fuuka04\\";
-			Map<String, String> map = new HashMap<String, String>(){
-				{
-					put("gh_fuuka-n_n2056.jpg", "p_fuuka2_02_011.jpg");
+			File mainDir = new File("D:\\迅雷下载\\p_dvd2_fuuka03");
+			String assitDir = "E:\\Fuuka Nishihama\\minisuka\\p_dvd2_fuuka03\\";
+			for (File mainFile : mainDir.listFiles()) {
+				String name = mainFile.getName().toLowerCase();
+				if (name.endsWith("jpg") || name.endsWith("jpeg")) {
+					ImageRepaint.repaintAssignArea(
+							mainFile.getPath(), assitDir + mainFile.getName(),
+							"左下", 400, 150);
+//					240, 60);
 				}
-			};
-			for (Map.Entry<String, String> entry : map.entrySet()) {
-				ImageRepaint.repaintAssignArea(
-						mainDir + entry.getKey(), assitDir + entry.getValue(),
-						"左下", 240, 60);
 			}
 			// 任务结束
 			LOG.info("wasteTime=" + (System.currentTimeMillis() - startTime));

@@ -194,7 +194,7 @@ public class ImageRepaint {
 			targetImage = ImageIO.read(mainImage);
 
 			// 缩放后的辅助图片
-			scaleAssitImage = getFasterScaledInstance(assitImage, targetImage.getWidth(), true);
+			scaleAssitImage = getFasterScaledInstance(assitImage, targetImage.getWidth(), false);
 
 			replacePixel(targetImage, scaleAssitImage, replaceAreaW, replaceAreaH, location);
 			

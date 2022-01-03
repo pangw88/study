@@ -13,7 +13,11 @@ import org.slf4j.LoggerFactory;
 public class FileOperationTest {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(FileOperationTest.class);
-	
+
+	public FileOperationTest() {
+		super();
+	}
+
 	public static void main(String[] args) {
 		try {
 			// 任务开始
@@ -27,7 +31,7 @@ public class FileOperationTest {
 			/*File file = new File("F:/ftp/karen nishino");
 			File info = new File("F:/1.txt");
 			FileOperation.checkExist(file, info);*/
-			String path = "D:\\图集\\Mayumi Yamanaka\\minisuka\\p_mayumi-y2_st1_01";
+			String path = "D:\\图集\\Fuuka Nishihama\\p_fuuka_st2_08";
 			FileOperation.rename(new File(path));
 			/*File path = new File("G:/Album/Beauty/Koharu Nishino");
 			FileOperation.checkSubValidAndCut(path);*/
