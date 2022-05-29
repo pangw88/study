@@ -972,14 +972,15 @@ public class FileOperation {
 		if (CacheUtils.exists("winrar")) {
 			winrar = CacheUtils.getCache("winrar", File.class);
 		} else {
-			String winrarName = "WinRAR\\.exe";
-			List<File> programs = search(winrarName, true);
-			if (programs == null || programs.size() != 1) {
-				LOG.error("get compress program <{}> failed", winrarName);
-				return result;
-			}
-			winrar = programs.get(0);
-			CacheUtils.setCache("winrar", programs.get(0));
+			String winrarName = "C:\\Program Files\\WinRAR\\WinRAR.exe";
+//			List<File> programs = search(winrarName, true);
+//			if (programs == null || programs.size() != 1) {
+//				LOG.error("get compress program <{}> failed", winrarName);
+//				return result;
+//			}
+//			winrar = programs.get(0);
+			winrar = new File(winrarName);
+//			CacheUtils.setCache("winrar", programs.get(0));
 		}
 
 		// x提取压缩文件中完整路径，-m3标准方式解压
@@ -1096,6 +1097,39 @@ public class FileOperation {
 			IoUtils.closeQuietly(fr, bufr);
 		}
 		return sb.toString();
+	}
+
+	/**
+	 * 以父文件夹名称为基准重命名文件 文件夹名：xxx 重命名文件：xxx_001.jpg、xxx_002.jpg
+	 *
+	 * @param parent
+	 */
+	public static void renameLivp2Zip(File parent) {
+		if (parent == null || !parent.exists() || !parent.isDirectory()) {
+			LOG.error("can not find directory <{}>", parent);
+			return;
+		}
+		try {
+			// 获取所有子文件
+			List<File> subFiles = loadFiles(parent);
+			if (null == subFiles || subFiles.isEmpty()) {
+				return;
+			}
+			// 过滤有效文件
+			for (File subFile : subFiles) {
+				String path = subFile.getPath();
+				if (path.toLowerCase().endsWith(".livp")) {
+					String name = subFile.getName();
+					String rename = name.replaceAll(".livp", ".zip");
+					subFile.renameTo(new File(subFile.getParentFile(), rename));
+					uncompress(new File(subFile.getParentFile(), rename), null);
+				} else if (path.toLowerCase().endsWith(".zip")) {
+					uncompress(subFile, null);
+				}
+			}
+		} catch (Exception e) {
+			LOG.error("renameLivp2Zip fail, parent={}, error:", parent, e);
+		}
 	}
 
 }

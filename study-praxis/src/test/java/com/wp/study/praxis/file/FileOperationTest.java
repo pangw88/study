@@ -31,8 +31,10 @@ public class FileOperationTest {
 			/*File file = new File("F:/ftp/karen nishino");
 			File info = new File("F:/1.txt");
 			FileOperation.checkExist(file, info);*/
-			String path = "D:\\图集\\Fuuka Nishihama\\p_fuuka_st2_08";
-			FileOperation.rename(new File(path));
+//			String path = "D:\\图集\\Fuuka Nishihama\\p_fuuka_st2_08";
+//			FileOperation.rename(new File(path));
+			String path = "E:\\DCIM\\苹果照片\\livp";
+			FileOperation.renameLivp2Zip(new File(path));
 			/*File path = new File("G:/Album/Beauty/Koharu Nishino");
 			FileOperation.checkSubValidAndCut(path);*/
             /*File f1 = new File("H:/Album/Beauty/Koharu Nishino"); 
