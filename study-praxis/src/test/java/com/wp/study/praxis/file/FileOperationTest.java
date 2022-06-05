@@ -34,7 +34,11 @@ public class FileOperationTest {
 //			String path = "D:\\图集\\Fuuka Nishihama\\p_fuuka_st2_08";
 //			FileOperation.rename(new File(path));
 			String path = "E:\\DCIM\\苹果照片\\livp";
-			FileOperation.renameLivp2Zip(new File(path));
+			FileOperation.renameLivp2ZipAndUncompress(new File(path));
+
+//			String path = "E:\\DCIM\\iCloud 照片\\temp\\te";
+//			FileOperation.replaceRename(new File(path), "IMG_", "越南芽庄_IMG_0622_");
+
 			/*File path = new File("G:/Album/Beauty/Koharu Nishino");
 			FileOperation.checkSubValidAndCut(path);*/
             /*File f1 = new File("H:/Album/Beauty/Koharu Nishino"); 

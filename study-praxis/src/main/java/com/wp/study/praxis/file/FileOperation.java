@@ -1104,7 +1104,7 @@ public class FileOperation {
 	 *
 	 * @param parent
 	 */
-	public static void renameLivp2Zip(File parent) {
+	public static void renameLivp2ZipAndUncompress(File parent) {
 		if (parent == null || !parent.exists() || !parent.isDirectory()) {
 			LOG.error("can not find directory <{}>", parent);
 			return;
@@ -1129,6 +1129,36 @@ public class FileOperation {
 			}
 		} catch (Exception e) {
 			LOG.error("renameLivp2Zip fail, parent={}, error:", parent, e);
+		}
+	}
+
+	/**
+	 * 以父文件夹名称为基准重命名文件 文件夹名：xxx 重命名文件：xxx_001.jpg、xxx_002.jpg
+	 *
+	 * @param dir
+	 */
+	public static void replaceRename(File dir, String keyStr, String replaceStr) {
+		if (dir == null || !dir.exists() || !dir.isDirectory()) {
+			LOG.error("can not find directory <{}>", dir);
+			return;
+		}
+		try {
+			// 获取所有子文件
+			List<File> subFiles = loadFiles(dir);
+			if (null == subFiles || subFiles.isEmpty()) {
+				return;
+			}
+			// 过滤有效文件
+			for (File subFile : subFiles) {
+				String path = subFile.getPath();
+				if (path.indexOf(keyStr) >= 0) {
+					String name = subFile.getName();
+					String rename = name.replaceAll(keyStr, replaceStr);
+					subFile.renameTo(new File(subFile.getParentFile(), rename));
+				}
+			}
+		} catch (Exception e) {
+			LOG.error("replaceRename fail, dir={}, error:", dir, e);
 		}
 	}
 
