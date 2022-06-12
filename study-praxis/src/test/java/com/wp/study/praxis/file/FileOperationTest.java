@@ -36,7 +36,7 @@ public class FileOperationTest {
 //			String path = "E:\\DCIM\\苹果20220522";
 //			FileOperation.renameLivp2ZipAndUncompress(new File(path));
 
-			String path = "E:\\DCIM\\2017\\temp";
+			String path = "E:\\DCIM\\2020";
 			FileOperation.replaceRename(new File(path), "千岛湖_", "千岛湖_", ".jpg");
 //			FileOperation.replaceRename(new File(path), "JPG", "jpg", null);
 

@@ -38,5 +38,10 @@
 			<version>3.12</version>
 			<classifier>sources</classifier>
 		</dependency>
+
+		<dependency>
+			<groupId>net.coobird</groupId>
+			<artifactId>thumbnailator</artifactId>
+		</dependency>
 	</dependencies>
 </project>
