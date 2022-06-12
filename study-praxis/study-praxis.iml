@@ -40,6 +40,7 @@
     <orderEntry type="library" name="Maven: com.alibaba:fastjson:1.2.53" level="project" />
     <orderEntry type="library" name="Maven: org.apache.poi:poi:3.12" level="project" />
     <orderEntry type="library" name="Maven: org.apache.poi:poi:sources:3.12" level="project" />
+    <orderEntry type="library" name="Maven: net.coobird:thumbnailator:unknown" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.12" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:sources:1.7.12" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:javadoc:1.7.12" level="project" />
@@ -59,6 +60,5 @@
     <orderEntry type="library" name="Maven: org.hamcrest:hamcrest-core:1.3" level="project" />
     <orderEntry type="library" name="Maven: junit:junit:sources:4.12" level="project" />
     <orderEntry type="library" name="Maven: junit:junit:javadoc:4.12" level="project" />
-    <orderEntry type="library" name="Maven: net.coobird:thumbnailator:0.4.17" level="project" />
   </component>
 </module>
