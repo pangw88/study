@@ -10,14 +10,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-import java.util.TreeMap;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
@@ -225,7 +224,9 @@ public class FileOperation {
 	/**
 	 * 以父文件夹名称为基准重命名文件 文件夹名：xxx 重命名文件：xxx_001.jpg、xxx_002.jpg
 	 * 
-	 * @param parent
+	 * @param baseDir
+	 * @param targetDir
+	 *
 	 */
 	public static void replaceName(File baseDir, File targetDir) {
 		if (null == baseDir || null == targetDir || !baseDir.exists() || !targetDir.exists()) {
@@ -615,7 +616,6 @@ public class FileOperation {
 	 * 将校验源文件并剪切无效文件到指定文件夹
 	 * 
 	 * @param origin 源文件
-	 * @param path   指定文件夹
 	 */
 	public static boolean checkValidAndCut(File origin) {
 		boolean valid = false;
@@ -883,7 +883,8 @@ public class FileOperation {
 	 * <文件...> <@列表文件...> <解压路径\> <命令> a：添加文件到压缩文件 <参数> hp[password]：加密文件数据和文件头
 	 * m<0..5>：设置压缩级别(0-存储...3-默认...5-最大)
 	 * 
-	 * @param origin   需压缩文件
+	 * @param compressName   需压缩文件
+	 * @param compressModel
 	 * @param password 压缩密码，为空时无密码压缩
 	 * @return
 	 */
@@ -1121,6 +1122,7 @@ public class FileOperation {
 				if (path.toLowerCase().endsWith(".livp")) {
 					String name = subFile.getName();
 					String rename = name.replaceAll(".livp", ".zip");
+					rename = rename.replaceAll(" ", "-");
 					subFile.renameTo(new File(subFile.getParentFile(), rename));
 					uncompress(new File(subFile.getParentFile(), rename), null);
 				} else if (path.toLowerCase().endsWith(".zip")) {
@@ -1137,7 +1139,7 @@ public class FileOperation {
 	 *
 	 * @param dir
 	 */
-	public static void replaceRename(File dir, String keyStr, String replaceStr) {
+	public static void replaceRename(File dir, String keyStr, String replaceStr, String fileType) {
 		if (dir == null || !dir.exists() || !dir.isDirectory()) {
 			LOG.error("can not find directory <{}>", dir);
 			return;
@@ -1151,9 +1153,27 @@ public class FileOperation {
 			// 过滤有效文件
 			for (File subFile : subFiles) {
 				String path = subFile.getPath();
+				Map<String,Object> attributes = Files.readAttributes(Paths.get(path), "*", LinkOption.NOFOLLOW_LINKS);
+				FileTime lastModifiedTime = (FileTime) attributes.get("lastModifiedTime");
+
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(new Date(lastModifiedTime.toMillis()));
+
+				int month = cal.get(Calendar.MONTH) + 1;
+				int day = cal.get(Calendar.DAY_OF_MONTH);
+				int hours = cal.get(Calendar.HOUR_OF_DAY);
+				int minutes = cal.get(Calendar.MINUTE);
+				int seconds = cal.get(Calendar.SECOND);
+				String monthDay = (month<10?"0":"") + (month*100 + day);
+				String time = (hours<10?"0":"") + (hours*10000 + minutes*100 + seconds);
 				if (path.indexOf(keyStr) >= 0) {
 					String name = subFile.getName();
-					String rename = name.replaceAll(keyStr, replaceStr);
+					String rename = null;
+					if (StringUtils.isBlank(fileType)) {
+						rename = name.replaceAll(keyStr, replaceStr);
+					} else {
+						rename = replaceStr + monthDay + "_" + time + fileType;
+					}
 					subFile.renameTo(new File(subFile.getParentFile(), rename));
 				}
 			}
