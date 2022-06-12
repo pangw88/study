@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="jdeli-trial">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/study-praxis/src/main/resources/ext_jar/jdeli-trial.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

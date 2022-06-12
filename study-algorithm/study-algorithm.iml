@@ -56,5 +56,6 @@
     <orderEntry type="library" name="Maven: junit:junit:sources:4.12" level="project" />
     <orderEntry type="library" name="Maven: junit:junit:javadoc:4.12" level="project" />
     <orderEntry type="library" name="Maven: net.coobird:thumbnailator:0.4.17" level="project" />
+    <orderEntry type="library" name="jdeli-trial" level="project" />
   </component>
 </module>

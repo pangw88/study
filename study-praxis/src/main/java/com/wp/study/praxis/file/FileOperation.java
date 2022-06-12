@@ -1,5 +1,6 @@
 package com.wp.study.praxis.file;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -25,6 +26,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.filechooser.FileSystemView;
 
+import com.idrsolutions.image.JDeli;
+import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1179,6 +1182,25 @@ public class FileOperation {
 			}
 		} catch (Exception e) {
 			LOG.error("replaceRename fail, dir={}, error:", dir, e);
+		}
+	}
+
+	public static void toJpg(String heic, String targetJpg) {
+		BufferedImage heicImage = null;
+		try {
+			heicImage = JDeli.read(new File(heic));
+			Thumbnails.of(heicImage).scale(1.0d).outputQuality(1.0d).toFile(targetJpg);
+		} catch (Throwable e) {
+			LOG.error("toJpg fail, error:", e);
+		} finally {
+			try {
+				if (null != heicImage) {
+					heicImage.flush();
+					heicImage = null;
+				}
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
