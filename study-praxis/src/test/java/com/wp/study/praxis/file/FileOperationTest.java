@@ -33,12 +33,14 @@ public class FileOperationTest {
 			FileOperation.checkExist(file, info);*/
 //			String path = "D:\\图集\\Fuuka Nishihama\\p_fuuka_st2_08";
 //			FileOperation.rename(new File(path));
-//			String path = "E:\\DCIM\\苹果20220522";
+
+//			String path = "E:\\DCIM\\temp";
 //			FileOperation.renameLivp2ZipAndUncompress(new File(path));
 
-			String path = "E:\\DCIM\\2022";
-			FileOperation.replaceRename(new File(path), "IMG_", "嘻嘻嘻_", ".heic");
-//			FileOperation.replaceRename(new File(path), "2021-05-08 ", "雨崩徒步_0508_", null);
+			String path = "E:\\DCIM\\temp";
+//			FileOperation.replaceRename(new File(path), "IMG_", "成都outing_", ".jpg");
+			FileOperation.replaceRename(new File(path), "2022-07-04 ", "成都outing_0704_", null);
+//			FileOperation.replaceRename(new File(path), "jpeg", "jpg", null);
 //			FileOperation.toJpg("E:\\DCIM\\IMG_1747.HEIC.heic", "E:\\DCIM\\IMG_1747.jpg");
 
 			/*File path = new File("G:/Album/Beauty/Koharu Nishino");
