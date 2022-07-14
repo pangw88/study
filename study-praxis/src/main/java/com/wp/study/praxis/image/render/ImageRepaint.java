@@ -49,7 +49,7 @@ public class ImageRepaint {
 					super.write(str + "\r\n"); // 换行
 				}
 			};
-			File file = new File("E:\\image\\similarity_1552149325923");
+			File file = new File("E:\\photo\\similarity_1552149325923");
 			Map<String, String> map = loadFingers(file);
 			LOG.error("map.size={}", map.size());
 

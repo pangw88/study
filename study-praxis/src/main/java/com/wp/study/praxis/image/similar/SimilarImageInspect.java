@@ -44,7 +44,7 @@ public class SimilarImageInspect {
 		try {
 			allImageInspect(originDir, targetDir);
 			// 重命名详情输出
-			fw = new FileWriter(new File("E:\\image\\similarity_" + System.currentTimeMillis())) {
+			fw = new FileWriter(new File("E:\\photo\\similarity_" + System.currentTimeMillis())) {
 				@Override
 				public void write(String str) throws IOException {
 					super.write(str + "\r\n"); // 换行

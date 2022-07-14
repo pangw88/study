@@ -85,7 +85,7 @@ public final class FingerPrint {
 				String dirPath = subDir.getAbsolutePath();
 				String fingerFileName = dirPath.replaceAll("\\\\", "~");
 				fingerFileName = fingerFileName.replaceAll(":", "@");
-				File fingerFile = new File("E:\\image\\fingers", fingerFileName);
+				File fingerFile = new File("E:\\photo\\fingers", fingerFileName);
 				if (!fingerFile.exists()) {
 					fingerFile.createNewFile();
 				}
@@ -214,7 +214,7 @@ public final class FingerPrint {
 			synchronized (FingerPrint.class) {
 				fingerDirMap = fingerMap.get(fingerFileName);
 				if (null == fingerDirMap) {
-					fingerDirMap = loadFingers(new File("E:\\image\\fingers", fingerFileName));
+					fingerDirMap = loadFingers(new File("E:\\photo\\fingers", fingerFileName));
 					fingerMap.put(fingerFileName, fingerDirMap);
 				}
 			}
