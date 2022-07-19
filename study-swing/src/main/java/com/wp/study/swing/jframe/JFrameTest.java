@@ -304,7 +304,7 @@ public class JFrameTest extends JFrame {
 						String qkey = keyt.getPassword() == null ? null : new String(keyt.getPassword());
 						String qs = qts.getText();
 						String qn = qtn.getText();
-						if (key1.equals(qkey)) {
+//						if (key1.equals(qkey)) {
 							// show query datas, can flush
 							table.setModel(new MyTableModel(es.queryEntity(qlev, qs, qn, key, key1)));
 							TableColumnModel tcm = table.getColumnModel();
@@ -323,7 +323,7 @@ public class JFrameTest extends JFrame {
 								table.addMouseListener(new TableMouseAdapter());
 								mouseListener = true;
 							}
-						}
+//						}
 					} catch (Exception ex) {
 						LOG.error(ex.getMessage());
 					}
