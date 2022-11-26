@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>     
+<!DOCTYPE configuration     
+    PUBLIC "-//mybatis.org//DTD Config 3.0//EN"     
+    "http://mybatis.org/dtd/mybatis-3-config.dtd">  
+<configuration>  
+    <!-- <typeAliases>给mapper.xml中引用的pojo类设置别名</typeAliases> --> 
+    <!--数据源配置，这块用derby数据库 -->  
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="jdbc" />
+            <dataSource type="POOLED">  
+                <property name="driver" value="org.apache.derby.jdbc.EmbeddedDriver" />  
+                <!-- <property name="url" value="jdbc:derby:study;create=false" />  -->
+                <property name="url" value="jdbc:derby:D:\git\study\study-swing\src\main\resources\study;create=false" />  
+                <property name="username" value="app" />  
+                <property name="password" value="123456" />
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>  
+    	<!--configMapper.xml装载进来，同等于把"dao"的实现装载进来 -->  
+    	<mapper resource="com/wp/study/jdbc/sqlMap/derby/configMapper.xml" />  
+        <!--entityMapper.xml装载进来，同等于把"dao"的实现装载进来 -->  
+        <mapper resource="com/wp/study/jdbc/sqlMap/derby/entityMapper.xml" /> 
+    </mappers> 
+</configuration>

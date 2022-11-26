@@ -7,7 +7,7 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 public class SqlSessionService {
 	
 	public static SqlSession getSqlSession() {
-		String resource = "com/wp/study/swing/service/mybatis-config.xml";
+		String resource = "mybatis-config.xml";
 		try {
 			return new SqlSessionFactoryBuilder().build(Resources.getResourceAsReader(resource)).openSession();
 		} catch (Exception e) {
