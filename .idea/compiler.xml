@@ -18,18 +18,5 @@
         <module name="study-base" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="study-algorithm" target="1.8" />
-      <module name="study-base" target="1.8" />
-      <module name="study-hadoop" target="1.8" />
-      <module name="study-jdbc" target="1.8" />
-      <module name="study-mq" target="1.8" />
-      <module name="study-netty4" target="1.8" />
-      <module name="study-pakage" target="1.8" />
-      <module name="study-parent" target="1.8" />
-      <module name="study-praxis" target="1.8" />
-      <module name="study-spring" target="1.8" />
-      <module name="study-swing" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
 </project>
