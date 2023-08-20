@@ -88,6 +88,7 @@
 			<scope>compile</scope>
 		</dependency>
 		<!-- read HEIC image with JDeli -->
+		<!-- 收费软件：https://www.idrsolutions.com/jdeli/trial-download -->
 <!--		<dependency>-->
 <!--			<groupId>com.idrsolutions</groupId>-->
 <!--			<artifactId>jdeli</artifactId>-->

@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.filechooser.FileSystemView;
 
-import com.idrsolutions.image.JDeli;
+//import com.idrsolutions.image.JDeli;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -1143,6 +1143,16 @@ public class FileOperation {
 	 * @param dir
 	 */
 	public static void replaceRename(File dir, String keyStr, String replaceStr, String fileType) {
+		replaceRename(dir, keyStr, replaceStr, fileType, true);
+	}
+
+	/**
+	 * 以父文件夹名称为基准重命名文件 文件夹名：xxx 重命名文件：xxx_001.jpg、xxx_002.jpg
+	 * readSystemFileTime 读取系统文件时间
+	 *
+	 * @param dir
+	 */
+	public static void replaceRename(File dir, String keyStr, String replaceStr, String fileType, boolean readSystemFileTime) {
 		if (dir == null || !dir.exists() || !dir.isDirectory()) {
 			LOG.error("can not find directory <{}>", dir);
 			return;
@@ -1172,10 +1182,10 @@ public class FileOperation {
 				if (path.indexOf(keyStr) >= 0) {
 					String name = subFile.getName();
 					String rename = null;
-					if (StringUtils.isBlank(fileType)) {
-						rename = name.replaceAll(keyStr, replaceStr);
+					if (readSystemFileTime) {
+						rename = replaceStr + monthDay + "_" + time + (StringUtils.isBlank(fileType) ? "" : fileType);
 					} else {
-						rename = replaceStr + monthDay + "_" + time + fileType;
+						rename = name.replaceAll(keyStr, replaceStr);
 					}
 					subFile.renameTo(new File(subFile.getParentFile(), rename));
 				}
@@ -1185,23 +1195,23 @@ public class FileOperation {
 		}
 	}
 
-	public static void toJpg(String heic, String targetJpg) {
-		BufferedImage heicImage = null;
-		try {
-			heicImage = JDeli.read(new File(heic));
-			Thumbnails.of(heicImage).scale(1.0d).outputQuality(1.0d).toFile(targetJpg);
-		} catch (Throwable e) {
-			LOG.error("toJpg fail, error:", e);
-		} finally {
-			try {
-				if (null != heicImage) {
-					heicImage.flush();
-					heicImage = null;
-				}
-			} catch (Throwable e) {
-				e.printStackTrace();
-			}
-		}
-	}
+//	public static void toJpg(String heic, String targetJpg) {
+//		BufferedImage heicImage = null;
+//		try {
+//			heicImage = JDeli.read(new File(heic));
+//			Thumbnails.of(heicImage).scale(1.0d).outputQuality(1.0d).toFile(targetJpg);
+//		} catch (Throwable e) {
+//			LOG.error("toJpg fail, error:", e);
+//		} finally {
+//			try {
+//				if (null != heicImage) {
+//					heicImage.flush();
+//					heicImage = null;
+//				}
+//			} catch (Throwable e) {
+//				e.printStackTrace();
+//			}
+//		}
+//	}
 
 }

@@ -37,9 +37,9 @@ public class FileOperationTest {
 //			String path = "E:\\DCIM\\temp";
 //			FileOperation.renameLivp2ZipAndUncompress(new File(path));
 
-			String path = "E:\\DCIM\\temp";
-//			FileOperation.replaceRename(new File(path), "IMG_", "成都outing_", ".jpg");
-			FileOperation.replaceRename(new File(path), "2022-07-04 ", "成都outing_0704_", null);
+			String path = "E:\\DCIM\\2023.part1";
+			FileOperation.replaceRename(new File(path), "VID_20230722_", "川西环线_0722_", ".jpg", false);
+//			FileOperation.replaceRename(new File(path), "2022-07-04 ", "成都outing_0704_", null);
 //			FileOperation.replaceRename(new File(path), "jpeg", "jpg", null);
 //			FileOperation.toJpg("E:\\DCIM\\IMG_1747.HEIC.heic", "E:\\DCIM\\IMG_1747.jpg");
 
