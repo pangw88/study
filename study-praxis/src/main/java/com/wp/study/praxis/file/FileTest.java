@@ -99,7 +99,7 @@ public class FileTest {
 			}
 		}
 		if(sb.length() == 0) {
-			FileOperation.rename(picDic);
+			FileTools.rename(picDic);
 			log.delete();
 		}
 	}

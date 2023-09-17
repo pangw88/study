@@ -1,16 +1,10 @@
 package com.wp.study.praxis.image;
 
-import com.wp.study.praxis.file.FileOperation;
 import com.wp.study.praxis.image.render.ImageRepaint;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class ImageMergeTest {
 	
