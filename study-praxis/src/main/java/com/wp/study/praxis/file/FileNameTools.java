@@ -205,6 +205,9 @@ public class FileNameTools {
      * 以父文件夹名称为基准重命名文件 文件夹名：xxx 重命名文件：xxx_001.jpg、xxx_002.jpg
      *
      * @param dir
+     * @param keyStr
+     * @param replaceStr
+     * @param fileType
      */
     public static void renameByReplaceStr(File dir, String keyStr, String replaceStr, String fileType) {
         renameByReplaceStr(dir, keyStr, replaceStr, fileType, true);
@@ -213,8 +216,11 @@ public class FileNameTools {
     /**
      * 以父文件夹名称为基准重命名文件 文件夹名：xxx 重命名文件：xxx_001.jpg、xxx_002.jpg
      * readSystemFileTime 读取系统文件时间
-     *
      * @param dir
+     * @param keyStr
+     * @param replaceStr
+     * @param fileType
+     * @param readSystemFileTime
      */
     public static void renameByReplaceStr(File dir, String keyStr, String replaceStr, String fileType, boolean readSystemFileTime) {
         if (dir == null || !dir.exists() || !dir.isDirectory()) {
@@ -257,6 +263,33 @@ public class FileNameTools {
         } catch (Exception e) {
             LOG.error("renameByReplaceStr fail, dir={}, error:", dir, e);
         }
+    }
+
+    /**
+     * 通过文件名反转进行重命名，xxx_001.jpg -> gpj.100.xxx
+     *
+     * @param filePath
+     */
+    public static void renameByReverse(String filePath) {
+        if (StringUtils.isBlank(filePath)) {
+            LOG.error("invalid filePath <{}>", filePath);
+            return;
+        }
+        try {
+            File file = new File(filePath);
+            if (!file.exists()) {
+                LOG.error("invalid file <{}>", filePath);
+                return;
+            }
+            String rename = new StringBuilder(file.getName()).reverse().toString();
+            file.renameTo(new File(file.getParentFile(), rename));
+        } catch (Exception e) {
+            LOG.error("renameByReverse fail, filePath={}, error:", filePath, e);
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.print(new StringBuilder("我是file.我是getName()").reverse().toString());
     }
 
 }
