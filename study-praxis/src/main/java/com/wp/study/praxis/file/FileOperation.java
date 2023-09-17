@@ -91,32 +91,6 @@ public class FileOperation {
 	}
 
 	/**
-	 * 计算文件（夹）大小
-	 *
-	 * @param file
-	 * @return
-	 */
-	public static long getSize(File file) {
-		long bytes = 0L;
-		if (file == null || !file.exists()) {
-			LOG.error("<{}> not exist", file);
-			return bytes;
-		}
-		if (file.isFile()) { // 若为文件
-			bytes += file.length();
-		} else { // 若为文件夹
-			// 获取所有子文件
-			List<File> subFiles = loadFiles(file);
-			if (null != subFiles) {
-				for (File subFile : subFiles) {
-					bytes += subFile.length();
-				}
-			}
-		}
-		return bytes;
-	}
-
-	/**
 	 * 以父文件夹名称为基准重命名文件 文件夹名：xxx 重命名文件：xxx_001.jpg、xxx_002.jpg
 	 *
 	 * @param parent
@@ -585,7 +559,7 @@ public class FileOperation {
 			IoUtils.closeQuietly(fis, in, fos, out);
 		}
 		if (!result) {
-			LOG.error("copy0 fail, origin={}, path={}", origin, path);
+			LOG.error("copy fail, origin={}, path={}", origin, path);
 		}
 		return result;
 	}
