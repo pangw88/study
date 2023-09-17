@@ -35,7 +35,7 @@ public class FileToolsTest {
 //			FileTools.rename(new File(path));
 
 //			String path = "E:\\DCIM\\temp";
-//			FileTools.renameLivp2ZipAndUncompress(new File(path));
+//			AppleLivpTools.livp2ZipAndUncompress(new File(path));
 
 			String path = "E:\\DCIM\\2018.part2_Rainbow计划.淘造物节.鲁班.塘栖";
 			FileTools.replaceRename(new File(path), "LiveHouse_", "Rainbow计划_", ".jpg", false);
