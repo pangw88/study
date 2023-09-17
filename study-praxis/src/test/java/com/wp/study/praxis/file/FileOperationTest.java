@@ -123,7 +123,7 @@ public class FileOperationTest {
 			}
 		}
 		for(Map.Entry<String, List<File>> entry : map.entrySet()) {
-			FileOperation.compress(entry.getKey(), compressModel, password, entry.getValue().toArray(new File[0]));
+			WinRarTools.compress(entry.getKey(), compressModel, password, entry.getValue().toArray(new File[0]));
 		}
 	}
 }
