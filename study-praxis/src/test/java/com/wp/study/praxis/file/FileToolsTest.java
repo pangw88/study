@@ -48,12 +48,12 @@ public class FileToolsTest {
             /*File f1 = new File("H:/Album/Beauty/Koharu Nishino"); 
 			File f2 = new File("F:/Downloads/aa");
 			File[] files = {f1, f2};
-			FileTools.getMD5("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov|m4v)$", false, files);*/
+			Md5Tools.getMD5WithCut("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov|m4v)$", false, files);*/
 			/*File winrar = new File("C:/Program Files/WinRAR/WinRAR.exe");
 			File dir = new File("F:/temp");
 			FileTools.compress(winrar, dir, "90890219", 1);*/
 			/*File f = new File("K:/Album/Beauty/Mayumi Yamanaka");*
-			FileTools.getMD5("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov)$", true, f);*/
+			Md5Tools.getMD5WithCut("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov)$", true, f);*/
             /*File f1 = new File("C:/Users/wp/Downloads/200GANA-953.7z.001");
 			File f2 = new File("C:/Users/wp/Downloads/200GANA-953.7z.002");
 			File f3 = new File("C:/Users/wp/Downloads/200GANA-953.7z.003");
