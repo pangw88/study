@@ -34,7 +34,7 @@ public class Md5Tools {
         FileWriter fw = null;
         try {
             // 获取所有子文件
-            List<File> subFiles = FileTools.loadFiles(files);
+            List<File> subFiles = FileCommonTools.loadFiles(files);
             if (null == subFiles || subFiles.isEmpty()) {
                 return;
             }
@@ -62,7 +62,7 @@ public class Md5Tools {
                         int index = filePath.indexOf(File.separator);
                         File root = new File(index == -1 ? filePath : filePath.substring(0, index));
                         File temp = new File(root, "temp");
-                        FileTools.cut(subFile, temp);
+                        FileCommonTools.cut(subFile, temp);
                     }
                 } else {
                     md5Map.put(md5, subFile.getPath());

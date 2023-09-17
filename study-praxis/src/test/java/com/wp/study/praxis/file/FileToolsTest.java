@@ -14,10 +14,6 @@ public class FileToolsTest {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(FileToolsTest.class);
 
-	public FileToolsTest() {
-		super();
-	}
-
 	public static void main(String[] args) {
 		try {
 			// 任务开始
@@ -25,45 +21,45 @@ public class FileToolsTest {
 			LOG.info("task begin");
 			/*
 			Long time1 = new Date().getTime();
-			FileTools.copy(new File("E:/r2_kaneko_m03.mp4"), new File("D:/a1"));
+			FileCommonTools.copy(new File("E:/r2_kaneko_m03.mp4"), new File("D:/a1"));
 			Long time2 = new Date().getTime();
 			System.out.println(time2 - time1);*/
 			/*File file = new File("F:/ftp/karen nishino");
 			File info = new File("F:/1.txt");
-			FileTools.checkExist(file, info);*/
+			FileCommonTools.checkExist(file, info);*/
 //			String path = "D:\\图集\\Fuuka Nishihama\\p_fuuka_st2_08";
-//			FileTools.rename(new File(path));
+//			FileNameTools.rename(new File(path));
 
 //			String path = "E:\\DCIM\\temp";
 //			AppleLivpTools.livp2ZipAndUncompress(new File(path));
 
 			String path = "E:\\DCIM\\2018.part2_Rainbow计划.淘造物节.鲁班.塘栖";
-			FileTools.replaceRename(new File(path), "LiveHouse_", "Rainbow计划_", ".jpg", false);
-//			FileTools.replaceRename(new File(path), "2022-07-04 ", "成都outing_0704_", null);
-//			FileTools.replaceRename(new File(path), "jpeg", "jpg", null);
-//			FileTools.toJpg("E:\\DCIM\\IMG_1747.HEIC.heic", "E:\\DCIM\\IMG_1747.jpg");
+			FileNameTools.replaceRename(new File(path), "LiveHouse_", "Rainbow计划_", ".jpg", false);
+//			FileNameTools.replaceRename(new File(path), "2022-07-04 ", "成都outing_0704_", null);
+//			FileNameTools.replaceRename(new File(path), "jpeg", "jpg", null);
+//			FileCommonTools.toJpg("E:\\DCIM\\IMG_1747.HEIC.heic", "E:\\DCIM\\IMG_1747.jpg");
 
 			/*File path = new File("G:/Album/Beauty/Koharu Nishino");
-			FileTools.checkSubValidAndCut(path);*/
+			FileCommonTools.checkSubValidAndCut(path);*/
             /*File f1 = new File("H:/Album/Beauty/Koharu Nishino"); 
 			File f2 = new File("F:/Downloads/aa");
 			File[] files = {f1, f2};
 			Md5Tools.getMD5WithCut("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov|m4v)$", false, files);*/
 			/*File winrar = new File("C:/Program Files/WinRAR/WinRAR.exe");
 			File dir = new File("F:/temp");
-			FileTools.compress(winrar, dir, "90890219", 1);*/
+			FileCommonTools.compress(winrar, dir, "90890219", 1);*/
 			/*File f = new File("K:/Album/Beauty/Mayumi Yamanaka");*
 			Md5Tools.getMD5WithCut("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov)$", true, f);*/
             /*File f1 = new File("C:/Users/wp/Downloads/200GANA-953.7z.001");
 			File f2 = new File("C:/Users/wp/Downloads/200GANA-953.7z.002");
 			File f3 = new File("C:/Users/wp/Downloads/200GANA-953.7z.003");
 			File f4 = new File("C:/Users/wp/Downloads/200GANA-953.7z.004");
-			FileTools.merge(new File("F:/Downloads/abs/200GANA-953.7z"), f1, f2, f3, f4);*/
+			FileCommonTools.merge(new File("F:/Downloads/abs/200GANA-953.7z"), f1, f2, f3, f4);*/
 //			File dir = new File("G:\\Album\\Beauty\\Momo Shiina");
 //			compress(dir, "rar", "90890219");
 //			File baseDir = new File("F:\\photo\\invalid\\SEJIN 세진\\2015.10.21 [세진] 소파 위에 미녀 [44P]");
 //			File targetDir = new File("F:\\photo\\invalid\\SEJIN 세진\\2016.05.28 [세진] 소파 위에 미녀 [44P]");
-//			FileTools.replaceName(baseDir, targetDir);
+//			FileCommonTools.replaceName(baseDir, targetDir);
 			// 任务结束
 			LOG.info("wasteTime=" + (System.currentTimeMillis() - startTime));
 		} catch(Exception e) {

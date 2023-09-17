@@ -27,7 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.wp.study.base.util.HttpUtils;
 import com.wp.study.base.util.IoUtils;
 import com.wp.study.base.util.JsonUtils;
-import com.wp.study.praxis.file.FileTools;
+import com.wp.study.praxis.file.FileCommonTools;
 import com.wp.study.praxis.image.reptile.adapter.WebsiteAdapterUtils;
 import com.wp.study.praxis.image.reptile.filter.XmlFilter;
 import com.wp.study.praxis.image.reptile.model.DownloadDO;
@@ -142,7 +142,7 @@ public class ImageReptile {
 							}
 							// 校验图片有效性
 							if(output.exists()) {
-								download.setHasDown(FileTools.checkValidAndCut(output));
+								download.setHasDown(FileCommonTools.checkValidAndCut(output));
 							}
 						} catch(Throwable t) {
 							// t.printStackTrace();
@@ -281,7 +281,7 @@ public class ImageReptile {
 		Map<String, DownloadDO> urlMap = new HashMap<String, DownloadDO>();
 		for (File file : files) {
 			try {
-				String pageContent = FileTools.read(file);
+				String pageContent = FileCommonTools.read(file);
 				if (StringUtils.isBlank(pageContent)) {
 					System.out.println("page content is blank, file=" + file);
 					continue;

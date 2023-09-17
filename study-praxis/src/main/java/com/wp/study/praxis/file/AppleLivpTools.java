@@ -22,7 +22,7 @@ public class AppleLivpTools {
         }
         try {
             // 获取所有子文件
-            List<File> subFiles = FileTools.loadFiles(parent);
+            List<File> subFiles = FileCommonTools.loadFiles(parent);
             if (null == subFiles || subFiles.isEmpty()) {
                 return;
             }
