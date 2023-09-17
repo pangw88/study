@@ -11,9 +11,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Paths;
-import java.nio.file.attribute.FileTime;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorCompletionService;
@@ -22,7 +19,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 //import com.idrsolutions.image.JDeli;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -197,7 +197,7 @@ public class FileNameTools {
                 tar.renameTo(new File(tar.getParentFile(), ori.getName()));
             }
         } catch (Exception e) {
-            LOG.error("rename fail, originDir={}, targetDir={}, error:", baseDir, targetDir, e);
+            LOG.error("replaceName fail, originDir={}, targetDir={}, error:", baseDir, targetDir, e);
         }
     }
 
@@ -206,8 +206,8 @@ public class FileNameTools {
      *
      * @param dir
      */
-    public static void replaceRename(File dir, String keyStr, String replaceStr, String fileType) {
-        replaceRename(dir, keyStr, replaceStr, fileType, true);
+    public static void renameByReplaceStr(File dir, String keyStr, String replaceStr, String fileType) {
+        renameByReplaceStr(dir, keyStr, replaceStr, fileType, true);
     }
 
     /**
@@ -216,7 +216,7 @@ public class FileNameTools {
      *
      * @param dir
      */
-    public static void replaceRename(File dir, String keyStr, String replaceStr, String fileType, boolean readSystemFileTime) {
+    public static void renameByReplaceStr(File dir, String keyStr, String replaceStr, String fileType, boolean readSystemFileTime) {
         if (dir == null || !dir.exists() || !dir.isDirectory()) {
             LOG.error("can not find directory <{}>", dir);
             return;
@@ -255,7 +255,7 @@ public class FileNameTools {
                 }
             }
         } catch (Exception e) {
-            LOG.error("replaceRename fail, dir={}, error:", dir, e);
+            LOG.error("renameByReplaceStr fail, dir={}, error:", dir, e);
         }
     }
 

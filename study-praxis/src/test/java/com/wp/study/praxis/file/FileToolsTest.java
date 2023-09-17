@@ -34,9 +34,9 @@ public class FileToolsTest {
 //			AppleLivpTools.livp2ZipAndUncompress(new File(path));
 
 			String path = "E:\\DCIM\\2018.part2_Rainbow计划.淘造物节.鲁班.塘栖";
-			FileNameTools.replaceRename(new File(path), "LiveHouse_", "Rainbow计划_", ".jpg", false);
-//			FileNameTools.replaceRename(new File(path), "2022-07-04 ", "成都outing_0704_", null);
-//			FileNameTools.replaceRename(new File(path), "jpeg", "jpg", null);
+			FileNameTools.renameByReplaceStr(new File(path), "LiveHouse_", "Rainbow计划_", ".jpg", false);
+//			FileNameTools.renameByReplaceStr(new File(path), "2022-07-04 ", "成都outing_0704_", null);
+//			FileNameTools.renameByReplaceStr(new File(path), "jpeg", "jpg", null);
 //			FileCommonTools.toJpg("E:\\DCIM\\IMG_1747.HEIC.heic", "E:\\DCIM\\IMG_1747.jpg");
 
 			/*File path = new File("G:/Album/Beauty/Koharu Nishino");
