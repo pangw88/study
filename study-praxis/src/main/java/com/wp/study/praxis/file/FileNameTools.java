@@ -322,8 +322,7 @@ public class FileNameTools {
     }
 
     public static void main(String[] args) {
-        renameByReverse("E:\\[玉蒲团之偷情宝鉴][1991][1080p].rar", "!!!");
-        renameByReverse("E:\\rar.]p0801[]1991[]鉴宝情偷之团蒲玉[");
+        renameByReverse("D:\\迅雷下载\\" + "[踏血寻梅.导演剪辑版][2015][1080p].rar", "!!");
     }
 
 }
