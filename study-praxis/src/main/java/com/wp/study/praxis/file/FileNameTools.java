@@ -279,27 +279,39 @@ public class FileNameTools {
      * 通过文件名反转进行重命名，测试_001.jpg -> gpj.100_试测
      *
      * @param filePath
-     * @param limitedSeparator  插入的分隔串，仅针对中、日、韩文字符
-     *                      如果分隔串不为空，!#!，测试_001.jpg -> gpj.100_!#!试!#!测
+     * @param limitedSeparators  插入的分隔串，仅针对中、日、韩文字符
+     *                      如果分隔串不为空，!!，测试_001.jpg -> gpj.100_!!试!!测
      */
-    public static void renameByReverse(String filePath, String limitedSeparator) {
+    public static void renameByReverse(String filePath, String... limitedSeparators) {
         if (StringUtils.isBlank(filePath)) {
-            LOG.error("invalid filePath={}, limitedSeparator={}", filePath, limitedSeparator);
+            LOG.error("invalid filePath={}, limitedSeparators={}", filePath, limitedSeparators);
             return;
         }
         try {
             File file = new File(filePath);
             if (!file.exists()) {
-                LOG.error("invalid file={}, limitedSeparator={}", filePath, limitedSeparator);
+                LOG.error("invalid file={}, limitedSeparators={}", filePath, limitedSeparators);
                 return;
             }
             String rename = new StringBuilder(file.getName()).reverse().toString();
-            if (StringUtils.isNotBlank(limitedSeparator)) {
-                int firstIndex = rename.indexOf(limitedSeparator);
-                int lastIndex = rename.lastIndexOf(limitedSeparator);
-                if (firstIndex >=0 && lastIndex > firstIndex) {
-                    // 名字中存在分隔串，则将所有分隔串转为“”
-                    rename = rename.replaceAll(limitedSeparator, "");
+            if (null != limitedSeparators && limitedSeparators.length > 0) {
+                // 确认匹配的分隔串
+                Set<String> matchedSeparatorSet = new HashSet<>();
+                for (String limitedSeparator : limitedSeparators) {
+                    if (rename.indexOf(limitedSeparator) >= 0) {
+                        matchedSeparatorSet.add(limitedSeparator);
+                    }
+                    String limitedSeparatorReverse = new StringBuilder(limitedSeparator).reverse().toString();
+                    if (rename.indexOf(limitedSeparatorReverse) >= 0) {
+                        matchedSeparatorSet.add(limitedSeparatorReverse);
+                    }
+                }
+
+                if (!matchedSeparatorSet.isEmpty()) {
+                    for (String limitedSeparator : matchedSeparatorSet) {
+                        // 名字中存在分隔串，则将所有分隔串转为“”
+                        rename = rename.replaceAll(limitedSeparator, "");
+                    }
                 } else {
                     // 名字中无分隔串，则插入分隔串
                     StringBuilder sb = new StringBuilder("");
@@ -308,7 +320,7 @@ public class FileNameTools {
                         sb.append(ch);
                         if (AsciiTools.isChineseChar(ch) || AsciiTools.isJapaneseChar(ch) || AsciiTools.isKoreanChar(ch)) {
                             // 中文、日文、韩文字符添加分隔串
-                            sb.append(limitedSeparator);
+                            sb.append(limitedSeparators[i % limitedSeparators.length]);
                         }
                     }
                     rename = sb.toString();
@@ -317,12 +329,12 @@ public class FileNameTools {
             System.out.println(rename);
             file.renameTo(new File(file.getParentFile(), rename));
         } catch (Exception e) {
-            LOG.error("renameByReverse fail, filePath={}, limitedSeparator={}, error:", filePath, limitedSeparator, e);
+            LOG.error("renameByReverse fail, filePath={}, limitedSeparators={}, error:", filePath, limitedSeparators, e);
         }
     }
 
     public static void main(String[] args) {
-        renameByReverse("D:\\迅雷下载\\" + "[踏血寻梅.导演剪辑版][2015][1080p].rar", "!!");
+        renameByReverse("E:\\" + "rar.]p0801[]5102[]版!!辑$!剪#!演!!导$!.梅!!寻$!血#!踏!![", "!!", "$!", "#!");
     }
 
 }
