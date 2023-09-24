@@ -1,6 +1,7 @@
 package com.wp.study.praxis.file;
 
 import com.wp.study.base.util.IoUtils;
+import com.wp.study.praxis.text.AsciiTools;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -271,25 +272,58 @@ public class FileNameTools {
      * @param filePath
      */
     public static void renameByReverse(String filePath) {
+        renameByReverse(filePath, null);
+    }
+
+    /**
+     * 通过文件名反转进行重命名，测试_001.jpg -> gpj.100_试测
+     *
+     * @param filePath
+     * @param limitedSeparator  插入的分隔串，仅针对中、日、韩文字符
+     *                      如果分隔串不为空，!#!，测试_001.jpg -> gpj.100_!#!试!#!测
+     */
+    public static void renameByReverse(String filePath, String limitedSeparator) {
         if (StringUtils.isBlank(filePath)) {
-            LOG.error("invalid filePath <{}>", filePath);
+            LOG.error("invalid filePath={}, limitedSeparator={}", filePath, limitedSeparator);
             return;
         }
         try {
             File file = new File(filePath);
             if (!file.exists()) {
-                LOG.error("invalid file <{}>", filePath);
+                LOG.error("invalid file={}, limitedSeparator={}", filePath, limitedSeparator);
                 return;
             }
             String rename = new StringBuilder(file.getName()).reverse().toString();
+            if (StringUtils.isNotBlank(limitedSeparator)) {
+                int firstIndex = rename.indexOf(limitedSeparator);
+                int lastIndex = rename.lastIndexOf(limitedSeparator);
+                if (firstIndex >=0 && lastIndex > firstIndex) {
+                    // 名字中存在分隔串，则将所有分隔串转为“”
+                    rename = rename.replaceAll(limitedSeparator, "");
+                } else {
+                    // 名字中无分隔串，则插入分隔串
+                    StringBuilder sb = new StringBuilder("");
+                    for (int i = 0; i < rename.length(); i++) {
+                        char ch = rename.charAt(i);
+                        sb.append(ch);
+                        if (AsciiTools.isChineseChar(ch) || AsciiTools.isJapaneseChar(ch) || AsciiTools.isKoreanChar(ch)) {
+                            // 中文、日文、韩文字符添加分隔串
+                            sb.append(limitedSeparator);
+                        }
+                    }
+                    rename = sb.toString();
+                }
+            }
+            System.out.println(rename);
             file.renameTo(new File(file.getParentFile(), rename));
         } catch (Exception e) {
-            LOG.error("renameByReverse fail, filePath={}, error:", filePath, e);
+            LOG.error("renameByReverse fail, filePath={}, limitedSeparator={}, error:", filePath, limitedSeparator, e);
         }
     }
 
     public static void main(String[] args) {
-        System.out.print(new StringBuilder("我是file.我是getName()").reverse().toString());
+        renameByReverse("E:\\[玉蒲团之偷情宝鉴][1991][1080p].rar", "!!!");
+        renameByReverse("E:\\rar.]p0801[]1991[]鉴宝情偷之团蒲玉[");
     }
 
 }

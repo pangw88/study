@@ -27,14 +27,14 @@ public class FileTest {
 			/*File file = new File("F:/ftp/karen nishino");
 			File info = new File("F:/1.txt");
 			FileCommonTools.checkExist(file, info);*/
-//			String path = "D:\\图集\\Fuuka Nishihama\\p_fuuka_st2_08";
-//			FileNameTools.rename(new File(path));
+			String path = "E:\\DCIM\\Ai Takanashi\\4k_l_ai-t_70_2";
+			FileNameTools.rename(new File(path));
 
 //			String path = "E:\\DCIM\\temp";
 //			AppleLivpTools.livp2ZipAndUncompress(new File(path));
 
-			String path = "E:\\DCIM\\2018.part2_Rainbow计划.淘造物节.鲁班.塘栖";
-			FileNameTools.renameByReplaceStr(new File(path), "LiveHouse_", "Rainbow计划_", ".jpg", false);
+//			String path = "E:\\DCIM\\2018.part2_Rainbow计划.淘造物节.鲁班.塘栖";
+//			FileNameTools.renameByReplaceStr(new File(path), "LiveHouse_", "Rainbow计划_", ".jpg", false);
 //			FileNameTools.renameByReplaceStr(new File(path), "2022-07-04 ", "成都outing_0704_", null);
 //			FileNameTools.renameByReplaceStr(new File(path), "jpeg", "jpg", null);
 //			FileCommonTools.toJpg("E:\\DCIM\\IMG_1747.HEIC.heic", "E:\\DCIM\\IMG_1747.jpg");
