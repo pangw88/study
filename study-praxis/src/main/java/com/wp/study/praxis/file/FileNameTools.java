@@ -1,5 +1,6 @@
 package com.wp.study.praxis.file;
 
+import com.google.common.collect.Sets;
 import com.wp.study.base.util.IoUtils;
 import com.wp.study.praxis.text.AsciiTools;
 import org.apache.commons.lang3.StringUtils;
@@ -295,9 +296,17 @@ public class FileNameTools {
             }
             String rename = new StringBuilder(file.getName()).reverse().toString();
             if (null != limitedSeparators && limitedSeparators.length > 0) {
+                // 正则表达式占用的字符
+                Set<String> regUsedChars = Sets.newHashSet("$", "*", ".", "|", "\\", "?", "^");
                 // 确认匹配的分隔串
                 Set<String> matchedSeparatorSet = new HashSet<>();
                 for (String limitedSeparator : limitedSeparators) {
+                    for (String regUsedChar : regUsedChars) {
+                        // 校验分隔串是否包含正则表达式占用的字符
+                        if (limitedSeparator.contains(regUsedChar)) {
+                            throw new RuntimeException("limitedSeparator has regUsedChar=" + regUsedChar);
+                        }
+                    }
                     if (rename.indexOf(limitedSeparator) >= 0) {
                         matchedSeparatorSet.add(limitedSeparator);
                     }
@@ -334,7 +343,7 @@ public class FileNameTools {
     }
 
     public static void main(String[] args) {
-        renameByReverse("E:\\" + "rar.]p0801[]5102[]版!!辑$!剪#!演!!导$!.梅!!寻$!血#!踏!![", "!!", "$!", "#!");
+        renameByReverse("E:\\" + "[踏血寻梅.导演剪辑版][2015][1080p].rar", "!!", "%!", "#!");
     }
 
 }
