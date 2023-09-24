@@ -283,18 +283,17 @@ public class FileNameTools {
      * @param limitedSeparators  插入的分隔串，仅针对中、日、韩文字符
      *                      如果分隔串不为空，!!，测试_001.jpg -> gpj.100_!!试!!测
      */
-    public static void renameByReverse(String filePath, String... limitedSeparators) {
+    public static String renameByReverse(String filePath, String... limitedSeparators) {
         if (StringUtils.isBlank(filePath)) {
-            LOG.error("invalid filePath={}, limitedSeparators={}", filePath, limitedSeparators);
-            return;
+            throw new RuntimeException("invalid filePath=" + filePath + ", limitedSeparators=" + limitedSeparators);
         }
+        String rename = null;
         try {
             File file = new File(filePath);
             if (!file.exists()) {
-                LOG.error("invalid file={}, limitedSeparators={}", filePath, limitedSeparators);
-                return;
+                throw new RuntimeException("invalid file=" + filePath + ", limitedSeparators=" + limitedSeparators);
             }
-            String rename = new StringBuilder(file.getName()).reverse().toString();
+            rename = new StringBuilder(file.getName()).reverse().toString();
             if (null != limitedSeparators && limitedSeparators.length > 0) {
                 // 正则表达式占用的字符
                 Set<String> regUsedChars = Sets.newHashSet("$", "*", ".", "|", "\\", "?", "^");
@@ -340,10 +339,11 @@ public class FileNameTools {
         } catch (Exception e) {
             LOG.error("renameByReverse fail, filePath={}, limitedSeparators={}, error:", filePath, limitedSeparators, e);
         }
+        return rename;
     }
 
     public static void main(String[] args) {
-        renameByReverse("E:\\" + "[踏血寻梅.导演剪辑版][2015][1080p].rar", "!!", "%!", "#!");
+        String rename = renameByReverse("E:\\Downloads\\优质小视频\\" + "[UncenLeak][未知][FC2PPV-1616189].rar", "!!", "%!", "#!");
     }
 
 }
