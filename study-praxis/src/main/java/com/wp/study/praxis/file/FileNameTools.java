@@ -343,7 +343,7 @@ public class FileNameTools {
     }
 
     public static void main(String[] args) {
-        String rename = renameByReverse("D:\\电影\\" + "野兽.rar", "!!", "%!", "#!");
+        String rename = renameByReverse("D:\\电影\\" + "rar.901宮#!三!!", "!!", "%!", "#!");
     }
 
 }
