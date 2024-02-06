@@ -334,16 +334,11 @@ public class FileNameTools {
                     rename = sb.toString();
                 }
             }
-            System.out.println(rename);
             file.renameTo(new File(file.getParentFile(), rename));
         } catch (Exception e) {
             LOG.error("renameByReverse fail, filePath={}, limitedSeparators={}, error:", filePath, limitedSeparators, e);
         }
         return rename;
-    }
-
-    public static void main(String[] args) {
-        String rename = renameByReverse("D:\\电影\\" + "rar.901宮#!三!!", "!!", "%!", "#!");
     }
 
 }
