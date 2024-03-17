@@ -39,7 +39,7 @@ public class FileTest {
 //			FileNameTools.renameByReplaceStr(new File(path), "jpeg", "jpg", null);
 //			FileCommonTools.toJpg("E:\\DCIM\\IMG_1747.HEIC.heic", "E:\\DCIM\\IMG_1747.jpg");
 
-			String rename = FileNameTools.renameByReverse("D:\\电影\\" + "[山手梨愛][Fet-402].rar", "!!", "%!", "#!");
+			String rename = FileNameTools.renameByReverse("D:\\电影\\" + "[楪カレン][Fet-375].rar", "!!", "%!", "#!");
 			System.out.println(rename);
 
 			/*File path = new File("G:/Album/Beauty/Koharu Nishino");
