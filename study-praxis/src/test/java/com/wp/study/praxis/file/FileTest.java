@@ -35,12 +35,10 @@ public class FileTest {
 //			AppleLivpTools.livp2ZipAndUncompress(new File(path));
 
 			String path = "E:\\DCIM\\2024.part1_";
-			FileNameTools.renameByReplaceStr(new File(path), "竹山苗寨_", "竹山苗寨_", FileTypeEnum.MOV, true);
+			FileNameTools.renameByCreateTimeWithKeyword(new File(path), "竹山苗寨", FileTypeEnum.MOV);
 
 //			String path = "E:\\DCIM\\2023.part2_";
-//			FileNameTools.renameByReplaceStr(new File(path), "IMG_20231126", "西湖_1126", null, false);
-//			FileNameTools.renameByReplaceStr(new File(path), "IMG_20231112", "北京_1112", null);
-//			FileNameTools.renameByReplaceStr(new File(path), "jpeg", "jpg", null);
+//			FileNameTools.renameByReplaceStr(new File(path), "IMG_20231126", "西湖_1126");
 //			FileCommonTools.toJpg("E:\\DCIM\\IMG_1747.HEIC.heic", "E:\\DCIM\\IMG_1747.jpg");
 
 //			String rename = FileNameTools.renameByReverse("D:\\电影\\" + "[早野歌][Fet-156].rar", "!!", "%!", "#!");

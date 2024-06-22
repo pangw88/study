@@ -213,28 +213,74 @@ public class FileNameTools {
     }
 
     /**
-     * 以父文件夹名称为基准重命名文件 文件夹名：xxx 重命名文件：xxx_001.jpg、xxx_002.jpg
+     * 以创建时间和关键词重命名文件，格式：{mmdd}_{keyword}_{hhmmss}.{fileType}
      *
      * @param dir
-     * @param keyStr
-     * @param replaceStr
+     * @param keyword
      * @param fileType
      */
-    public static void renameByReplaceStr(File dir, String keyStr, String replaceStr, FileTypeEnum fileType) {
-        renameByReplaceStr(dir, keyStr, replaceStr, fileType, true);
+    public static void renameByCreateTimeWithKeyword(File dir, String keyword, FileTypeEnum fileType) {
+        if (dir == null || !dir.exists() || !dir.isDirectory()) {
+            logger.error("can not find directory <{}>", dir);
+            return;
+        }
+        try {
+            // 获取所有子文件
+            List<File> subFiles = FileCommonTools.loadFiles(dir);
+            if (null == subFiles || subFiles.isEmpty()) {
+                return;
+            }
+            // 过滤有效文件
+            for (File subFile : subFiles) {
+                if (subFile.isDirectory()) {
+                    logger.error("renameByCreateTimeWithKeyword is directory, subFile={}", subFile);
+                    continue;
+                }
+
+                MimeTypeEnum mimeType = FileAttributeTools.extractMimeType(subFile);
+                if (null == mimeType) {
+                    logger.error("renameByCreateTimeWithKeyword mimeType null, subFile={}", subFile);
+                    continue;
+                }
+
+                if (null != fileType && !fileType.getMimeType().equals(mimeType)) {
+                    // 文件MIME和要转换MIME不一致，退出
+                    logger.error("renameByCreateTimeWithKeyword mimeType not equals, subFile={}", subFile);
+                    continue;
+                }
+
+                Date date = FileAttributeTools.extractCreateTime(subFile, mimeType);
+                if (null == date) {
+                    logger.error("renameByCreateTimeWithKeyword date null, subFile={}", subFile);
+                    continue;
+                }
+
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(date);
+                int month = cal.get(Calendar.MONTH) + 1;
+                int day = cal.get(Calendar.DAY_OF_MONTH);
+                int hours = cal.get(Calendar.HOUR_OF_DAY);
+                int minutes = cal.get(Calendar.MINUTE);
+                int seconds = cal.get(Calendar.SECOND);
+                String monthDay = (month<10?"0":"") + (month*100 + day);
+                String time = (hours<10?"0":"") + (hours*10000 + minutes*100 + seconds);
+                String fileSuffix = null == fileType ? "" : ("." + fileType.getCode());
+                String rename = monthDay + "_" + keyword + "_" + time + fileSuffix;
+                subFile.renameTo(new File(subFile.getParentFile(), rename));
+            }
+        } catch (Exception e) {
+            logger.error("renameByCreateTimeWithKeyword fail, dir={}, error:", dir, e);
+        }
     }
 
     /**
-     * 以父文件夹名称为基准重命名文件 文件夹名：xxx 重命名文件：xxx_001.jpg、xxx_002.jpg
-     * readSystemFileTime 读取系统文件时间
+     * 以指定替换字符串重命名文件
+     *
      * @param dir
-     * @param keyStr
+     * @param originStr
      * @param replaceStr
-     * @param fileType
-     * @param readSystemFileTime
      */
-    public static void renameByReplaceStr(
-            File dir, String keyStr, String replaceStr, FileTypeEnum fileType, boolean readSystemFileTime) {
+    public static void renameByReplaceStr(File dir, String originStr, String replaceStr) {
         if (dir == null || !dir.exists() || !dir.isDirectory()) {
             logger.error("can not find directory <{}>", dir);
             return;
@@ -251,49 +297,11 @@ public class FileNameTools {
                     logger.error("renameByReplaceStr is directory, subFile={}", subFile);
                     continue;
                 }
-                if (subFile.getName().indexOf(keyStr) < 0) {
-//                    logger.error("renameByReplaceStr keyStr not match, subFile={}", subFile);
+                if (subFile.getName().indexOf(originStr) < 0) {
+                    logger.error("renameByReplaceStr originStr not match, subFile={}", subFile);
                     continue;
                 }
-
-                MimeTypeEnum mimeType = FileAttributeTools.extractMimeType(subFile);
-                if (null == mimeType) {
-                    logger.error("renameByReplaceStr mimeType null, subFile={}", subFile);
-                    continue;
-                }
-
-                if (null != fileType && !fileType.getMimeType().equals(mimeType)) {
-                    // 文件MIME和要转换MIME不一致，退出
-                    logger.error("renameByReplaceStr mimeType not equals, subFile={}", subFile);
-                    continue;
-                }
-
-                Date date = FileAttributeTools.extractCreateTime(subFile, mimeType);
-                if (null == date) {
-                    logger.error("renameByReplaceStr date null, subFile={}", subFile);
-                    continue;
-                }
-
-                Calendar cal = Calendar.getInstance();
-                cal.setTime(date);
-                int month = cal.get(Calendar.MONTH) + 1;
-                int day = cal.get(Calendar.DAY_OF_MONTH);
-                int hours = cal.get(Calendar.HOUR_OF_DAY);
-                int minutes = cal.get(Calendar.MINUTE);
-                int seconds = cal.get(Calendar.SECOND);
-                String monthDay = (month<10?"0":"") + (month*100 + day);
-                String time = (hours<10?"0":"") + (hours*10000 + minutes*100 + seconds);
-                if (subFile.getPath().indexOf(keyStr) >= 0) {
-                    String name = subFile.getName();
-                    String rename = null;
-                    if (readSystemFileTime) {
-                        String fileSuffix = null == fileType ? "" : ("." + fileType.getCode());
-                        rename = replaceStr + monthDay + "_" + time + fileSuffix;
-                    } else {
-                        rename = name.replaceAll(keyStr, replaceStr);
-                    }
-                    subFile.renameTo(new File(subFile.getParentFile(), rename));
-                }
+                subFile.renameTo(new File(subFile.getParentFile(), subFile.getName().replaceAll(originStr, replaceStr)));
             }
         } catch (Exception e) {
             logger.error("renameByReplaceStr fail, dir={}, error:", dir, e);
