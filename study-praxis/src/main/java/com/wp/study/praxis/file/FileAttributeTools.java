@@ -9,6 +9,7 @@ import org.apache.poi.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.activation.MimetypesFileTypeMap;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -43,6 +44,7 @@ public class FileAttributeTools {
             Path path = Paths.get(file.getPath());
             // 获取文件的MIME类型，这里假设是通过文件扩展名判断，实际应用中可能需要依赖文件内容或者其他信息
             String contentType = Files.probeContentType(path);
+//            String contentType = new MimetypesFileTypeMap().getContentType(file);
             if (StringUtils.isBlank(contentType)) {
                 logger.error("extractMimeType contentType blank, file={}", file);
                 return null;

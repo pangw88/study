@@ -2,6 +2,7 @@ package com.wp.study.praxis.file;
 
 import com.google.common.collect.Sets;
 import com.wp.study.base.util.IoUtils;
+import com.wp.study.praxis.constant.FileTypeEnum;
 import com.wp.study.praxis.text.AsciiTools;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -218,7 +219,7 @@ public class FileNameTools {
      * @param replaceStr
      * @param fileType
      */
-    public static void renameByReplaceStr(File dir, String keyStr, String replaceStr, String fileType) {
+    public static void renameByReplaceStr(File dir, String keyStr, String replaceStr, FileTypeEnum fileType) {
         renameByReplaceStr(dir, keyStr, replaceStr, fileType, true);
     }
 
@@ -231,7 +232,8 @@ public class FileNameTools {
      * @param fileType
      * @param readSystemFileTime
      */
-    public static void renameByReplaceStr(File dir, String keyStr, String replaceStr, String fileType, boolean readSystemFileTime) {
+    public static void renameByReplaceStr(
+            File dir, String keyStr, String replaceStr, FileTypeEnum fileType, boolean readSystemFileTime) {
         if (dir == null || !dir.exists() || !dir.isDirectory()) {
             logger.error("can not find directory <{}>", dir);
             return;
@@ -268,7 +270,8 @@ public class FileNameTools {
                     String name = subFile.getName();
                     String rename = null;
                     if (readSystemFileTime) {
-                        rename = replaceStr + monthDay + "_" + time + (StringUtils.isBlank(fileType) ? "" : fileType);
+                        String fileSuffix = null == fileType ? "" : ("." + fileType.getCode());
+                        rename = replaceStr + monthDay + "_" + time + fileSuffix;
                     } else {
                         rename = name.replaceAll(keyStr, replaceStr);
                     }

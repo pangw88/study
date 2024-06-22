@@ -6,12 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.wp.study.praxis.constant.FileTypeEnum;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class FileTest {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(FileTest.class);
 
 	public static void main(String[] args) {
@@ -19,12 +20,12 @@ public class FileTest {
 			// 任务开始
 			long startTime = System.currentTimeMillis();
 			LOG.info("task begin");
-			/*
+            /*
 			Long time1 = new Date().getTime();
 			FileCommonTools.copy(new File("E:/r2_kaneko_m03.mp4"), new File("D:/a1"));
 			Long time2 = new Date().getTime();
 			System.out.println(time2 - time1);*/
-			/*File file = new File("F:/ftp/karen nishino");
+            /*File file = new File("F:/ftp/karen nishino");
 			File info = new File("F:/1.txt");
 			FileCommonTools.checkExist(file, info);*/
 //			String path = "E:\\DCIM\\Ai Takanashi\\4k_l_ai-t_70_2";
@@ -33,8 +34,8 @@ public class FileTest {
 //			String path = "E:\\DCIM\\temp";
 //			AppleLivpTools.livp2ZipAndUncompress(new File(path));
 
-			String path = "E:\\DCIM\\temp1";
-			FileNameTools.renameByReplaceStr(new File(path), "黄山_", "黄山_", ".jpg", true);
+			String path = "E:\\DCIM\\temp";
+			FileNameTools.renameByReplaceStr(new File(path), "张家界_", "张家界_", FileTypeEnum.MOV, true);
 
 //			String path = "E:\\DCIM\\2023.part2_";
 //			FileNameTools.renameByReplaceStr(new File(path), "IMG_20231126", "西湖_1126", null, false);
@@ -45,16 +46,16 @@ public class FileTest {
 //			String rename = FileNameTools.renameByReverse("D:\\电影\\" + "[早野歌][Fet-156].rar", "!!", "%!", "#!");
 //			System.out.println(rename);
 
-			/*File path = new File("G:/Album/Beauty/Koharu Nishino");
+            /*File path = new File("G:/Album/Beauty/Koharu Nishino");
 			FileCommonTools.checkSubValidAndCut(path);*/
             /*File f1 = new File("H:/Album/Beauty/Koharu Nishino"); 
 			File f2 = new File("F:/Downloads/aa");
 			File[] files = {f1, f2};
 			Md5Tools.getMD5WithCut("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov|m4v)$", false, files);*/
-			/*File winrar = new File("C:/Program Files/WinRAR/WinRAR.exe");
+            /*File winrar = new File("C:/Program Files/WinRAR/WinRAR.exe");
 			File dir = new File("F:/temp");
 			FileCommonTools.compress(winrar, dir, "90890219", 1);*/
-			/*File f = new File("K:/Album/Beauty/Mayumi Yamanaka");*
+            /*File f = new File("K:/Album/Beauty/Mayumi Yamanaka");*
 			Md5Tools.getMD5WithCut("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov)$", true, f);*/
             /*File f1 = new File("C:/Users/wp/Downloads/200GANA-953.7z.001");
 			File f2 = new File("C:/Users/wp/Downloads/200GANA-953.7z.002");
@@ -72,7 +73,7 @@ public class FileTest {
 			LOG.error(e.getMessage());
 		}
 	}
-	
+
 	public static void compress(File dir, String compressModel, String password) {
 		if(null == dir || !dir.exists()) {
 			return;
