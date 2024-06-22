@@ -19,6 +19,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class FileAttributeTools {
 
@@ -69,6 +70,7 @@ public class FileAttributeTools {
                 logger.error("extractCreateTime mimeType null, file={}", file);
                 return null;
             }
+
             switch (mimeType) {
                 case VIDEO:
                     Process process = Runtime.getRuntime().exec("ffmpeg -i " + file.getPath());
@@ -78,9 +80,10 @@ public class FileAttributeTools {
                         // 创建时间格式-> "creation_time   : 2024-06-14T10:02:42.000000Z"
                         if (line.contains("creation_time")) {
                             String timeStr = line.substring(line.indexOf(":") + 1);
-                            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+                            dateFormat.setTimeZone(TimeZone.getTimeZone("GMT+0"));
                             // 解析创建时间
-                            date = inputFormat.parse(timeStr.trim());
+                            date = dateFormat.parse(timeStr.trim());
                             break;
                         }
                     }
@@ -88,7 +91,8 @@ public class FileAttributeTools {
                 case IMAGE:
                     Metadata metadata = ImageMetadataReader.readMetadata(file);
                     ExifSubIFDDirectory directory = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
-                    date = directory.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
+                    // 设置为东八区时间
+                    date = directory.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL, TimeZone.getTimeZone("GMT+8"));
                     break;
                 default:
                     Path path = Paths.get(file.getPath());
