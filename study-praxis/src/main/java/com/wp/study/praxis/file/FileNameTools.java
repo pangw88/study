@@ -3,6 +3,7 @@ package com.wp.study.praxis.file;
 import com.google.common.collect.Sets;
 import com.wp.study.base.util.IoUtils;
 import com.wp.study.praxis.constant.FileTypeEnum;
+import com.wp.study.praxis.constant.MimeTypeEnum;
 import com.wp.study.praxis.text.AsciiTools;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -251,7 +252,19 @@ public class FileNameTools {
                     return;
                 }
 
-                Date date = FileAttributeTools.extractCreateTime(subFile);
+                MimeTypeEnum mimeType = FileAttributeTools.extractMimeType(subFile);
+                if (null == mimeType) {
+                    logger.error("renameByReplaceStr mimeType null, subFile={}", subFile);
+                    return;
+                }
+
+                if (null != fileType && !fileType.getMimeType().equals(mimeType)) {
+                    // 文件MIME和要转换MIME不一致，退出
+                    logger.error("renameByReplaceStr mimeType not equals, subFile={}", subFile);
+                    return;
+                }
+
+                Date date = FileAttributeTools.extractCreateTime(subFile, mimeType);
                 if (null == date) {
                     logger.error("renameByReplaceStr date null, subFile={}", subFile);
                     return;

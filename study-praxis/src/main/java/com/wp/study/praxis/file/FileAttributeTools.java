@@ -61,18 +61,13 @@ public class FileAttributeTools {
      * 提取文件创建时间
      *
      * @param file
+     * @param mimeType
      * @return
      */
-    public static Date extractCreateTime(File file) {
+    public static Date extractCreateTime(File file, MimeTypeEnum mimeType) {
         Date date = null;
         BufferedReader reader = null;
         try {
-            MimeTypeEnum mimeType = extractMimeType(file);
-            if (null == mimeType) {
-                logger.error("extractCreateTime mimeType null, file={}", file);
-                return null;
-            }
-
             switch (mimeType) {
                 case VIDEO:
                     Process process = Runtime.getRuntime().exec("ffmpeg -i " + file.getPath());
@@ -105,7 +100,7 @@ public class FileAttributeTools {
                     break;
             }
         } catch (Throwable e) {
-            logger.error("extractCreateTime fail, file={}, error:", file, e);
+            logger.error("extractCreateTime fail, file={}, mimeType={}, error:", file, mimeType, e);
         } finally {
             IOUtils.closeQuietly(reader);
         }
