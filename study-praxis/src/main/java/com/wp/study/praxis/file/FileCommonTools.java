@@ -26,9 +26,9 @@ import com.wp.study.base.util.IoUtils;
 
 public class FileCommonTools {
 
-	private static final Logger LOG = LoggerFactory.getLogger(FileCommonTools.class);
+	private static Logger logger = LoggerFactory.getLogger(FileCommonTools.class);
 
-	public static File invalidPath = new File("E:/photo/invalid");
+	private static File invalidPath = new File("E:/photo/invalid");
 	private static AtomicInteger checkSize = new AtomicInteger(0);
 
 	/**
@@ -76,7 +76,7 @@ public class FileCommonTools {
 				}
 			}
 		} catch (Exception e) {
-			LOG.error("loadFiles fail, files={}, error:", files, e);
+			logger.error("loadFiles fail, files={}, error:", files, e);
 		}
 		return fileList;
 	}
@@ -89,11 +89,11 @@ public class FileCommonTools {
 	 */
 	public static void checkExist(File dir, File info) {
 		if (dir == null || !dir.exists() || !dir.isDirectory()) {
-			LOG.error("can not find directory <{}>", dir);
+			logger.error("can not find directory <{}>", dir);
 			return;
 		}
 		if (info == null || !info.exists() || !info.isFile()) {
-			LOG.error("can not find info file <{}>", info);
+			logger.error("can not find info file <{}>", info);
 			return;
 		}
 
@@ -214,7 +214,7 @@ public class FileCommonTools {
 			}
 			fw.flush();
 		} catch (Exception e) {
-			LOG.error("checkExist fail, dir={}, info={}, error:", dir, info, e);
+			logger.error("checkExist fail, dir={}, info={}, error:", dir, info, e);
 		} finally {
 			IoUtils.closeQuietly(br, fw);
 		}
@@ -229,7 +229,7 @@ public class FileCommonTools {
 	public static boolean copy0(File origin, File path) {
 		boolean result = false;
 		if (origin == null || !origin.exists() || !origin.isFile()) {
-			LOG.error("can not find copy file <{}>", origin);
+			logger.error("can not find copy file <{}>", origin);
 			return result;
 		}
 		BufferedInputStream bis = null;
@@ -256,13 +256,13 @@ public class FileCommonTools {
 			bos.flush();
 			result = true;
 		} catch (Exception e) {
-			LOG.error(e.getMessage());
+			logger.error(e.getMessage());
 		} finally {
 			// 关闭输入输出流
 			IoUtils.closeQuietly(bis, bos);
 		}
 		if (!result) {
-			LOG.error("copy0 fail, dir={}, info={}", origin, path);
+			logger.error("copy0 fail, dir={}, info={}", origin, path);
 		}
 		return result;
 	}
@@ -276,7 +276,7 @@ public class FileCommonTools {
 	public static boolean copy(File origin, File path) {
 		boolean result = false;
 		if (origin == null || !origin.exists() || !origin.isFile()) {
-			LOG.error("can not find copy file <{}>", origin);
+			logger.error("can not find copy file <{}>", origin);
 			return result;
 		}
 		FileInputStream fis = null;
@@ -302,13 +302,13 @@ public class FileCommonTools {
 			fos.flush();
 			result = true;
 		} catch (Exception e) {
-			LOG.error(e.getMessage());
+			logger.error(e.getMessage());
 		} finally {
 			// 关闭输入输出流
 			IoUtils.closeQuietly(fis, in, fos, out);
 		}
 		if (!result) {
-			LOG.error("copy fail, origin={}, path={}", origin, path);
+			logger.error("copy fail, origin={}, path={}", origin, path);
 		}
 		return result;
 	}
@@ -328,7 +328,7 @@ public class FileCommonTools {
 			if (origin.delete()) {
 				result = true;
 			} else {
-				LOG.error("delete fail, origin={}, path={}", origin, path);
+				logger.error("delete fail, origin={}, path={}", origin, path);
 			}
 		}
 		return result;
@@ -358,7 +358,7 @@ public class FileCommonTools {
 				valid = cut(origin, invalidPath);
 			}
 		} catch (Exception e) {
-			LOG.error("checkValidAndCut fail, origin={}, error:", origin, e);
+			logger.error("checkValidAndCut fail, origin={}, error:", origin, e);
 		}
 		return valid;
 	}
@@ -391,7 +391,7 @@ public class FileCommonTools {
 						}
 					});
 				} catch (Throwable e) {
-					LOG.error("submitTask fail, subFile={}, error:", subFile, e);
+					logger.error("submitTask fail, subFile={}, error:", subFile, e);
 				}
 				try {
 					// 控制任务提交速度
@@ -407,7 +407,7 @@ public class FileCommonTools {
 				System.out.println("checkSubValidAndCut has process: " + (int) (size * 100 / subFiles.size()) + "%s");
 			}
 		} catch (Exception e) {
-			LOG.error("checkSubValidAndCut fail, error:", e);
+			logger.error("checkSubValidAndCut fail, error:", e);
 		} finally {
 			if (null != checkPool) {
 				try {
@@ -427,11 +427,11 @@ public class FileCommonTools {
 	public static boolean merge(File mergedFile, File... files) {
 		boolean result = false;
 		if (mergedFile == null || mergedFile.isDirectory()) {
-			LOG.warn("merged file is null or is directory");
+			logger.warn("merged file is null or is directory");
 			return result;
 		}
 		if (files == null || files.length == 0) {
-			LOG.warn("orgin files is empty");
+			logger.warn("orgin files is empty");
 			return result;
 		}
 		FileInputStream fis = null;
@@ -465,7 +465,7 @@ public class FileCommonTools {
 			fos.flush();
 			result = true;
 		} catch (Exception e) {
-			LOG.error("merge fail, mergedFile={}, files={}, error:", mergedFile, files, e);
+			logger.error("merge fail, mergedFile={}, files={}, error:", mergedFile, files, e);
 		} finally {
 			// 关闭输入输出流
 			IoUtils.closeQuietly(fos, out);
@@ -481,7 +481,7 @@ public class FileCommonTools {
 			fw.write(content);
 			fw.flush();
 		} catch (Exception e) {
-			LOG.error("write fail, filePath={}, error:", filePath, e);
+			logger.error("write fail, filePath={}, error:", filePath, e);
 		} finally {
 			IoUtils.closeQuietly(fw);
 		}
@@ -500,7 +500,7 @@ public class FileCommonTools {
 				sb.append(line).append("\n");
 			}
 		} catch (Exception e) {
-			LOG.error("read fail, file={}, error:", file, e);
+			logger.error("read fail, file={}, error:", file, e);
 		} finally {
 			IoUtils.closeQuietly(fr, bufr);
 		}

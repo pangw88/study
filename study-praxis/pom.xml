@@ -95,5 +95,12 @@
 <!--			<version>1.0</version>-->
 <!--		</dependency>-->
 		<!-- read HEIC image with JDeli -->
+
+		<!-- 提取图片元数据 -->
+		<dependency>
+			<groupId>com.drewnoakes</groupId>
+			<artifactId>metadata-extractor</artifactId>
+			<version>2.16.0</version>
+		</dependency>
 	</dependencies>
 </project>

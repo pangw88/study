@@ -17,9 +17,16 @@ import java.nio.file.attribute.FileTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import java.util.Date;
+
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.exif.ExifSubIFDDirectory;
+
+
 public class FileNameTools {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FileNameTools.class);
+    private static Logger logger = LoggerFactory.getLogger(FileNameTools.class);
 
     /**
      * 以父文件夹名称为基准重命名文件 文件夹名：xxx 重命名文件：xxx_001.jpg、xxx_002.jpg
@@ -28,7 +35,7 @@ public class FileNameTools {
      */
     public static void rename(File parent) {
         if (parent == null || !parent.exists() || !parent.isDirectory()) {
-            LOG.error("can not find directory <{}>", parent);
+            logger.error("can not find directory <{}>", parent);
             return;
         }
         FileWriter fw = null;
@@ -52,11 +59,11 @@ public class FileNameTools {
             for (File subFile : subFiles) {
                 String path = subFile.getPath();
                 if (path.matches("^[\\s\\S]*\\.ini$")) {
-                    LOG.info("exist .ini file <{}>", path);
+                    logger.info("exist .ini file <{}>", path);
                     subFile.delete();
                 } else if (path.matches("^[\\s\\S]*\\.db$")) { // \s匹配任意的空白符，\S则是匹配任意非空白符的字符
                     // 过滤数据库缓存文件
-                    LOG.info("exist .db file <{}>", path);
+                    logger.info("exist .db file <{}>", path);
                 } else if (path.toLowerCase().matches("^[\\s\\S]*\\.(mp4|mkv|avi|wmv|mov|m4v|zip|rar)$")) {
                     String name = subFile.getName();
                     // .*匹配除换行符外任意长度字符串
@@ -66,7 +73,7 @@ public class FileNameTools {
                         fw.write(name + " rename to " + rename);
                     } else {
                         // 过滤视频文件
-                        LOG.info("ignore video file <{}>", path);
+                        logger.info("ignore video file <{}>", path);
                     }
                 } else { // 非数据库、视频文件处理
                     files.add(new File(path) {
@@ -119,7 +126,7 @@ public class FileNameTools {
             }
             fw.flush();
         } catch (Exception e) {
-            LOG.error("rename fail, parent={}, error:", parent, e);
+            logger.error("rename fail, parent={}, error:", parent, e);
         } finally {
             IoUtils.closeQuietly(fw);
         }
@@ -134,11 +141,11 @@ public class FileNameTools {
      */
     public static void replaceName(File baseDir, File targetDir) {
         if (null == baseDir || null == targetDir || !baseDir.exists() || !targetDir.exists()) {
-            LOG.error("can not find baseDir <{}>, targetDir <{}>", baseDir, targetDir);
+            logger.error("can not find baseDir <{}>, targetDir <{}>", baseDir, targetDir);
             return;
         }
         if (!baseDir.isDirectory() || !targetDir.isDirectory() || baseDir.list().length != targetDir.list().length) {
-            LOG.error("can not find baseDir length <{}>, targetDir length <{}>", baseDir.list().length,
+            logger.error("can not find baseDir length <{}>, targetDir length <{}>", baseDir.list().length,
                     targetDir.list().length);
             return;
         }
@@ -199,7 +206,7 @@ public class FileNameTools {
                 tar.renameTo(new File(tar.getParentFile(), ori.getName()));
             }
         } catch (Exception e) {
-            LOG.error("replaceName fail, originDir={}, targetDir={}, error:", baseDir, targetDir, e);
+            logger.error("replaceName fail, originDir={}, targetDir={}, error:", baseDir, targetDir, e);
         }
     }
 
@@ -226,7 +233,7 @@ public class FileNameTools {
      */
     public static void renameByReplaceStr(File dir, String keyStr, String replaceStr, String fileType, boolean readSystemFileTime) {
         if (dir == null || !dir.exists() || !dir.isDirectory()) {
-            LOG.error("can not find directory <{}>", dir);
+            logger.error("can not find directory <{}>", dir);
             return;
         }
         try {
@@ -237,13 +244,22 @@ public class FileNameTools {
             }
             // 过滤有效文件
             for (File subFile : subFiles) {
+                if (subFile.isDirectory()) {
+                    logger.error("renameByReplaceStr is directory, subFile={}", subFile);
+                    return;
+                }
                 String path = subFile.getPath();
                 Map<String,Object> attributes = Files.readAttributes(Paths.get(path), "*", LinkOption.NOFOLLOW_LINKS);
                 FileTime lastModifiedTime = (FileTime) attributes.get("lastModifiedTime");
 
-                Calendar cal = Calendar.getInstance();
-                cal.setTime(new Date(lastModifiedTime.toMillis()));
+                Date date = FileAttributeTools.extractCreateTime(subFile);
+                if (null == date) {
+                    logger.error("renameByReplaceStr date null, subFile={}", subFile);
+                    return;
+                }
 
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(date);
                 int month = cal.get(Calendar.MONTH) + 1;
                 int day = cal.get(Calendar.DAY_OF_MONTH);
                 int hours = cal.get(Calendar.HOUR_OF_DAY);
@@ -263,7 +279,7 @@ public class FileNameTools {
                 }
             }
         } catch (Exception e) {
-            LOG.error("renameByReplaceStr fail, dir={}, error:", dir, e);
+            logger.error("renameByReplaceStr fail, dir={}, error:", dir, e);
         }
     }
 
@@ -336,7 +352,7 @@ public class FileNameTools {
             }
             file.renameTo(new File(file.getParentFile(), rename));
         } catch (Exception e) {
-            LOG.error("renameByReverse fail, filePath={}, limitedSeparators={}, error:", filePath, limitedSeparators, e);
+            logger.error("renameByReverse fail, filePath={}, limitedSeparators={}, error:", filePath, limitedSeparators, e);
         }
         return rename;
     }
