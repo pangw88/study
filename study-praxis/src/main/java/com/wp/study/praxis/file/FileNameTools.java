@@ -248,9 +248,6 @@ public class FileNameTools {
                     logger.error("renameByReplaceStr is directory, subFile={}", subFile);
                     return;
                 }
-                String path = subFile.getPath();
-                Map<String,Object> attributes = Files.readAttributes(Paths.get(path), "*", LinkOption.NOFOLLOW_LINKS);
-                FileTime lastModifiedTime = (FileTime) attributes.get("lastModifiedTime");
 
                 Date date = FileAttributeTools.extractCreateTime(subFile);
                 if (null == date) {
@@ -267,7 +264,7 @@ public class FileNameTools {
                 int seconds = cal.get(Calendar.SECOND);
                 String monthDay = (month<10?"0":"") + (month*100 + day);
                 String time = (hours<10?"0":"") + (hours*10000 + minutes*100 + seconds);
-                if (path.indexOf(keyStr) >= 0) {
+                if (subFile.getPath().indexOf(keyStr) >= 0) {
                     String name = subFile.getName();
                     String rename = null;
                     if (readSystemFileTime) {

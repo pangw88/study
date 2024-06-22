@@ -5,15 +5,19 @@ import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.wp.study.praxis.constant.MimeTypeEnum;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class FileAttributeTools {
@@ -58,6 +62,7 @@ public class FileAttributeTools {
      */
     public static Date extractCreateTime(File file) {
         Date date = null;
+        BufferedReader reader = null;
         try {
             MimeTypeEnum mimeType = extractMimeType(file);
             if (null == mimeType) {
@@ -66,26 +71,39 @@ public class FileAttributeTools {
             }
             switch (mimeType) {
                 case VIDEO:
-                    Path path = Paths.get(file.getPath());
-                    // 获取文件的基本属性
-                    BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
-                    FileTime creationTime = attributes.lastModifiedTime();
-                    date = new Date(creationTime.toMillis());
+                    Process process = Runtime.getRuntime().exec("ffmpeg -i " + file.getPath());
+                    reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        // 创建时间格式-> "creation_time   : 2024-06-14T10:02:42.000000Z"
+                        if (line.contains("creation_time")) {
+                            String timeStr = line.substring(line.indexOf(":") + 1);
+                            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+                            // 解析创建时间
+                            date = inputFormat.parse(timeStr.trim());
+                            break;
+                        }
+                    }
                     break;
                 case IMAGE:
                     Metadata metadata = ImageMetadataReader.readMetadata(file);
                     ExifSubIFDDirectory directory = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
                     date = directory.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
                     break;
+                default:
+                    Path path = Paths.get(file.getPath());
+                    // 获取文件的基本属性
+                    BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
+                    FileTime creationTime = attributes.lastModifiedTime();
+                    date = new Date(creationTime.toMillis());
+                    break;
             }
         } catch (Throwable e) {
             logger.error("extractCreateTime fail, file={}, error:", file, e);
+        } finally {
+            IOUtils.closeQuietly(reader);
         }
         return date;
-    }
-
-    public static void main(String[] args) {
-        extractCreateTime(new File("E:\\DCIM\\2024.part1_\\张家界_0511_075101.mov"));
     }
 
 }
