@@ -249,25 +249,29 @@ public class FileNameTools {
             for (File subFile : subFiles) {
                 if (subFile.isDirectory()) {
                     logger.error("renameByReplaceStr is directory, subFile={}", subFile);
-                    return;
+                    continue;
+                }
+                if (subFile.getName().indexOf(keyStr) < 0) {
+//                    logger.error("renameByReplaceStr keyStr not match, subFile={}", subFile);
+                    continue;
                 }
 
                 MimeTypeEnum mimeType = FileAttributeTools.extractMimeType(subFile);
                 if (null == mimeType) {
                     logger.error("renameByReplaceStr mimeType null, subFile={}", subFile);
-                    return;
+                    continue;
                 }
 
                 if (null != fileType && !fileType.getMimeType().equals(mimeType)) {
                     // 文件MIME和要转换MIME不一致，退出
                     logger.error("renameByReplaceStr mimeType not equals, subFile={}", subFile);
-                    return;
+                    continue;
                 }
 
                 Date date = FileAttributeTools.extractCreateTime(subFile, mimeType);
                 if (null == date) {
                     logger.error("renameByReplaceStr date null, subFile={}", subFile);
-                    return;
+                    continue;
                 }
 
                 Calendar cal = Calendar.getInstance();
