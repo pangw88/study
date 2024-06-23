@@ -242,19 +242,36 @@ public class FileNameTools {
 
                 Calendar cal = Calendar.getInstance();
                 cal.setTime(date);
-                int month = cal.get(Calendar.MONTH) + 1;
-                int day = cal.get(Calendar.DAY_OF_MONTH);
-                int hours = cal.get(Calendar.HOUR_OF_DAY);
-                int minutes = cal.get(Calendar.MINUTE);
-                int seconds = cal.get(Calendar.SECOND);
-                String monthDay = (month<10?"0":"") + (month*100 + day);
-                String time = (hours<10?"0":"") + (hours*10000 + minutes*100 + seconds);
-                String rename = monthDay  + "-" + time + "_" + keyword + fileType.getExtension();
+                String month = to2DigitString(cal.get(Calendar.MONTH) + 1);
+                String day = to2DigitString(cal.get(Calendar.DAY_OF_MONTH));
+                String hour = to2DigitString(cal.get(Calendar.HOUR_OF_DAY));
+                String minute = to2DigitString(cal.get(Calendar.MINUTE));
+                String second = to2DigitString(cal.get(Calendar.SECOND));
+                String rename = month + day  + "-" + hour + minute + second + "_" + keyword + fileType.getExtension();
                 subFile.renameTo(new File(subFile.getParentFile(), rename));
             }
         } catch (Exception e) {
             logger.error("renameByCreateTimeWithKeyword fail, dir={}, error:", dir, e);
         }
+    }
+
+    /**
+     * 时间分段转2位字符串
+     *
+     * @param timeSeg
+     * @return
+     */
+    private static String to2DigitString(int timeSeg) {
+        if (timeSeg < 0) {
+            throw new RuntimeException("timeSeg invalid, timeSeg=" + timeSeg);
+        }
+        if (timeSeg == 0) {
+            return "00";
+        }
+        if (timeSeg < 10) {
+            return "0" + timeSeg;
+        }
+        return String.valueOf(timeSeg);
     }
 
     /**
