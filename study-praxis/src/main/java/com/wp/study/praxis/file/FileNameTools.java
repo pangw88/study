@@ -249,7 +249,7 @@ public class FileNameTools {
                 int seconds = cal.get(Calendar.SECOND);
                 String monthDay = (month<10?"0":"") + (month*100 + day);
                 String time = (hours<10?"0":"") + (hours*10000 + minutes*100 + seconds);
-                String rename = monthDay + "_" + keyword + "_" + time + fileType.getExtension();
+                String rename = monthDay  + "-" + time + "_" + keyword + fileType.getExtension();
                 subFile.renameTo(new File(subFile.getParentFile(), rename));
             }
         } catch (Exception e) {
