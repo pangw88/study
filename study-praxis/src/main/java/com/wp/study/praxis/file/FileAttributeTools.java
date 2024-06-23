@@ -3,13 +3,13 @@ package com.wp.study.praxis.file;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
+import com.wp.study.praxis.constant.FileTypeEnum;
 import com.wp.study.praxis.constant.MimeTypeEnum;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.activation.MimetypesFileTypeMap;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -27,17 +27,17 @@ public class FileAttributeTools {
     private static Logger logger = LoggerFactory.getLogger(FileAttributeTools.class);
 
     /**
-     * 提取文件MIME类型
+     * 提取文件类型
      *
      * @param file
      * @return
      */
-    public static MimeTypeEnum extractMimeType(File file) {
-        MimeTypeEnum mimeType = null;
+    public static FileTypeEnum extractFileType(File file) {
+        FileTypeEnum fileType = null;
         try {
             // 判断文件是否是一个目录
             if (file.isDirectory()) {
-                logger.error("extractMimeType is directory, file={}", file);
+                logger.error("extractFileType is directory, file={}", file);
                 return null;
             }
             // 将文件路径转换为Path对象
@@ -46,15 +46,14 @@ public class FileAttributeTools {
             String contentType = Files.probeContentType(path);
 //            String contentType = new MimetypesFileTypeMap().getContentType(file);
             if (StringUtils.isBlank(contentType)) {
-                logger.error("extractMimeType contentType blank, file={}", file);
+                logger.error("extractFileType contentType blank, file={}", file);
                 return null;
             }
-            String[] arr = contentType.split("/");
-            mimeType = MimeTypeEnum.getEnum(arr[0]);
+            fileType = FileTypeEnum.getEnum(contentType);
         } catch (Throwable e) {
-            logger.error("extractMimeType fail, file={}, error:", file, e);
+            logger.error("extractFileType fail, file={}, error:", file, e);
         }
-        return mimeType;
+        return fileType;
     }
 
     /**

@@ -34,8 +34,8 @@ public class FileTest {
 //			String path = "E:\\DCIM\\temp";
 //			AppleLivpTools.livp2ZipAndUncompress(new File(path));
 
-			String path = "E:\\DCIM\\2024.part1_";
-			FileNameTools.renameByCreateTimeWithKeyword(new File(path), "竹山苗寨", FileTypeEnum.MOV);
+			String path = "E:\\DCIM\\temp";
+			FileNameTools.renameByCreateTimeWithKeyword(new File(path), "拉毫营盘");
 
 //			String path = "E:\\DCIM\\2023.part2_";
 //			FileNameTools.renameByReplaceStr(new File(path), "IMG_20231126", "西湖_1126");

@@ -12,18 +12,10 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Paths;
-import java.nio.file.attribute.FileTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import java.util.Date;
-
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.exif.ExifSubIFDDirectory;
 
 
 public class FileNameTools {
@@ -213,13 +205,12 @@ public class FileNameTools {
     }
 
     /**
-     * 以创建时间和关键词重命名文件，格式：{mmdd}_{keyword}_{hhmmss}.{fileType}
+     * 以创建时间和关键词重命名文件，格式：{mmdd}_{keyword}_{hhmmss}{fileExtension}
      *
      * @param dir
      * @param keyword
-     * @param fileType
      */
-    public static void renameByCreateTimeWithKeyword(File dir, String keyword, FileTypeEnum fileType) {
+    public static void renameByCreateTimeWithKeyword(File dir, String keyword) {
         if (dir == null || !dir.exists() || !dir.isDirectory()) {
             logger.error("can not find directory <{}>", dir);
             return;
@@ -237,19 +228,13 @@ public class FileNameTools {
                     continue;
                 }
 
-                MimeTypeEnum mimeType = FileAttributeTools.extractMimeType(subFile);
-                if (null == mimeType) {
-                    logger.error("renameByCreateTimeWithKeyword mimeType null, subFile={}", subFile);
+                FileTypeEnum fileType = FileAttributeTools.extractFileType(subFile);
+                if (null == fileType) {
+                    logger.error("renameByCreateTimeWithKeyword fileType null, subFile={}", subFile);
                     continue;
                 }
 
-                if (null != fileType && !fileType.getMimeType().equals(mimeType)) {
-                    // 文件MIME和要转换MIME不一致，退出
-                    logger.error("renameByCreateTimeWithKeyword mimeType not equals, subFile={}", subFile);
-                    continue;
-                }
-
-                Date date = FileAttributeTools.extractCreateTime(subFile, mimeType);
+                Date date = FileAttributeTools.extractCreateTime(subFile, fileType.getMimeType());
                 if (null == date) {
                     logger.error("renameByCreateTimeWithKeyword date null, subFile={}", subFile);
                     continue;
@@ -264,8 +249,7 @@ public class FileNameTools {
                 int seconds = cal.get(Calendar.SECOND);
                 String monthDay = (month<10?"0":"") + (month*100 + day);
                 String time = (hours<10?"0":"") + (hours*10000 + minutes*100 + seconds);
-                String fileSuffix = null == fileType ? "" : ("." + fileType.getCode());
-                String rename = monthDay + "_" + keyword + "_" + time + fileSuffix;
+                String rename = monthDay + "_" + keyword + "_" + time + fileType.getExtension();
                 subFile.renameTo(new File(subFile.getParentFile(), rename));
             }
         } catch (Exception e) {
